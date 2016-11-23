@@ -1,0 +1,78 @@
+<ion-view view-title="学车-搜索">
+  <ion-content>
+    <div class="list">
+
+      <div class="item item-divider item-button-right">
+        <span class="input-label">分类搜索</span>
+        <button class="button button-clear button-positive">
+          <i class="icon ion-ios-search"></i>
+        </button>
+      </div>
+
+     <!--  <div class="list">
+        <label class="item item-input item-select">
+          <span class="input-label">车型</span>
+            <select ng-model="comment.cartype">
+                <option ng-repeat="n in [\'校车\',\'打车\']" value="{{n}}">{{n}}</option>
+            </select>
+        </label>
+        <label class="item item-input">
+          <span class="input-label">资质</span>
+          <input type="text" ng-model="comment.author">
+        </label>
+        <label class="item item-input">
+          <span class="input-label">语言</span>
+          <input type="text" ng-model="comment.comment">
+        </label>
+        <label class="item item-input">
+          <span class="input-label">性别</span>
+          <input type="text" ng-model="comment.comment">
+        </label>
+        <label class="item">
+          <button class="button button-block button-positive" type="submit">Submit</button>
+        </label>
+      </div> -->
+
+      <a class="item" href="#">
+          <form id="commentform" name="commentform" ng-submit="doComment()">
+            <div class="list">
+              <label class="item item-input item-select">
+                <span class="input-label">车型</span>
+                  <select ng-model="comment.cartype">
+                      <option ng-repeat="n in [1,2,3]" value="{{n}}">{{n}}</option>
+                  </select>
+              </label>
+              <label class="item item-input">
+                <span class="input-label">资质</span>
+                <input type="text" ng-model="comment.author">
+              </label>
+              <label class="item item-input">
+                <span class="input-label">语言</span>
+                <input type="text" ng-model="comment.comment">
+              </label>
+              <label class="item item-input">
+                <span class="input-label">性别</span>
+                <input type="text" ng-model="comment.comment">
+              </label>
+            </div>
+          </form>
+      </a>
+
+      <div class="item item-divider">
+        区域搜索
+      </div>
+
+      <a class="item" href="#">
+        Butterfinger
+      </a>
+
+      <div class="item item-divider">
+        关键字搜索
+      </div>
+
+      <a class="item" href="#">
+        Butterfinger
+      </a>
+    </div>
+  </ion-content>
+</ion-view>
