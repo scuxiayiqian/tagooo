@@ -8,10 +8,22 @@
 // angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
-  'starter.services', 'starter.directives', 'baiduMap'])
+  'starter.services', 'starter.directives', 'baiduMap', 'ngCordova'])
+
+.config(function($ionicConfigProvider){
+  //$ionicConfigProvider.views.maxCache(0);
+  //$ionicConfigProvider.backButton.icon("ion-chevron-left");
+  $ionicConfigProvider.tabs.style('standard'); // Tab风格
+  $ionicConfigProvider.tabs.position('bottom'); // Tab位置
+  $ionicConfigProvider.navBar.alignTitle('center'); // 标题位置
+  $ionicConfigProvider.navBar.positionPrimaryButtons('left'); // 主要操作按钮位置
+  $ionicConfigProvider.navBar.positionSecondaryButtons('right'); //次要操作按钮位置
+
+})
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
+
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
@@ -26,15 +38,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
   });
 })
 
-.config(function($ionicConfigProvider){
-  //$ionicConfigProvider.views.maxCache(0);
-  //$ionicConfigProvider.backButton.icon("ion-chevron-left");
-  $ionicConfigProvider.tabs.style('standard'); // Tab风格
-  $ionicConfigProvider.tabs.position('bottom'); // Tab位置
-  $ionicConfigProvider.navBar.alignTitle('center'); // 标题位置
-  $ionicConfigProvider.navBar.positionPrimaryButtons('left'); // 主要操作按钮位置
-  $ionicConfigProvider.navBar.positionSecondaryButtons('right'); //次要操作按钮位置
 
-})
 
 

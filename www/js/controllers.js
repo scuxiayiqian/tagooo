@@ -67,6 +67,10 @@ angular.module('starter.controllers', [])
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats, $state) {
+  // $scope.$on('$ionicView.beforeEnter', function (event, viewData) {
+  //   viewData.enableBack = true;
+  // }); 
+  
   $scope.chat = Chats.get($stateParams.chatId);
 })
 
@@ -76,8 +80,19 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('SearchResultCtrl', function($scope, $state) {
+.controller('SearchResultCtrl', function($scope, $state, Chats, $cordovaToast) {
   // $ionicTabsDelegate.showBar(false);
 
+  $scope.chats = Chats.all();
   console.log('search result');
+
+  $scope.follow = function() {
+    console.log("incongruous");
+    
+    $cordovaToast.showShortBottom('关注成功').then(function(success) {
+      // success
+    }, function (error) {
+      // error
+    });
+  };
 });

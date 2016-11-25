@@ -1,1 +1,13 @@
 /* Empty. Add your own CSS if you like */
+
+.item-right-textnote {
+	font-size: 14px;
+	color: #aaa;
+    position: absolute;
+	top: 18px;
+	transform: translateY(-50%);
+	right: 12px;
+	/*float: right;
+	vertical-align: middle;
+	 text-align: center;*/
+}

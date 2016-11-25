@@ -1,4 +1,4 @@
-<ion-view view-title="学车-搜索">
+<ion-view view-title="找教练">
 
 <!--   <ion-nav-bar class="bar-positive">
     <ion-nav-back-button>
@@ -51,20 +51,6 @@
       </a>
 
       <div class="item item-divider">
-        区域搜索
-      </div>
-
-      <a class="item" href="#">
-        <label class="item item-input">
-          <i class="icon ion-search placeholder-icon"></i>
-          <input type="search" placeholder="输入地址">
-        </label>
-
-        <baidu-map options="mapOptions" ak="BV1sD84OhA6nPuydiTGEqDKMkt0ojwMF" offline="offlineOpts" style="width: 100%; height: 300px;display: block;" on-map-loaded="mapLoaded(map)">
-        </baidu-map>
-      </a>
-
-      <div class="item item-divider">
         关键字搜索
       </div>
 
@@ -78,9 +64,22 @@
 
         <!-- <a class="button button-icon icon ion-search"></a> -->
       </div>
+    
+
+      <div class="item item-divider">
+        区域搜索
+      </div>
+
+      <a class="item" href="#">
+        <label class="item item-input">
+          <i class="icon ion-search placeholder-icon"></i>
+          <input type="search" placeholder="输入地址">
+        </label>
+
+        <baidu-map options="mapOptions" ak="BV1sD84OhA6nPuydiTGEqDKMkt0ojwMF" offline="offlineOpts" style="width: 100%; height: 300px;display: block;" on-map-loaded="mapLoaded(map)">
+        </baidu-map>
+      </a>
     </div>
-
-
      <!--  <div class="item item-divider">
         关键字搜索
       </div>

@@ -1,14 +1,31 @@
-<!-- <hideTabs> -->
-<ion-view view-title="title" hide-tabs>
+<ion-view view-title="搜索结果" hide-tabs>
   <!-- <ion-nav-bar class="bar-positive">
-    <ion-nav-back-button>
-    </ion-nav-back-button>
+    <ion-nav-back-button class="button-clear"><i class="icon ion-ios7-arrow-back"></i>Back</ion-nav-back-button>
   </ion-nav-bar> -->
-  <ion-content class="padding">
-    <img ng-src="{{chat.face}}" style="width: 64px; height: 64px">
-    <p>
-        search result
-    </p>
+  
+  <ion-content>
+    
+    <ion-list>
+      <ion-item class="item-remove-animate item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="chat in chats">
+        <img ng-src="{{chat.face}}">
+
+        <h2>{{chat.name}}</h2>
+        <p>十年经验</p>
+        <p>优质服务优质服务质服务质服务质服务优质</p>
+        <p>优质服务优质服务优质</p>
+        <!-- <p>收费优惠</p> -->
+        <!-- <i class="icon ion-chevron-right icon-accessory"></i> -->
+
+        <span class="item-right-textnote">
+          0.2km
+        </span>
+        <i class="icon ion-ios-heart-outline"  on-icon="ion-ios-heart-outline" off-icon="ion-ios-heart" ng-click="follow()" icon-switcher></i>
+        
+        <ion-option-button class="button-assertive" ng-click="remove(chat)">
+          Delete
+        </ion-option-button>
+      </ion-item>
+    </ion-list>
   </ion-content>
+
 </ion-view>
-<!-- </hideTabs> -->

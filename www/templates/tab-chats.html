@@ -13,13 +13,39 @@
     <ion-nav-back-button>
     </ion-nav-back-button>
   </ion-nav-bar> -->
+
   <ion-content>
+
+    <div class="list">
+
+      <a class="item item-icon-left" href="#">
+        <i class="icon ion-email"></i>
+        Check mail
+      </a>
+
+      <a class="item item-icon-left item-icon-right" href="#">
+        <i class="icon ion-chatbubble-working"></i>
+        Call Ma
+
+        <span class="item-note" >
+          Grammy
+        </span>
+        <i class="icon ion-ios-telephone-outline"></i>
+      </a>
+
+    </div> 
+
     <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/0">
+      <ion-item class="item-remove-animate item-thumbnail-left item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/0">
         <img ng-src="{{chat.face}}">
         <h2>{{chat.name}}</h2>
         <p>{{chat.lastText}}</p>
-        <i class="icon ion-chevron-right icon-accessory"></i>
+        <!-- <i class="icon ion-chevron-right icon-accessory"></i> -->
+
+        <span class="item-right-textnote">
+          0.2km
+        </span>
+        <i class="icon ion-ios-heart-outline"></i>
 
         <ion-option-button class="button-assertive" ng-click="remove(chat)">
           Delete
