@@ -2,11 +2,7 @@ angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope, $state) {
 
-  $scope.haha = function() {
-    console.log("haha");
-    // $state.go("tab.account");
-    $state.go("searchresult");
-  }
+  
 })
 
 .controller('ChatsCtrl', function($scope, Chats, $state) {
@@ -35,5 +31,7 @@ angular.module('starter.controllers', [])
 })
 
 .controller('SearchResultCtrl', function($scope, $state) {
+  // $ionicTabsDelegate.showBar(false);
+
   console.log('search result');
 });

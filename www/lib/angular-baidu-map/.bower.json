@@ -1,0 +1,15 @@
+{
+  "name": "angular-baidu-map",
+  "homepage": "https://github.com/leftstick/BaiduMapForAngularJS",
+  "version": "2.2.0",
+  "_release": "2.2.0",
+  "_resolution": {
+    "type": "version",
+    "tag": "2.2.0",
+    "commit": "14c859a5a1ff1a4bda250a0bffb2797a0929af07"
+  },
+  "_source": "https://github.com/leftstick/BaiduMapForAngularJS.git",
+  "_target": "^2.2.0",
+  "_originalSource": "angular-baidu-map",
+  "_direct": true
+}

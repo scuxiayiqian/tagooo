@@ -1,7 +1,21 @@
+<!-- <ion-header-bar align-title="left" class="bar-positive">
+  <div class="h1 title">学车-搜索</div>
+  <div class="buttons">
+      <button class="button no-animation button-icon icon ion-android-search">
+      </button>
+      <button class="button no-animation button-icon icon ion-android-add">
+      </button>
+  </div>
+</ion-header-bar> -->
+
 <ion-view view-title="Chats">
+  <!-- <ion-nav-bar class="bar-positive">
+    <ion-nav-back-button>
+    </ion-nav-back-button>
+  </ion-nav-bar> -->
   <ion-content>
     <ion-list>
-      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/{{chat.id}}">
+      <ion-item class="item-remove-animate item-avatar item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/0">
         <img ng-src="{{chat.face}}">
         <h2>{{chat.name}}</h2>
         <p>{{chat.lastText}}</p>
