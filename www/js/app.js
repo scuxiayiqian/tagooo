@@ -7,7 +7,8 @@
 // 'starter.controllers' is found in controllers.js
 // angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 'starter.services', 'starter.directives'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
+  'starter.services', 'starter.directives', 'baiduMap'])
 
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
@@ -23,6 +24,17 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 'st
       StatusBar.styleDefault();
     }
   });
+})
+
+.config(function($ionicConfigProvider){
+  //$ionicConfigProvider.views.maxCache(0);
+  //$ionicConfigProvider.backButton.icon("ion-chevron-left");
+  $ionicConfigProvider.tabs.style('standard'); // Tab风格
+  $ionicConfigProvider.tabs.position('bottom'); // Tab位置
+  $ionicConfigProvider.navBar.alignTitle('center'); // 标题位置
+  $ionicConfigProvider.navBar.positionPrimaryButtons('left'); // 主要操作按钮位置
+  $ionicConfigProvider.navBar.positionSecondaryButtons('right'); //次要操作按钮位置
+
 })
 
 
