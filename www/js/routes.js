@@ -54,12 +54,12 @@ angular.module('starter.routes', [])
       }
     })
 
-    .state('tab.account', {
-      url: '/account',
+    .state('tab.publish', {
+      url: '/publish',
       views: {
-        'tab-account': {
-          templateUrl: 'templates/tab-account.html',
-          controller: 'AccountCtrl'
+        'tab-publish': {
+          templateUrl: 'templates/tab-publish.html',
+          controller: 'PublishCtrl'
         }
       }
     })
@@ -85,6 +85,6 @@ angular.module('starter.routes', [])
     })
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/dash');
+  $urlRouterProvider.otherwise('/tab/publish');
 
 });
