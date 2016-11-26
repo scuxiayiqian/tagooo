@@ -2,9 +2,9 @@
   <!-- <ion-nav-bar class="bar-positive">
     <ion-nav-back-button class="button-clear"><i class="icon ion-ios7-arrow-back"></i>Back</ion-nav-back-button>
   </ion-nav-bar> -->
-  
+
   <ion-content>
-    
+
     <ion-list>
       <ion-item class="item-remove-animate item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="chat in chats">
         <img ng-src="{{chat.face}}">
@@ -20,7 +20,7 @@
           0.2km
         </span>
         <i class="icon ion-ios-heart-outline"  on-icon="ion-ios-heart-outline" off-icon="ion-ios-heart" ng-click="follow()" icon-switcher></i>
-        
+          
         <ion-option-button class="button-assertive" ng-click="remove(chat)">
           Delete
         </ion-option-button>
