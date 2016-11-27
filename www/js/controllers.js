@@ -76,6 +76,8 @@ angular.module('starter.controllers', [])
 .controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 
     function($scope, $timeout, $state, $rootScope) {
 
+    $scope.typeSearch = {};
+    $scope.typeSearch.cartype = '小车';
     // 分类搜索待选项
     $scope.cartype = ['小车', '卡车', '摩托车'];
     $scope.level = ['认证教练', '非认证教练', '陪练'];
@@ -87,6 +89,7 @@ angular.module('starter.controllers', [])
 
     var longitude = 121.506191;
     var latitude = 31.245554;
+
     $scope.mapOptions = {
         center: {
             longitude: longitude,
