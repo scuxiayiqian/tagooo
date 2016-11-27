@@ -34,6 +34,17 @@ angular.module('starter.routes', [])
       }
     })
 
+    .state('tab.searchresult', {
+            // url: '/messageDetail/:messageId',
+        url: '/searchresult',
+        views: {
+          'tab-dash': {
+            templateUrl: "templates/search-result.html",
+            controller: "SearchResultCtrl"
+          }
+        } 
+    })
+
     .state('tab.chats', {
         url: '/chats',
         views: {
@@ -64,6 +75,16 @@ angular.module('starter.routes', [])
       }
     })
 
+    .state('tab.messageDetail', {
+      url: '/messageDetail/:messageId',
+      views: {
+        'tab-publish': {
+          templateUrl: "templates/message-detail.html",
+          controller: "messageDetailCtrl"
+        }
+      }
+    })
+
     // 跳转到该页面用 state.go(searchresult);
     // .state('searchresult', {
     //         // url: '/messageDetail/:messageId',
@@ -72,17 +93,6 @@ angular.module('starter.routes', [])
     //     controller: "SearchResultCtrl"
     // })
 
-    .state('tab.searchresult', {
-            // url: '/messageDetail/:messageId',
-        url: '/searchresult',
-        views: {
-        	'tab-dash': {
-        		templateUrl: "templates/search-result.html",
-        		controller: "SearchResultCtrl"
-        	}
-        }
-       
-    })
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/tab/publish');
