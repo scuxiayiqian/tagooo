@@ -30,7 +30,31 @@
       </div>
     </div>
 
-    <ion-list rj-close-back-drop>
+    <div class="list">
+        <a class="item item-avatar" href="#">
+          <img src="img/adam.jpg">
+          <span class="rj-sm-red-icon" ng-show="true"><p ng-bind="1"></p></span>
+          <h2>Venkman</h2>
+          <p>Back off, man. I'm a scientist.</p>
+          <span class="rj-push-right">2016</span>
+        </a>
+        <a class="item item-avatar" href="#">
+          <img src="img/adam.jpg">
+          <span class="rj-sm-red-icon" ng-show="true"><p ng-bind="1"></p></span>
+          <h2>Venkman</h2>
+          <p>Back off, man. I'm a scientist.</p>
+          <span class="rj-push-right">2016</span>
+        </a>
+        <a class="item item-avatar" href="#">
+          <img src="img/adam.jpg">
+          <span class="rj-sm-red-icon" ng-show="true"><p ng-bind="1"></p></span>
+          <h2>Venkman</h2>
+          <p>Back off, man. I'm a scientist.</p>
+          <span class="rj-push-right">2016</span>
+        </a>
+    </div>
+
+   <!--  <ion-list rj-close-back-drop>
         <ion-item class="item-avatar" ng-class="{'rj-item-top': message.isTop}" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="message in messages | orderBy:['isTop', 'lastMessage.timeFrome1970']:true" ng-click="messageDetils(message)">
             <img ng-src="{{message.pic}}">
             <span class="rj-sm-red-icon" ng-show="message.showHints"><p ng-bind="message.noReadMessages"></p></span>
@@ -38,7 +62,7 @@
             <p class="rj-list-p" ng-bind="message.lastMessage.content"></p>
             <span class="rj-push-right" ng-bind="message.lastMessage.time"></span>
         </ion-item>
-    </ion-list>
+    </ion-list> -->
 
   </ion-content>
 </ion-view>
