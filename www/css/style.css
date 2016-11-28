@@ -16,3 +16,16 @@
 	text-align: center;
 }
 
+.app-use-agreement {
+	width: 80%;
+	font-size: 14px;
+	position: absolute;  
+    left: 10%;
+    color: #444;
+}
+
+.register-login-btn {
+	width: 80%;
+	margin: 0 auto;
+	padding-top: 10px;
+}
