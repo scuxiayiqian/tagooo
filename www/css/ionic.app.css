@@ -282,16 +282,17 @@ $dark:                            #444 !default;
   max-height: 40px;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   margin-left: 10px;
 }
 
 .item-avatar-right, .item-avatar-right .item-content{
   padding: 16px 49px 16px 16px;
+  /*border-radius: 0;*/
 }
 
 .item-avatar-right > img:first-child, .item-avatar-right .item-image, .item-avatar-right .item-content > img:first-child, .item-avatar-right .item-content .item-image{
   position: inital !important;
+  border-radius: 0;
 }
 
 a.item {
