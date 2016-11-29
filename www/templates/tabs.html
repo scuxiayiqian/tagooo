@@ -6,17 +6,17 @@ navigation history that also transitions its views in and out.
 <ion-tabs class="tabs-icon-top tabs-color-active-positive {{$root.hideTabs}}">
 
   <!-- Dashboard Tab -->
-  <ion-tab title="搜索" icon-off="ion-ios-search" icon-on="ion-ios-search-strong" ui-sref="tab.dash">
+  <ion-tab title="搜索" icon-off="ion-ios-search" icon-on="ion-ios-search-strong" ui-sref="tab.dash"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
     <ion-nav-view name="tab-dash"></ion-nav-view>
   </ion-tab>
 
   <!-- Chats Tab -->
-  <ion-tab title="我的关注" icon-off="ion-ios-star-outline" icon-on="ion-ios-star" ui-sref="tab.chats">
+  <ion-tab title="我的关注" icon-off="ion-ios-star-outline" icon-on="ion-ios-star" ui-sref="tab.chats"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
     <ion-nav-view name="tab-chats"></ion-nav-view>
   </ion-tab>
 
   <!-- Account Tab -->
-  <ion-tab title="我的发布" icon-off="ion-ios-cloud-upload-outline" icon-on="ion-ios-cloud-upload" ui-sref="tab.publish">
+  <ion-tab title="我的发布" icon-off="ion-ios-cloud-upload-outline" icon-on="ion-ios-cloud-upload" ui-sref="tab.publish" on-select="onTabSelected()" on-deselect="onTabDeselected()">
     <ion-nav-view name="tab-publish"></ion-nav-view>
   </ion-tab>
 </ion-tabs>

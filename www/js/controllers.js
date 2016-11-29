@@ -1,6 +1,17 @@
 angular.module('starter.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory) {
+
+  // 解决tab切换时nav返回按钮消失的问题
+  $scope.onTabSelected = function(){
+    console.log('onTabSelected');
+    $ionicHistory.clearHistory();
+  };
+
+  $scope.onTabDeselected = function(){
+    console.log('onTabDeselected');
+    $ionicHistory.clearHistory();
+  };  
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -189,9 +200,9 @@ angular.module('starter.controllers', [])
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats, $state) {
   
   // 强制显示nav back btn
-  $scope.$on('$ionicView.beforeEnter', function (event, viewData) {
-    viewData.enableBack = true;
-  }); 
+  // $scope.$on('$ionicView.beforeEnter', function (event, viewData) {
+  //   viewData.enableBack = true;
+  // }); 
 
   $scope.chat = Chats.get($stateParams.chatId);
 })
