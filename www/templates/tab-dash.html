@@ -1,9 +1,9 @@
 <ion-view view-title="找教练">
 
   <ion-nav-buttons side="right">
-      <button class="button button-clear button-small" ng-click="login()">登录
+      <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()">登录
       </button>
-      <button class="button button-clear button-small" ng-click="reserve()">注册
+      <button ng-show="isLogin()" class="button button-clear button-small" ng-click="reserve()">注册
       </button>
   </ion-nav-buttons>
 
@@ -89,6 +89,7 @@
         <baidu-map options="mapOptions" ak="BV1sD84OhA6nPuydiTGEqDKMkt0ojwMF" offline="offlineOpts" style="width: 100%; height: 300px;display: block;" on-map-loaded="mapLoaded(map)">
         </baidu-map>
       </a>
+
     </div>
      <!--  <div class="item item-divider">
         关键字搜索

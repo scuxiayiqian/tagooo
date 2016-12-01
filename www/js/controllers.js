@@ -1,17 +1,22 @@
 angular.module('starter.controllers', [])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, 
+  $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService,
+  UserService, $http, baseUrl, port) {
 
   // 解决tab切换时nav返回按钮消失的问题
   $scope.onTabSelected = function(){
-    console.log('onTabSelected');
     $ionicHistory.clearHistory();
   };
 
   $scope.onTabDeselected = function(){
-    console.log('onTabDeselected');
     $ionicHistory.clearHistory();
   };  
+
+  var clearLoginError = function(){
+    $scope.loginError.flag = false;
+    $scope.loginError.info = "";
+  };
 
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
@@ -20,9 +25,9 @@ angular.module('starter.controllers', [])
   //$scope.$on('$ionicView.enter', function(e) {
   //});
 
-  // Form data for the login modal
-  // $scope.loginData = {};
-  // $scope.loginData = $localStorage.getObject('userinfo', '{}');
+  $scope.loginData = {};
+  $scope.loginError = {};
+  $scope.loginError.flag = false;
 
   // Create the login modal that we will use later
   $ionicModal.fromTemplateUrl('templates/login.html', {
@@ -36,24 +41,76 @@ angular.module('starter.controllers', [])
     $scope.modal.hide();
   };
 
-  // Open the login modal
   $scope.login = function() {
     $scope.modal.show();
   };
 
   // Perform the login action when the user submits the login form
   $scope.doLogin = function() {
-    console.log('Doing login', $scope.loginData);
-    // $localStorage.storeObject('userinfo', $scope.loginData);
 
-    // Simulate a login delay. Remove this and replace with your login
-    // code if using a login system
-    $timeout(function() {
-      $scope.closeLogin();
-    }, 1000);
+    console.log('Doing login', $scope.loginData);  
+
+    if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
+      || $scope.loginData.password == '' || $scope.loginData.password == undefined){
+      $scope.loginError.flag = true;
+      $scope.loginError.info = "用户名或密码未填写";
+
+      ToastService.showCenterToast($scope.loginError.info)
+      .then(function(success) {
+        clearLoginError();
+      }, function (error) {
+        console.log("show toast error");
+      });
+
+      return;
+    }
+
+    UserService.login($scope.loginData)
+      .success(function(data){
+        if(data.status == 500){
+          $scope.loginError.flag = true;
+          $scope.loginError.info = "用户名密码不匹配";
+          // $timeout(clearLoginError,1200);
+          ToastService.showCenterToast($scope.loginError.info)
+          .then(function(success) {
+            clearLoginError();
+          }, function (error) {
+            console.log("show toast error");
+          });
+        }
+        else if(data.status == 200){
+          // // for真机
+          // ToastService.showCenterToast("登录成功")
+          // .then(function(success) {
+          //   UserService.setCurrentUser(data);
+          //   UserService.isLogin = false;
+          //   clearLoginError();
+          //   $scope.closeLogin();
+          // }, function (error) {
+          //   // error
+          // });
+
+          // for console
+          UserService.setCurrentUser(data);
+          UserService.isLogin = true;
+          clearLoginError();
+          $scope.closeLogin();
+        }
+        else {
+          console.log(data);
+        }
+      })
+      .error(function(data){
+        // $scope.loginError.flag = true;
+        // $scope.loginError.info = "网络错误";
+        // $timeout(clearLoginError, 1200);
+        clearLoginError();
+        console.log(data);
+      })
   };
 
   $scope.reservation = {};
+  $scope.reservation.photo = "img/noprofile.png";
 
   // Create the reserve modal that we will use later
   $ionicModal.fromTemplateUrl('templates/reserve.html', {
@@ -67,7 +124,6 @@ angular.module('starter.controllers', [])
     $scope.reserveform.hide();
   };
 
-  $scope.profileSrc = "img/noprofile.png";
   // Open the reserve modal
   $scope.reserve = function() {
     $scope.reserveform.show();
@@ -85,7 +141,7 @@ angular.module('starter.controllers', [])
   };
 
   // 上传头像
-  $scope.openPicChooser = function() {
+  $scope.pickPhoto = function() {
     var actionSheetOptions = {
       title: '上传头像',
       buttonLabels: ['相机', '从图库选择'],
@@ -118,7 +174,7 @@ angular.module('starter.controllers', [])
 
       $cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
         
-        $scope.profileSrc = 'data:image/jpeg;base64,' + imageData;
+        $scope.reservation.photo = 'data:image/jpeg;base64,' + imageData;
 
       }, function(err) {
         // error
@@ -128,8 +184,8 @@ angular.module('starter.controllers', [])
   };
 })
 
-.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 
-    function($scope, $timeout, $state, $rootScope) {
+.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser',
+    function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser) {
 
     $scope.typeSearch = {};
     $scope.typeSearch.cartype = '小车';
@@ -177,7 +233,13 @@ angular.module('starter.controllers', [])
     // end - baidu map
 
     $scope.searchBtnClicked = function() {
+
       $state.go('tab.searchresult');
+
+    };
+
+    $scope.isLogin = function() {
+      return !UserService.isLogin;
     }
   }
 ])

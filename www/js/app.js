@@ -10,6 +10,10 @@
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
   'starter.services', 'starter.directives', 'baiduMap', 'ngCordova'])
 
+.constant('baseUrl', 'http://202.120.40.175:')
+
+.constant('port', '21181')
+
 .config(function($ionicConfigProvider){
   //$ionicConfigProvider.views.maxCache(0);
   //$ionicConfigProvider.backButton.icon("ion-chevron-left");

@@ -1,5 +1,71 @@
 angular.module('starter.services', [])
 
+.factory('ToastService', function($cordovaToast){
+    var ToastService = {};
+
+    ToastService.showTopToast = function(toastInfo) {
+        return $cordovaToast.showShortTop(toastInfo);
+    };
+
+    ToastService.showCenterToast = function(toastInfo) {
+        return $cordovaToast.showShortCenter(toastInfo);
+    };
+
+    ToastService.showBottomToast = function(toastInfo) {
+        return $cordovaToast.showShortBottom(toastInfo);
+    };
+
+    return ToastService;
+})
+
+.factory('UserService', function($http, baseUrl, port){
+    var UserService = {};
+    //var ss = '1';
+    UserService.currentUser = {};
+    UserService.isLogin = false;
+
+    UserService.setCurrentUser = function(currentUser){
+        UserService.currentUser = currentUser;
+        //console.log("ss" + ss)
+    }
+
+    UserService.getCurrentUser = function(){
+        return angular.copy(UserService.currentUser);
+    }
+
+    UserService.register = function(registerInfo){
+        return $http({
+            method: 'POST',
+            url: baseUrl + port + '/student/register',
+            data: JSON.stringify(registerInfo),
+            crossDomain: true,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        });
+    }
+
+    UserService.login = function(loginInfo){
+        console.log(JSON.stringify(loginInfo));
+        return $http({
+            method: 'POST',
+            url: baseUrl + port + '/student/login',
+            data: JSON.stringify(loginInfo),
+            crossDomain: true,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        });
+    }
+
+    // UserService.uploadLicense = function(userId, imageURI){
+    //     var options = new FileUploadOptions();
+    //     options.fileKey = "picture";
+    //     options.httpMethod = "POST";
+    //     var url = baseUrl + port + '/api/image/licence/upload?teaSalerId=' + userId;
+    //     return $cordovaFileTransfer.upload(url, imageURI, options);
+    // }
+
+    return UserService;
+})
+
+
 .factory('Chats', function() {
   // Might use a resource here that returns a JSON array
 
