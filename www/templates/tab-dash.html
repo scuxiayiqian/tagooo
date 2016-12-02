@@ -28,33 +28,43 @@
       </div>
 
       <a class="item" href="#">
-          <form id="typeSearchForm" name="typeSearchForm" ng-submit="doSearch()">
+          <form id="typeSearchForm" name="typeSearchForm">
             <div class="list">
               <label class="item item-input item-select">
                 <span class="input-label">车型</span>
-                <select ng-model="typeSearch.cartype">
-                    <option ng-repeat="n in cartype" value="{{n}}">{{n}}</option>
+                <select ng-model="typeSearch.type">
+                    <!-- <option ng-repeat="n in type" value="{{n}}">{{n}}</option> -->
+                    <option value="C1">小车</option>
+                    <option value="truck">卡车</option>
+                    <option value="moto">摩托车</option>
                 </select>
               </label>
               <label class="item item-input item-select">
                 <span class="input-label">资质</span>
-                <select ng-model="typeSearch.level">
-                    <option ng-repeat="n in level" value="{{n}}">{{n}}</option>
+                <select ng-model="typeSearch.quality">
+                    <option value="haolihai">认证教练</option>
+                    <option value="truck">非认证教练</option>
+                    <option value="moto">陪练</option>
                 </select>
               </label>
               <label class="item item-input item-select">
                 <span class="input-label">语言</span>
                 <select ng-model="typeSearch.language">
-                    <option ng-repeat="n in language" value="{{n}}">{{n}}</option>
+                    <option value="zhongwen">中文</option>
+                    <option value="yingwen">英文</option>
                 </select>
               </label>
               <label class="item item-input item-select">
                 <span class="input-label">性别</span>
                 <select ng-model="typeSearch.gender">
-                    <option ng-repeat="n in gender" value="{{n}}">{{n}}</option>
+                    <option value=1>男</option>
+                    <option value=0>女</option>
                 </select>
               </label>
             </div>
+            <button class="button button-outline button-small button-block button-positive" ng-click="searchByType()">
+              提交
+            </button>
           </form>
       </a>
 
@@ -76,7 +86,7 @@
       </div>
     
 
-      <div class="item item-divider">
+     <!--  <div class="item item-divider">
         区域搜索
       </div>
 
@@ -88,7 +98,7 @@
 
         <baidu-map options="mapOptions" ak="BV1sD84OhA6nPuydiTGEqDKMkt0ojwMF" offline="offlineOpts" style="width: 100%; height: 300px;display: block;" on-map-loaded="mapLoaded(map)">
         </baidu-map>
-      </a>
+      </a> -->
 
     </div>
      <!--  <div class="item item-divider">

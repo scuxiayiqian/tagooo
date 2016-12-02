@@ -13,7 +13,7 @@ angular.module('starter.directives', [])
     };
   })
 
-  .directive('iconSwitcher', function() {
+  .directive('iconSwitcher', function(SearchService) {
     return {
       restrict : 'A',
       
@@ -26,6 +26,7 @@ angular.module('starter.directives', [])
           
           if(currentState === true) {
             console.log('It is on!');
+            SearchService.on();
             angular.element(elem).removeClass(attrs.onIcon);
             angular.element(elem).addClass(attrs.offIcon);
           } else {

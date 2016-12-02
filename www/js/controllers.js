@@ -2,7 +2,7 @@ angular.module('starter.controllers', [])
 
 .controller('AppCtrl', function($scope, $ionicModal, $timeout, 
   $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService,
-  UserService, $http, baseUrl, port) {
+  UserService, $http, baseUrl, port, $state) {
 
   // 解决tab切换时nav返回按钮消失的问题
   $scope.onTabSelected = function(){
@@ -79,11 +79,11 @@ angular.module('starter.controllers', [])
           });
         }
         else if(data.status == 200){
-          // // for真机
+          // for真机
           // ToastService.showCenterToast("登录成功")
           // .then(function(success) {
           //   UserService.setCurrentUser(data);
-          //   UserService.isLogin = false;
+          //   UserService.isLogin = true;
           //   clearLoginError();
           //   $scope.closeLogin();
           // }, function (error) {
@@ -93,8 +93,11 @@ angular.module('starter.controllers', [])
           // for console
           UserService.setCurrentUser(data);
           UserService.isLogin = true;
+          // $scope.getAllFollowedCoach();
+
           clearLoginError();
           $scope.closeLogin();
+          $state.go("tab.dash");
         }
         else {
           console.log(data);
@@ -133,11 +136,52 @@ angular.module('starter.controllers', [])
   $scope.doReserve = function() {
     console.log('Doing reservation', $scope.reservation);
 
-    // Simulate a reservation delay. Remove this and replace with your reservation
-    // code if using a server system
-    $timeout(function() {
-      $scope.closeReserve();
-    }, 1000);
+    UserService.register($scope.reservation)
+      .success(function(data){
+        if(data.status == 2){
+          console.log("错误");
+          ToastService.showCenterToast("错误")
+          .then(function(success) {
+
+          }, function (error) {
+            console.log("show toast error");
+          });
+        }
+        else if(data.status == 0){
+          console.log("注册成功");
+          // // for真机
+          // ToastService.showCenterToast("注册成功")
+          // .then(function(success) {
+          //   UserService.setCurrentUser(data);
+          //   UserService.isLogin = true;
+          //   $scope.closeReserve();
+          // }, function (error) {
+          //   // error
+          // });
+
+          // for console
+          UserService.setCurrentUser(data);
+          UserService.isLogin = true;
+          // $scope.getAllFollowedCoach();
+
+          clearLoginError();
+          $scope.closeReserve();
+        }
+        else {
+          console.log(data);
+        }
+      })
+      .error(function(data){
+        // $scope.loginError.flag = true;
+        // $scope.loginError.info = "网络错误";
+        // $timeout(clearLoginError, 1200);
+        clearLoginError();
+        console.log(data);
+      })
+
+    // $timeout(function() {
+    //   $scope.closeReserve();
+    // }, 1000);
   };
 
   // 上传头像
@@ -182,18 +226,46 @@ angular.module('starter.controllers', [])
       });
     });
   };
+
+  $scope.getAllFollowedCoach = function() {
+    UserService.searchAllFollows()
+      .success(function(data){
+        UserService.setFollowedCoach(data);
+        console.log(data);
+      })
+      .error(function(data){
+        console.log("get all follows error");
+      })
+  }
 })
 
-.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser',
-    function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser) {
+.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', 
+    function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService) {
 
     $scope.typeSearch = {};
-    $scope.typeSearch.cartype = '小车';
-    // 分类搜索待选项
-    $scope.cartype = ['小车', '卡车', '摩托车'];
-    $scope.level = ['认证教练', '非认证教练', '陪练'];
-    $scope.language = ['国语', '英语', '粤语', '印度语', '菲语', '韩语', '日语'];
-    $scope.gender = ['男', '女'];
+   
+    // $scope.type = ['小车', '卡车', '摩托车'];
+    // $scope.quality = ['认证教练', '非认证教练', '陪练'];
+    // $scope.language = ['国语', '英语', '粤语', '印度语', '菲语', '韩语', '日语'];
+    // $scope.gender = ['男', '女'];
+    $scope.typeSearch.type = "C1";
+    $scope.typeSearch.quality = "haolihai";
+    $scope.typeSearch.language = "zhongwen";
+    $scope.typeSearch.gender = "1";
+
+    $scope.searchByType = function() {
+      console.log($scope.typeSearch);
+
+      SearchService.searchByType($scope.typeSearch)
+      .success(function(data){
+        // console.log(data);
+        SearchService.setCurrentSearchResult(data);
+        $state.go('tab.searchresult');
+      })
+      .error(function(data){
+
+      })
+    };
 
     // start - baidu map
     $scope.offlineOpts = {retryInterval: 5000};
@@ -269,8 +341,16 @@ angular.module('starter.controllers', [])
   $scope.chat = Chats.get($stateParams.chatId);
 })
 
-.controller('PublishCtrl', function($scope, $state, $ionicPopup, localStorageService, messageService) {
+.controller('PublishCtrl', function($scope, $state, $ionicPopup, localStorageService, messageService, UserService) {
   
+  $scope.loginUser = UserService.getCurrentUser();
+  console.log($scope.loginUser);
+
+  if ($scope.loginUser.description == null) {
+    // console.log("null description");
+    $scope.loginUser.description = "暂无介绍";
+  }
+
   // copied from ionic wechat
   $scope.messages = messageService.getAllMessages();
   $scope.onSwipeLeft = function() {
@@ -368,19 +448,127 @@ angular.module('starter.controllers', [])
   }
 ])
 
-.controller('SearchResultCtrl', function($scope, $state, Chats, $cordovaToast) {
+.controller('SearchResultCtrl', function($scope, $state, Chats, $cordovaToast, SearchService, UserService) {
   // $ionicTabsDelegate.showBar(false);
 
-  $scope.chats = Chats.all();
-  console.log('search result');
-
-  $scope.follow = function() {
-    console.log("incongruous");
+  $scope.$on("$ionicView.beforeEnter", function(){
     
-    $cordovaToast.showShortBottom('关注成功').then(function(success) {
-      // success
-    }, function (error) {
-      // error
-    });
+    $scope.coaches = SearchService.getCurrentSearchResult();
+    // console.log($scope.coaches);
+
+    UserService.searchAllFollows()
+      .success(function(data){
+        // UserService.setFollowedCoach(data);
+
+        $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data);
+      })
+      .error(function(data){
+        console.log("get all follows error");
+      })
+
+  });
+
+  $scope.filtMyFollow = function(allCoachs, followedCoachs) {
+    var out = [];
+    $scope.coachStudentPair = {};
+    $scope.coachStudentPair.studentId = UserService.getCurrentUser().id;
+    // console.log("------");
+    // console.log(allCoachs);
+    // console.log(followedCoachs);
+
+    for(var i = 0; i < allCoachs.length; i++) {
+      for(var j = 0; j < followedCoachs.length; j++) {
+        if (followedCoachs[j].coachId == allCoachs[i].id) {
+          allCoachs[i].isFollowd = true;
+        }
+      }
+      if(allCoachs[i].isFollowd) {
+        out.push(allCoachs[i]);
+      }
+      else {
+        allCoachs[i].isFollowd = false;
+        out.push(allCoachs[i]);
+      }
+    }
+
+    return out;
+  }
+
+  $scope.follow = function(coach) {
+    if ($scope.coachStudentPair.studentId == null) {
+      // console.log("unavailable");
+      $scope.modal.show();
+
+      // // for 真机
+      // $cordovaToast.showShortBottom('请先登录').then(function(success) {
+      //   // success
+      //   $scope.modal.show();
+      // }, function (error) {
+      //   // error
+      // });
+
+      return;
+    }
+
+    $scope.coachStudentPair.coachId = coach.id;
+
+    // console.log($scope.coachStudentPair);
+
+    UserService.follow($scope.coachStudentPair)
+      .success(function(data){
+        console.log("followed");
+        coach.isFollowd = true;
+      })
+      .error(function(data){
+        console.log(data);
+      })
+
+    // coach.isFollowd = true;
+
+    // $cordovaToast.showShortBottom('关注成功').then(function(success) {
+    //   // success
+    // }, function (error) {
+    //   // error
+    // });
   };
+
+  $scope.unfollow = function(coach) {
+
+    if ($scope.coachStudentPair.studentId == null) {
+      console.log("unavailable");
+      $scope.modal.show();
+
+      // // for 真机
+      // $cordovaToast.showShortBottom('请先登录').then(function(success) {
+      //   // success
+      //   $scope.modal.show();
+      // }, function (error) {
+      //   // error
+      // });
+
+      return;
+    }
+
+    $scope.coachStudentPair.coachId = coach.id;
+
+    // console.log($scope.coachStudentPair);
+
+    UserService.unFollow($scope.coachStudentPair)
+      .success(function(data){
+        console.log("unfollowed");
+        coach.isFollowd = false;
+      })
+      .error(function(data){
+        console.log(data);
+      })
+
+    // coach.isFollowd = false;
+
+    // $cordovaToast.showShortBottom('取消关注').then(function(success) {
+    //   // success
+    // }, function (error) {
+    //   // error
+    // });  
+  }
+
 });

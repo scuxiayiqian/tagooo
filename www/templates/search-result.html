@@ -6,24 +6,26 @@
   <ion-content>
 
     <ion-list>
-      <ion-item class="item-remove-animate item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="chat in chats">
-        <img ng-src="{{chat.face}}">
+      <ion-item class="item-remove-animate item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="coach in filtedCoaches">
+        <img ng-src="img/noprofile.png">
 
-        <h2>{{chat.name}}</h2>
-        <p>十年经验</p>
-        <p>优质服务优质服务质服务质服务质服务优质</p>
-        <p>优质服务优质服务优质</p>
+        <h2>{{coach.coachName}}</h2>
+        <p>{{coach.quality}}</p>
+        <p>{{coach.description}}</p>
         <!-- <p>收费优惠</p> -->
         <!-- <i class="icon ion-chevron-right icon-accessory"></i> -->
 
         <span class="item-right-textnote">
           0.2km
         </span>
-        <i class="icon ion-ios-heart-outline"  on-icon="ion-ios-heart-outline" off-icon="ion-ios-heart" ng-click="follow()" icon-switcher></i>
-          
-        <ion-option-button class="button-assertive" ng-click="remove(chat)">
+        <!-- <i class="icon ion-ios-heart-outline" on-icon="ion-ios-heart-outline" off-icon="ion-ios-heart" ng-click="follow()" icon-switcher></i> -->
+
+        <i class="icon ion-ios-heart-outline" ng-click="follow(coach)" ng-show="!coach.isFollowd"></i>
+        <i class="icon ion-ios-heart" ng-click="unfollow(coach)" ng-show="coach.isFollowd"></i>
+        
+        <!-- <ion-option-button class="button-assertive" ng-click="remove(coach)">
           Delete
-        </ion-option-button>
+        </ion-option-button> -->
       </ion-item>
     </ion-list>
   </ion-content>

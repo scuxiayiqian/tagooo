@@ -20,17 +20,25 @@ angular.module('starter.services', [])
 
 .factory('UserService', function($http, baseUrl, port){
     var UserService = {};
-    //var ss = '1';
+   
     UserService.currentUser = {};
+    UserService.followedCoach = [];
     UserService.isLogin = false;
 
     UserService.setCurrentUser = function(currentUser){
         UserService.currentUser = currentUser;
-        //console.log("ss" + ss)
     }
 
     UserService.getCurrentUser = function(){
         return angular.copy(UserService.currentUser);
+    }
+
+    UserService.setFollowedCoach = function(followedCoach){
+        UserService.followedCoach = followedCoach;
+    }
+
+    UserService.getFollowedCoach = function(){
+        return angular.copy(UserService.followedCoach);
     }
 
     UserService.register = function(registerInfo){
@@ -54,6 +62,34 @@ angular.module('starter.services', [])
         });
     }
 
+    UserService.searchAllFollows = function() {
+        return $http({
+            method: 'GET',
+            url: baseUrl + port + '/interact/findByStudentId?studentId=' + UserService.currentUser.id,
+            crossDomain: true
+        })
+    }
+
+    UserService.follow = function(followPair) {
+        return $http({
+            method: 'POST',
+            url: baseUrl + port + '/interact/follow',
+            data: JSON.stringify(followPair),
+            crossDomain: true,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        })
+    }
+
+    UserService.unFollow = function(unFollowPair) {
+        return $http({
+            method: 'POST',
+            url: baseUrl + port + '/interact/follow/remove',
+            data: JSON.stringify(unFollowPair),
+            crossDomain: true,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        })
+    }
+
     // UserService.uploadLicense = function(userId, imageURI){
     //     var options = new FileUploadOptions();
     //     options.fileKey = "picture";
@@ -63,6 +99,35 @@ angular.module('starter.services', [])
     // }
 
     return UserService;
+})
+
+.factory('SearchService', function($http, baseUrl, port){
+
+    var SearchService = {};
+
+    SearchService.searchResult = [];
+    SearchService.setCurrentSearchResult = function(result) {
+        SearchService.searchResult = result;
+    }
+    SearchService.getCurrentSearchResult = function() {
+        return angular.copy(SearchService.searchResult);
+    }
+
+    SearchService.searchByType = function(searchInfo) {
+        return $http({
+            method: 'POST',
+            url: baseUrl + port + '/coach/findcommon',
+            data: JSON.stringify(searchInfo),
+            crossDomain: true,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        });
+    }
+
+    SearchService.on = function() {
+        console.log("service on ");
+    }
+
+    return SearchService;
 })
 
 
