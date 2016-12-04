@@ -578,17 +578,24 @@ angular.module('starter.controllers', [])
   $scope.$on("$ionicView.beforeEnter", function(){
     
     $scope.coaches = SearchService.getCurrentSearchResult();
-    // console.log($scope.coaches);
+    console.log($scope.coaches);
 
-    UserService.searchAllFollows()
-      .success(function(data){
-        // UserService.setFollowedCoach(data);
+    if(UserService.getCurrentUser().id == null) {
 
-        $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data.coachinfoDTOList);
-      })
-      .error(function(data){
-        console.log("get all follows error");
-      })
+      $scope.filtedCoaches = $scope.coaches;
+      console.log($scope.filtedCoaches);
+    }
+    else {
+      UserService.searchAllFollows()
+        .success(function(data){
+          // UserService.setFollowedCoach(data);
+
+          $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data.coachinfoDTOList);
+        })
+        .error(function(data){
+          console.log("get all follows error");
+        })
+    }
 
   });
 
@@ -619,7 +626,7 @@ angular.module('starter.controllers', [])
   }
 
   $scope.follow = function(coach) {
-    if ($scope.coachStudentPair.studentId == null) {
+    if (UserService.getCurrentUser().id == null) {
       // console.log("unavailable");
       $scope.modal.show();
 
