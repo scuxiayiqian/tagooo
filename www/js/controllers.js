@@ -50,6 +50,9 @@ angular.module('starter.controllers', [])
 
     console.log('Doing login', $scope.loginData);  
 
+    $scope.loginData.phone = "18116214088";
+    $scope.loginData.password = "123456";
+
     if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
       || $scope.loginData.password == '' || $scope.loginData.password == undefined){
       $scope.loginError.flag = true;
@@ -249,7 +252,7 @@ angular.module('starter.controllers', [])
     // $scope.language = ['国语', '英语', '粤语', '印度语', '菲语', '韩语', '日语'];
     // $scope.gender = ['男', '女'];
     $scope.typeSearch.type = "C1";
-    $scope.typeSearch.quality = "haolihai";
+    $scope.typeSearch.quality = "jiaoche";
     $scope.typeSearch.language = "zhongwen";
     $scope.typeSearch.gender = "1";
 
@@ -324,7 +327,11 @@ angular.module('starter.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
+
   $scope.myFollowedCoasts = [];
+  $scope.qualityHash = {
+    "jiaoche": "轿车"
+  }
 
   $scope.$on('$ionicView.beforeEnter', function(){
     UserService.searchAllFollows()
@@ -375,34 +382,43 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats, $state) {
+.controller('ChatDetailCtrl', function($scope, $stateParams, messageService, 
+  $ionicScrollDelegate, $timeout) {
   
-  // 强制显示nav back btn
-  // $scope.$on('$ionicView.beforeEnter', function (event, viewData) {
-  //   viewData.enableBack = true;
-  // }); 
-
-  $scope.chat = Chats.get($stateParams.chatId);
 })
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, 
   localStorageService, messageService, UserService, ImageService,
   ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats) {
-  
   $scope.loginUser = {};
 
-  if (UserService.isLogin) {
-    $scope.loginUser = UserService.getCurrentUser();
+  $scope.$on("$ionicView.beforeEnter", function(){
+    
+    if (UserService.isLogin) {
+      $scope.loginUser = UserService.getCurrentUser();
+      $scope.userProfile = "img/huolong.jpg";
+    }   
+    else {
+      $scope.userProfile = "img/noprofile.png";
+    }
+  });
+
+  $scope.profileInfo = {};
+  $scope.showRedIcon = true;
+  console.log($scope.count);
+
+  if (UserService.getCurrentUser().id == null) {
+    $scope.loginUser.description = "未登录";
+  }
+  else {
+    if ($scope.loginUser.description == null) {
+      // console.log("null description");
+      $scope.loginUser.description = "暂无介绍";
+    }
   }
 
-  // console.log($scope.loginUser);
-
-  $scope.userProfile = "img/noprofile.png";
-  $scope.profileInfo = {};
-
-  if ($scope.loginUser.description == null) {
-    // console.log("null description");
-    $scope.loginUser.description = "暂无介绍";
+  $scope.isShow = function() {
+    return !UserService.isLogin;
   }
 
   $scope.editProfile = function() {
@@ -525,6 +541,7 @@ angular.module('starter.controllers', [])
       messageService.updateMessage(message);
   };
   $scope.messageDetils = function(message) {
+      $scope.showRedIcon = false;
       $state.go("tab.messageDetail", {
           "messageId": message.id
       });
@@ -577,6 +594,10 @@ angular.module('starter.controllers', [])
 .controller('SearchResultCtrl', function($scope, $state, $cordovaToast, SearchService, UserService) {
   // $ionicTabsDelegate.showBar(false);
 
+  $scope.qualityHash = {
+      "jiaoche": "轿车"
+    }
+
   $scope.$on("$ionicView.beforeEnter", function(){
     
     $scope.coaches = SearchService.getCurrentSearchResult();
@@ -598,7 +619,6 @@ angular.module('starter.controllers', [])
           console.log("get all follows error");
         })
     }
-
   });
 
   $scope.filtMyFollow = function(allCoachs, followedCoachs) {

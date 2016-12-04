@@ -56,7 +56,7 @@ angular.module('starter.routes', [])
       })
 
     .state('tab.chat-detail', {
-      url: '/chats/:chatId',
+      url: '/chatDetail',
       views: {
         'tab-chats': {
           templateUrl: 'templates/chat-detail.html',

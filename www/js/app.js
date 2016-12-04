@@ -8,7 +8,7 @@
 // angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
-  'starter.services', 'starter.directives', 'baiduMap', 'ngCordova'])
+  'starter.services', 'starter.directives', 'baiduMap', 'ngCordova', 'ngAnimate'])
 
 .constant('baseUrl', 'http://202.120.40.175:')
 

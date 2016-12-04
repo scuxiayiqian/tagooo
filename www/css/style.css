@@ -29,3 +29,8 @@
 	margin: 0 auto;
 	padding-top: 10px;
 }
+
+/*去掉ng-hide的动画*/
+.ng-hide.ng-hide-animate{
+     display: none !important;
+}

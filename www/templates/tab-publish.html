@@ -54,10 +54,10 @@
         </a>
     </div> -->
 
-    <ion-list rj-close-back-drop>
+    <ion-list rj-close-back-drop ng-show="!isShow()">
         <ion-item class="item-avatar" ng-class="{'rj-item-top': message.isTop}" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="message in allchatmessages | orderBy:['isTop', 'lastMessage.timeFrome1970']:true" ng-click="messageDetils(message)">
             <img ng-src="{{message.pic}}">
-            <span class="rj-sm-red-icon" ng-show="message.showHints"><p ng-bind="message.noReadMessages"></p></span>
+            <span class="rj-sm-red-icon" ng-show="showRedIcon"><p>1</p></span>
             <h2 ng-bind="message.name"></h2>
             <p class="rj-list-p" ng-bind="message.lastMessage.content"></p>
             <span class="rj-push-right" ng-bind="message.lastMessage.time"></span>

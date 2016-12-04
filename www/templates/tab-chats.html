@@ -16,10 +16,12 @@
 
   <ion-content>
     <ion-list>
-      <ion-item class="item-thumbnail-left item-icon-right" ng-repeat="coast in myFollowedCoasts" type="item-text-wrap">
+      <ion-item class="item-thumbnail-left item-icon-right item-text-wrap" ng-repeat="coast in myFollowedCoasts" href="#/tab/chatDetail">
         <img ng-src="img/noprofile.png">
+        
         <h2>{{coast.coachName}}</h2>
-        <p>{{coast.quality}}</p>
+        <p>{{qualityHash[coast.quality]}}</p>
+        <p>{{coach.description}}</p>
         <!-- <i class="icon ion-chevron-right icon-accessory"></i> -->
 
         <span class="item-right-textnote">
