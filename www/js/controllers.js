@@ -329,7 +329,7 @@ angular.module('starter.controllers', [])
   $scope.$on('$ionicView.beforeEnter', function(){
     UserService.searchAllFollows()
       .success(function(data){
-        $scope.myFollowedCoasts = data;
+        $scope.myFollowedCoasts = data.coachinfoDTOList;
       })
       .error(function(data){
         console.log("get my follow error");
@@ -338,7 +338,7 @@ angular.module('starter.controllers', [])
 
   $scope.unfollow = function(coast) {
     var pair = {};
-    pair.coachId = coast.coachId;
+    pair.coachId = coast.id;
     pair.studentId = UserService.getCurrentUser().id;
 
     console.log(pair);
@@ -584,7 +584,7 @@ angular.module('starter.controllers', [])
       .success(function(data){
         // UserService.setFollowedCoach(data);
 
-        $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data);
+        $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data.coachinfoDTOList);
       })
       .error(function(data){
         console.log("get all follows error");
@@ -602,7 +602,7 @@ angular.module('starter.controllers', [])
 
     for(var i = 0; i < allCoachs.length; i++) {
       for(var j = 0; j < followedCoachs.length; j++) {
-        if (followedCoachs[j].coachId == allCoachs[i].id) {
+        if (followedCoachs[j].id == allCoachs[i].id) {
           allCoachs[i].isFollowd = true;
         }
       }
