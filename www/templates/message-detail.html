@@ -11,17 +11,17 @@
 <ion-view hide-tabs view-title="chats">
     <ion-content class="rj-stable-content" delegate-handle="messageDetailsScroll" id="message-detail-content">
     	<ion-refresher pulling-text="..." on-refresh="doRefresh()" pulling-icon=""></ion-refresher>
-        <div ng-repeat="item in messageDetils">
-        	<p class="rj-message-time" ng-bind="item.time" ng-if="false"></p>
-            <div class="rj-message-wrap" ng-if="!item.isFromeMe">
-                <img ng-src="{{message.pic}}" class="rj-head-pic">
+        <div>
+        	<p class="rj-message-time" ng-if="true">2016</p>
+            <div class="rj-message-wrap" ng-if="true">
+                <img ng-src="img/max.png" class="rj-head-pic">
                 <span class="rj-triangle-left"></span>
-                <p class="rj-message" ng-bind="item.content"></p>
+                <p class="rj-message">你好</p>
             </div>
-            <div class="rj-message-wrap" ng-if="item.isFromeMe">
-                <img src="img/me.png" class="rj-head-pic-right">
+            <div class="rj-message-wrap" ng-if="true">
+                <img src="img/noprofile.png" class="rj-head-pic-right">
                 <span class="rj-triangle-right"></span>
-                <p class="rj-message-right" ng-bind="item.content"></p>
+                <p class="rj-message-right">你好，你觉得我可爱吗？</p>
             </div>
         </div>
     </ion-content>

@@ -120,11 +120,13 @@ $dark:                            #444 !default;
 .rj-message-wrap .rj-message {
   float: left;
   margin-left: 16px;
+  font-size: 16px;
   background-color: #fff; }
 
 .rj-message-wrap .rj-message-right {
   float: right;
   margin-right: 16px;
+  font-size: 16px;
   background-color: #6BE00B; }
 
 .rj-message-wrap .rj-triangle-left,

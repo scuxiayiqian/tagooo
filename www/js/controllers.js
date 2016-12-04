@@ -387,7 +387,7 @@ angular.module('starter.controllers', [])
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, 
   localStorageService, messageService, UserService, ImageService,
-  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast) {
+  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats) {
   
   $scope.loginUser = {};
 
@@ -475,7 +475,9 @@ angular.module('starter.controllers', [])
   }
 
   // copied from ionic wechat - start
-  $scope.messages = messageService.getAllMessages();
+  $scope.allchatmessages = Chats.all();
+  // console.log(JSON.stringify($scope.messages));
+
   $scope.onSwipeLeft = function() {
       $state.go("tab.friends");
   };
@@ -547,7 +549,7 @@ angular.module('starter.controllers', [])
         // console.log("ok");
       $scope.messageNum += 5;
       $timeout(function() {
-          $scope.messageDetils = messageService.getAmountMessageById($scope.messageNum,
+          $scope.messageDetilss = messageService.getAmountMessageById($scope.messageNum,
               $stateParams.messageId);
           $scope.$broadcast('scroll.refreshComplete');
       }, 200);
@@ -559,7 +561,7 @@ angular.module('starter.controllers', [])
       $scope.message.showHints = false;
       messageService.updateMessage($scope.message);
       $scope.messageNum = 10;
-      $scope.messageDetils = messageService.getAmountMessageById($scope.messageNum,
+      $scope.messageDetilss = messageService.getAmountMessageById($scope.messageNum,
           $stateParams.messageId);
       $timeout(function() {
           viewScroll.scrollBottom();
