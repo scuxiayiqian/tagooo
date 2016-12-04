@@ -316,7 +316,7 @@ angular.module('starter.controllers', [])
   }
 ])
 
-.controller('ChatsCtrl', function($scope, Chats, $state) {
+.controller('ChatsCtrl', function($scope, UserService, $state, $ionicListDelegate) {
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -324,11 +324,55 @@ angular.module('starter.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
+  $scope.myFollowedCoasts = [];
 
-  $scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
+  $scope.$on('$ionicView.beforeEnter', function(){
+    UserService.searchAllFollows()
+      .success(function(data){
+        $scope.myFollowedCoasts = data;
+      })
+      .error(function(data){
+        console.log("get my follow error");
+      })
+  });
+
+  $scope.unfollow = function(coast) {
+    var pair = {};
+    pair.coachId = coast.coachId;
+    pair.studentId = UserService.getCurrentUser().id;
+
+    console.log(pair);
+
+    UserService.unFollow(pair)
+      .success(function(data){
+        if (data.status == 0) {
+          console.log("取关成功");
+          $scope.removeCoast(coast);
+          $ionicListDelegate.closeOptionButtons();
+        }
+        else {
+          console.log("取关失败");
+          $ionicListDelegate.closeOptionButtons();
+        }
+      })
+      .error(function(data){
+        console.log(data);
+        $ionicListDelegate.closeOptionButtons();
+      });
+    
   };
+
+  $scope.removeCoast = function(coast) {
+    // for (var i = 0; i < $scope.myFollowedCoasts.length; i++) {
+    //   if ($scope.myFollowedCoasts[i].coachId == coast.coachId) {
+    //     console.log("aha");
+    //     $scope.myFollowedCoasts.splice(i, 1);
+    //     return;
+    //   }
+    // }
+    $scope.myFollowedCoasts.splice($scope.myFollowedCoasts.indexOf(coast), 1);
+    console.log($scope.myFollowedCoasts.length);
+  }
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, Chats, $state) {
@@ -341,17 +385,96 @@ angular.module('starter.controllers', [])
   $scope.chat = Chats.get($stateParams.chatId);
 })
 
-.controller('PublishCtrl', function($scope, $state, $ionicPopup, localStorageService, messageService, UserService) {
+.controller('PublishCtrl', function($scope, $state, $ionicPopup, 
+  localStorageService, messageService, UserService, ImageService,
+  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast) {
   
-  $scope.loginUser = UserService.getCurrentUser();
-  console.log($scope.loginUser);
+  $scope.loginUser = {};
+
+  if (UserService.isLogin) {
+    $scope.loginUser = UserService.getCurrentUser();
+  }
+
+  // console.log($scope.loginUser);
+
+  $scope.userProfile = "img/noprofile.png";
+  $scope.profileInfo = {};
 
   if ($scope.loginUser.description == null) {
     // console.log("null description");
     $scope.loginUser.description = "暂无介绍";
   }
 
-  // copied from ionic wechat
+  $scope.editProfile = function() {
+
+    console.log("edit profile");
+
+    if (!UserService.isLogin) {
+      return;
+    }
+
+    $scope.profileInfo.phone = UserService.getCurrentUser().phone;
+
+    var option = {
+      title: '编辑头像',
+      buttonLabels: ['相机', '从图库选择'],
+      addCancelButtonWithLabel: '取消',
+      androidEnableCancelButton: true
+    };
+    $cordovaActionSheet.show(option).then(function (btnIndex) {
+      var imageSource;
+      if(btnIndex == 1){
+        imageSource = Camera.PictureSourceType.CAMERA;
+      }
+      else if(btnIndex == 2){
+        imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+      }
+      else{
+        return;
+      }
+      var cameraOptionss = {
+        //这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+        quality: 80,                                            //相片质量0-100
+        destinationType: Camera.DestinationType.DATA_URL,        //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+        sourceType: imageSource,             //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+        allowEdit: true,                                        //在选择之前允许修改截图
+        encodingType:Camera.EncodingType.JPEG,                   //保存的图片格式： JPEG = 0, PNG = 1
+        targetWidth: 200,                                        //照片宽度
+        targetHeight: 200,                                       //照片高度
+        mediaType:0,                                             //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+        cameraDirection:0                                      //枪后摄像头类型：Back= 0,Front-facing = 1
+      };
+
+      $cordovaCamera.getPicture(cameraOptionss).then(function(imageData) {
+        
+        $scope.profileInfo.photoImageValue = imageData;
+
+        ImageService.uploadProfile($scope.profileInfo)
+          .success(function(data){
+            ToastService.showTopToast("上传成功")
+              .then(function(success) {
+                
+              }, function (error) {
+                console.log("show toast error");
+              });
+          })
+          .error(function(data){
+            ToastService.showTopToast(data)
+              .then(function(success) {
+                
+              }, function (error) {
+                console.log("show toast error");
+              });
+          })
+
+      }, function(err) {
+        // error
+        console.log("get pic err");
+      });
+    });
+  }
+
+  // copied from ionic wechat - start
   $scope.messages = messageService.getAllMessages();
   $scope.onSwipeLeft = function() {
       $state.go("tab.friends");
@@ -412,6 +535,7 @@ angular.module('starter.controllers', [])
           index: 0
       };
   });
+  // copied from ionic wechat - end
 })
 
 .controller('messageDetailCtrl', ['$scope', '$stateParams',
@@ -448,7 +572,7 @@ angular.module('starter.controllers', [])
   }
 ])
 
-.controller('SearchResultCtrl', function($scope, $state, Chats, $cordovaToast, SearchService, UserService) {
+.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, SearchService, UserService) {
   // $ionicTabsDelegate.showBar(false);
 
   $scope.$on("$ionicView.beforeEnter", function(){

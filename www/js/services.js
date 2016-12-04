@@ -101,6 +101,22 @@ angular.module('starter.services', [])
     return UserService;
 })
 
+.factory('ImageService', function($http, baseUrl, port){
+    var ImageService = {};
+
+    ImageService.uploadProfile = function(imageInfo) {
+        return $http({
+            method: 'POST',
+            url: baseUrl + port + '/student/uploadphoto',
+            data: JSON.stringify(imageInfo),
+            crossDomain: true,
+            headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        });
+    }
+
+    return ImageService;
+})
+
 .factory('SearchService', function($http, baseUrl, port){
 
     var SearchService = {};
@@ -130,6 +146,11 @@ angular.module('starter.services', [])
     return SearchService;
 })
 
+.factory('MyFollowsService', function($http, baseUrl, port) {
+    var MyFollowsService = {};
+
+    return MyFollowsService;
+})
 
 .factory('Chats', function() {
   // Might use a resource here that returns a JSON array

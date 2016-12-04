@@ -8,7 +8,7 @@
   </div>
 </ion-header-bar> -->
 
-<ion-view view-title="Chats">
+<ion-view view-title="我的关注">
   <!-- <ion-nav-bar class="bar-positive">
     <ion-nav-back-button>
     </ion-nav-back-button>
@@ -16,19 +16,18 @@
 
   <ion-content>
     <ion-list>
-      <ion-item class="item-remove-animate item-thumbnail-left item-icon-right" ng-repeat="chat in chats" type="item-text-wrap" href="#/tab/chats/{{chat.id}}">
-        <img ng-src="{{chat.face}}">
-        <h2>{{chat.name}}</h2>
-        <p>{{chat.lastText}}</p>
+      <ion-item class="item-thumbnail-left item-icon-right" ng-repeat="coast in myFollowedCoasts" type="item-text-wrap">
+        <img ng-src="img/noprofile.png">
+        <h2>{{coast.coachId}}</h2>
+        <p>{{coast.coachId}}</p>
         <!-- <i class="icon ion-chevron-right icon-accessory"></i> -->
 
         <span class="item-right-textnote">
           0.2km
         </span>
-        <i class="icon ion-ios-heart-outline"></i>
 
-        <ion-option-button class="button-assertive" ng-click="remove(chat)">
-          Delete
+        <ion-option-button class="button-assertive" ng-click="unfollow(coast)">
+          取消关注
         </ion-option-button>
       </ion-item>
     </ion-list>
