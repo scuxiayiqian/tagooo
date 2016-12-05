@@ -89,6 +89,7 @@ angular.module('starter.controllers', [])
           //   UserService.isLogin = true;
           //   clearLoginError();
           //   $scope.closeLogin();
+          //   $state.go("tab.dash");
           // }, function (error) {
           //   // error
           // });
@@ -96,10 +97,12 @@ angular.module('starter.controllers', [])
           // for console
           UserService.setCurrentUser(data);
           UserService.isLogin = true;
-          // $scope.getAllFollowedCoach();
-
           clearLoginError();
           $scope.closeLogin();
+
+          if (data.photo != null) {
+            UserService.usersProfile = baseUrl + port + '/student/getphoto?phone=' + data.phone;
+          }
           $state.go("tab.dash");
         }
         else {
@@ -153,22 +156,21 @@ angular.module('starter.controllers', [])
         else if(data.status == 0){
           console.log("注册成功");
           // // for真机
-          // ToastService.showCenterToast("注册成功")
-          // .then(function(success) {
-          //   UserService.setCurrentUser(data);
-          //   UserService.isLogin = true;
-          //   $scope.closeReserve();
-          // }, function (error) {
-          //   // error
-          // });
+          ToastService.showCenterToast("注册成功")
+          .then(function(success) {
+            UserService.setCurrentUser(data);
+            UserService.isLogin = true;
+            clearLoginError();
+            $scope.closeReserve();
+          }, function (error) {
+            // error
+          });
 
           // for console
-          UserService.setCurrentUser(data);
-          UserService.isLogin = true;
-          // $scope.getAllFollowedCoach();
-
-          clearLoginError();
-          $scope.closeReserve();
+          // UserService.setCurrentUser(data);
+          // UserService.isLogin = true;
+          // clearLoginError();
+          // $scope.closeReserve();
         }
         else {
           console.log(data);
@@ -383,20 +385,24 @@ angular.module('starter.controllers', [])
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, messageService, 
-  $ionicScrollDelegate, $timeout) {
-  
+  $ionicScrollDelegate, $timeout, UserService) {
+  $scope.myProfile = UserService.usersProfile;
 })
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, 
   localStorageService, messageService, UserService, ImageService,
-  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats) {
+  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port) {
   $scope.loginUser = {};
 
   $scope.$on("$ionicView.beforeEnter", function(){
     
     if (UserService.isLogin) {
-      $scope.loginUser = UserService.getCurrentUser();
-      $scope.userProfile = "img/huolong.jpg";
+      if (!UserService.profileUpdated) {
+        $scope.loginUser = UserService.getCurrentUser();
+        $scope.userProfile = baseUrl + port + '/student/getphoto?phone=' + $scope.loginUser.phone;
+        UserService.usersProfile = $scope.userProfile;
+        console.log("bebe");       
+      }
     }   
     else {
       $scope.userProfile = "img/noprofile.png";
@@ -405,7 +411,6 @@ angular.module('starter.controllers', [])
 
   $scope.profileInfo = {};
   $scope.showRedIcon = true;
-  console.log($scope.count);
 
   if (UserService.getCurrentUser().id == null) {
     $scope.loginUser.description = "未登录";
@@ -463,16 +468,31 @@ angular.module('starter.controllers', [])
 
       $cordovaCamera.getPicture(cameraOptionss).then(function(imageData) {
         
+        // $scope.begin = imageData.indexOf("base64") + 7;
+        // $scope.myUploadPic = imageData.substr($scope.begin);
+
         $scope.profileInfo.photoImageValue = imageData;
 
         ImageService.uploadProfile($scope.profileInfo)
           .success(function(data){
-            ToastService.showTopToast("上传成功")
-              .then(function(success) {
-                
-              }, function (error) {
-                console.log("show toast error");
-              });
+            if (data.result == "OK") {
+              ToastService.showTopToast("上传成功")
+                .then(function(success) {
+                  $scope.userProfile = 'data:image/jpeg;base64,' + imageData;
+                  UserService.usersProfile = $scope.userProfile;
+                }, function (error) {
+                  console.log("show toast error");
+                });
+              UserService.profileUpdated = true;
+            }
+            else {
+              ToastService.showTopToast("上传失败")
+                .then(function(success) {
+                  
+                }, function (error) {
+                  console.log("show toast error");
+                });            
+            }
           })
           .error(function(data){
             ToastService.showTopToast(data)
@@ -558,8 +578,11 @@ angular.module('starter.controllers', [])
 })
 
 .controller('messageDetailCtrl', ['$scope', '$stateParams',
-  'messageService', '$ionicScrollDelegate', '$timeout',
-  function($scope, $stateParams, messageService, $ionicScrollDelegate, $timeout) {
+  'messageService', '$ionicScrollDelegate', '$timeout', 'UserService',
+  function($scope, $stateParams, messageService, $ionicScrollDelegate, $timeout, UserService) {
+
+    $scope.myProfile = UserService.usersProfile;
+
     var viewScroll = $ionicScrollDelegate.$getByHandle('messageDetailsScroll');
     // console.log("enter");
     $scope.doRefresh = function() {
@@ -650,17 +673,17 @@ angular.module('starter.controllers', [])
   $scope.follow = function(coach) {
     if (UserService.getCurrentUser().id == null) {
       // console.log("unavailable");
-      $scope.modal.show();
+      // $scope.modal.show();
 
-      // // for 真机
-      // $cordovaToast.showShortBottom('请先登录').then(function(success) {
-      //   // success
-      //   $scope.modal.show();
-      // }, function (error) {
-      //   // error
-      // });
-
-      return;
+      // for 真机
+      $cordovaToast.showShortBottom('请先登录').then(function(success) {
+        // success
+        $scope.modal.show();
+        return;
+      }, function (error) {
+        // error
+        return;
+      });
     }
 
     $scope.coachStudentPair.coachId = coach.id;
@@ -678,26 +701,26 @@ angular.module('starter.controllers', [])
 
     // coach.isFollowd = true;
 
-    // $cordovaToast.showShortBottom('关注成功').then(function(success) {
-    //   // success
-    // }, function (error) {
-    //   // error
-    // });
+    $cordovaToast.showShortBottom('关注成功').then(function(success) {
+      // success
+    }, function (error) {
+      // error
+    });
   };
 
   $scope.unfollow = function(coach) {
 
     if ($scope.coachStudentPair.studentId == null) {
       console.log("unavailable");
-      $scope.modal.show();
+      // $scope.modal.show();
 
-      // // for 真机
-      // $cordovaToast.showShortBottom('请先登录').then(function(success) {
-      //   // success
-      //   $scope.modal.show();
-      // }, function (error) {
-      //   // error
-      // });
+      // for 真机
+      $cordovaToast.showShortBottom('请先登录').then(function(success) {
+        // success
+        $scope.modal.show();
+      }, function (error) {
+        // error
+      });
 
       return;
     }
@@ -717,11 +740,11 @@ angular.module('starter.controllers', [])
 
     // coach.isFollowd = false;
 
-    // $cordovaToast.showShortBottom('取消关注').then(function(success) {
-    //   // success
-    // }, function (error) {
-    //   // error
-    // });  
+    $cordovaToast.showShortBottom('取消关注').then(function(success) {
+      // success
+    }, function (error) {
+      // error
+    });  
   }
 
 });

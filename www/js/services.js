@@ -24,6 +24,8 @@ angular.module('starter.services', [])
     UserService.currentUser = {};
     UserService.followedCoach = [];
     UserService.isLogin = false;
+    UserService.profileUpdated = false;
+    // UserService.usersProfile = "img/noprofile.png";
 
     UserService.setCurrentUser = function(currentUser){
         UserService.currentUser = currentUser;
@@ -111,6 +113,15 @@ angular.module('starter.services', [])
             data: JSON.stringify(imageInfo),
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
+        });
+    }
+
+    ImageService.getProfile = function(phone) {
+        return $http({
+            method: 'GET',
+            url: baseUrl + port + '/student/getphoto?phone=' + phone,
+            crossDomain:true
+            // headers: {'Content-Type': 'image/jpeg;charset=UTF-8'}
         });
     }
 

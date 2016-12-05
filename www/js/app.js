@@ -25,7 +25,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
 
 })
 
-.run(function($ionicPlatform, $ionicHistory) {
+.run(function($ionicPlatform, $ionicHistory, $rootScope, ToastService) {
   $ionicPlatform.ready(function() {
 
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -42,14 +42,30 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
   });
 
   $ionicPlatform.registerBackButtonAction(function(e) {
-    e.preventDefault();
-    //console.log("registerBackButtonAction");
-    //console.log($ionicHistory.backView());
-    if($ionicHistory.backView()) {
+    // e.preventDefault();
+    // //console.log("registerBackButtonAction");
+    // //console.log($ionicHistory.backView());
+    // if($ionicHistory.backView()) {
+    //   $ionicHistory.goBack();
+    // }
+    // return false;
+    if ($rootScope.backButtonPressedOnceToExit) {
+      ionic.Platform.exitApp();
+    }
+
+    else if ($ionicHistory.backView()) {
       $ionicHistory.goBack();
     }
+    else {
+      $rootScope.backButtonPressedOnceToExit = true;
+      setTimeout(function(){
+        $rootScope.backButtonPressedOnceToExit = false;
+      },2000);
+    }
+    e.preventDefault();
     return false;
-  }, 999);
+
+  }, 101);
 })
 
 
