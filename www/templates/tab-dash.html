@@ -1,4 +1,4 @@
-<ion-view view-title="找教练">
+<ion-view view-title="找服务">
 
   <ion-nav-buttons side="right">
       <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()">登录
@@ -13,78 +13,45 @@
   </ion-nav-bar>
  -->
   <ion-content>
+	  <div class="item item-input-inset">
+		  <label class="item-input-wrapper">
+			  <input type="text" placeholder="输入你想要的服务">
+		  </label>
+		  <button class="button button-small button-positive button-outline" ng-click="searchBtnClicked()">
+			  搜索
+		  </button>
+	  </div>
+	  <div class="list">
+		  <a class="item item-thumbnail-left" ng-repeat="service in services" style="padding-top: 10px; position: relative" ng-click="showServiceDetail(service)">
+			  <img ng-src="{{service.pic}}">
+			  <h2>{{service.name}}</h2>
+			  <button class="button button-small button-positive button-outline" style="position: absolute;right: 16px; top:10px; min-height: 0px; height: 30px">
+				  马上联系
+			  </button>
+			  <div>
+			    <span style="font-size: 13px; color: rgba(0,0,0,0.7)">{{service.person.name}}</span>
+			    <span style="margin-left: 20px; font-size: 12px; background-color: rgba(78, 174, 243, 0.69); color: white;">{{['极好','优质'][service.person.level]}}</span>
+			  </div>
+			  <div style="color: rgba(0, 0, 0, 0.7); font-size: 16px; margin-bottom: 3px">￥ {{service.price}}</div>
+			  <p style="color: rgba(0, 0, 0, 0.8); font-size: 13px;word-wrap:break-word; word-break:normal;">{{service.description}}</p>
+		  </a>
 
-    <div class="list">
 
-      <!-- <div class="item item-divider item-button-right">
-        <span class="input-label">分类搜索</span>
-        <button class="button button-clear button-positive">
-          <i class="icon ion-ios-search"></i>
-        </button>
-      </div> -->
+	  </div>
 
-      <div class="item item-divider">
-        分类搜索
-      </div>
 
-      <a class="item" href="#">
-          <form id="typeSearchForm" name="typeSearchForm">
-            <div class="list">
-              <label class="item item-input item-select">
-                <span class="input-label">车型</span>
-                <select ng-model="typeSearch.type">
-                    <!-- <option ng-repeat="n in type" value="{{n}}">{{n}}</option> -->
-                    <option value="C1">小车</option>
-                    <option value="truck">卡车</option>
-                    <option value="moto">摩托车</option>
-                </select>
-              </label>
-              <label class="item item-input item-select">
-                <span class="input-label">资质</span>
-                <select ng-model="typeSearch.quality">
-                    <option value="haolihai">认证教练</option>
-                    <option value="truck">非认证教练</option>
-                    <option value="moto">陪练</option>
-                </select>
-              </label>
-              <label class="item item-input item-select">
-                <span class="input-label">语言</span>
-                <select ng-model="typeSearch.language">
-                    <option value="zhongwen">中文</option>
-                    <option value="yingwen">英文</option>
-                </select>
-              </label>
-              <label class="item item-input item-select">
-                <span class="input-label">性别</span>
-                <select ng-model="typeSearch.gender">
-                    <option value=1>男</option>
-                    <option value=0>女</option>
-                </select>
-              </label>
-            </div>
-            <button class="button button-outline button-small button-block button-positive" ng-click="searchByType()">
-              提交
-            </button>
-          </form>
-      </a>
 
-      <div class="item item-divider">
-        关键字搜索
-      </div>
-
-      <div class="item item-input-inset">
-        <label class="item-input-wrapper">
-          <input type="text" placeholder="输入关键字">
-        </label>
-        <button class="button button-small button-positive button-outline" ng-click="searchBtnClicked()">
-          确定
-        </button>
+      <!--<div class="item item-input-inset">-->
+        <!--<label class="item-input-wrapper">-->
+          <!--<input type="text" placeholder="输入关键字">-->
+        <!--</label>-->
+        <!--<button class="button button-small button-positive button-outline" ng-click="searchBtnClicked()">-->
+          <!--确定-->
+        <!--</button>-->
         <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
           login
         </button> -->
         <!-- <a class="button button-icon icon ion-search"></a> -->
-      </div>
-    
 
      <!--  <div class="item item-divider">
         区域搜索
@@ -100,7 +67,7 @@
         </baidu-map>
       </a> -->
 
-    </div>
+    <!--</div>-->
      <!--  <div class="item item-divider">
         关键字搜索
       </div>

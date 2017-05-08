@@ -1,0 +1,45 @@
+<ion-modal-view>
+	<ion-content>
+		<div style="position: relative">
+			<img ng-src="{{service.pic}}" style="width: 100%">
+			<div style="position: absolute; top: 20px; left: 20px">
+				<i class="ion-record" ng-click="modal.remove()" style="font-size: 35px; color:rgba(0, 0, 0, 0.4)"></i>
+				<i class="ion-ios-arrow-left" ng-click="modal.remove()" style="font-size: 25px; color: white; position: absolute; left:50%; top: 50%; transform: translateY(-50%) translateX(-60%)"></i>
+			</div>
+			<div style="position: absolute; bottom: 15px; left: 20px; font-size: 10px; color: white">
+				8961次浏览
+			</div>
+		</div>
+		<div style="margin-top: 12px; margin-left: 12px">
+			<span style="font-size: 12px; color: #387ef5; font-weight: bold">￥</span>
+			<span style="font-size: 28px; color: #387ef5">{{service.price}}</span>
+			<div style="margin-top: 10px; font-size: 15px">
+				{{service.name}}
+			</div>
+			<p style="color: rgba(0,0,0,0.5); font-size: 12px">
+				{{service.description}}
+			</p>
+
+			<div class="list" style="margin-left: -12px">
+				<div class="item item-divider" style="min-height: 0px">
+				</div>
+				<a class="item item-avatar" href="#" style="padding-bottom: 10px; padding-top: 10px">
+					<img ng-src="{{service.person.image}}" style="border-radius: 50%; top:10px">
+					<h2>{{service.person.name}}
+						<span style="margin-left: 15px; font-size: 12px; background-color: rgba(78, 174, 243, 0.69); color: white;">{{['极好','优质'][service.person.level]}}</span>
+					</h2>
+					<p>{{service.person.tel}}</p>
+				</a>
+
+			</div>
+
+			<button class="button button-small button-positive button-outline" ng-click="" style="min-height: 0px; height: 30px">
+				马上联系
+			</button>
+			<button class="button button-small button-positive button-outline" ng-click="" style="min-height: 0px; height: 30px">
+				为我服务
+			</button>
+
+		</div>
+	</ion-content>
+</ion-modal-view>

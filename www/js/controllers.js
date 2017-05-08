@@ -239,8 +239,58 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', 
-    function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService) {
+.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$ionicModal',
+    function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService, $ionicModal) {
+
+	    $scope.services = [
+		    {
+			    'pic': 'img/car.jpg',
+			    'name': '机动车驾驶教学',
+			    'price': 1500,
+			    'description': '最快2个月拿到驾照, 每周5小时',
+			    'person': {
+				    'name': 'William',
+				    'tel': '13166225809',
+				    'level': 1,
+				    'image': 'img/adam.jpg'
+			    }
+		    },
+		    {
+			    'pic': 'img/home.jpg',
+			    'name': '家庭水电路改造',
+			    'price': 5000,
+			    'description': '根据工程量大小, 实际价格有所变化',
+			    'person': {
+				    'name': 'Daniel',
+				    'tel': '15698813232',
+				    'level': 0,
+				    'image': 'img/ben.png'
+			    }
+		    },
+		    {
+			    'pic': 'img/piano.jpg',
+			    'name': '钢琴教学',
+			    'price': 3000,
+			    'description': '可上门教学, 时间自由',
+			    'person': {
+				    'name': 'Alice',
+				    'tel': '13465579221',
+				    'level': 0,
+				    'image': 'img/mike.png'
+			    }
+		    }
+	    ];
+
+	    $scope.showServiceDetail = function(service){
+		    $ionicModal.fromTemplateUrl('templates/service-detail.html', {
+			    scope: $scope,
+			    animation: 'slide-in-up'
+		    }).then(function(modal) {
+			    $scope.modal = modal;
+			    $scope.service = service;
+			    $scope.modal.show();
+		    });
+	    }
 
     $scope.typeSearch = {};
    
