@@ -24,12 +24,12 @@ angular.module('starter.routes', [])
 
     // Each tab has its own nav history stack:
 
-    .state('tab.dash', {
-      url: '/dash',
+    .state('tab.search', {
+      url: '/search',
       views: {
-        'tab-dash': {
-          templateUrl: 'templates/tab-dash.html',
-          controller: 'DashCtrl'
+        'tab-search': {
+          templateUrl: 'templates/tab-search.html',
+          controller: 'SearchCtrl'
         }
       }
     })
@@ -37,20 +37,22 @@ angular.module('starter.routes', [])
     .state('tab.searchresult', {
             // url: '/messageDetail/:messageId',
         url: '/searchresult',
+	    cache: false,
         views: {
-          'tab-dash': {
-            templateUrl: "templates/search-result.html",
+          'tab-search-result': {
+            templateUrl: "templates/tab-search-result.html",
             controller: "SearchResultCtrl"
           }
         } 
     })
 
-    .state('tab.chats', {
-        url: '/chats',
+    .state('tab.follow', {
+        url: '/follow',
+	    cache: false,
         views: {
-          'tab-chats': {
-            templateUrl: 'templates/tab-chats.html',
-            controller: 'ChatsCtrl'
+          'tab-follow': {
+            templateUrl: 'templates/tab-follow.html',
+            controller: 'FollowCtrl'
           }
         }
       })
@@ -85,16 +87,9 @@ angular.module('starter.routes', [])
       }
     })
 
-    // 跳转到该页面用 state.go(searchresult);
-    // .state('searchresult', {
-    //         // url: '/messageDetail/:messageId',
-    //     url: '/searchresults',
-    //     templateUrl: "templates/search-result.html",
-    //     controller: "SearchResultCtrl"
-    // })
 
 
   // if none of the above states are matched, use this as the fallback
-  $urlRouterProvider.otherwise('/tab/dash');
+  $urlRouterProvider.otherwise('/tab/search');
 
 });

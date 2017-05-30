@@ -1,4 +1,17 @@
 angular.module('starter.directives', [])
+
+	.filter('distance', function(){
+		return function(input, currentPosition){
+			var distance = currentPosition.distance([input.longitude, input.latitude]);
+			if(distance > 1000){
+				return (distance / 1000.0).toFixed(2) + '千米'
+			}
+			else{
+				return distance.toFixed(2) + '米'
+			}
+		}
+	})
+
   .directive('hideTabs', function($rootScope, $ionicTabsDelegate) {
     return {
       restrict: 'A',

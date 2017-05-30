@@ -20,11 +20,10 @@ angular.module('starter.services', [])
 
 .factory('UserService', function($http, baseUrl, port){
     var UserService = {};
-   
     UserService.currentUser = {};
     UserService.followedCoach = [];
     UserService.isLogin = false;
-    UserService.profileUpdated = false;
+	UserService.profileUpdated = false;
     // UserService.usersProfile = "img/noprofile.png";
 
     UserService.setCurrentUser = function(currentUser){
@@ -46,7 +45,7 @@ angular.module('starter.services', [])
     UserService.register = function(registerInfo){
         return $http({
             method: 'POST',
-            url: baseUrl + port + '/student/register',
+            url: baseUrl + port + '/user/register',
             data: JSON.stringify(registerInfo),
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
@@ -57,7 +56,7 @@ angular.module('starter.services', [])
         console.log(JSON.stringify(loginInfo));
         return $http({
             method: 'POST',
-            url: baseUrl + port + '/student/login',
+            url: baseUrl + port + '/user/login',
             data: JSON.stringify(loginInfo),
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
@@ -92,13 +91,18 @@ angular.module('starter.services', [])
         })
     }
 
-    // UserService.uploadLicense = function(userId, imageURI){
-    //     var options = new FileUploadOptions();
-    //     options.fileKey = "picture";
-    //     options.httpMethod = "POST";
-    //     var url = baseUrl + port + '/api/image/licence/upload?teaSalerId=' + userId;
-    //     return $cordovaFileTransfer.upload(url, imageURI, options);
-    // }
+	UserService.uploadPhoto = function(picture, phone){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/user/uploadphoto',
+			data: {
+				'phone': phone + "",
+				'photoImageValue': picture
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	}
 
     return UserService;
 })
@@ -133,12 +137,70 @@ angular.module('starter.services', [])
     var SearchService = {};
 
     SearchService.searchResult = [];
+
     SearchService.setCurrentSearchResult = function(result) {
         SearchService.searchResult = result;
     }
+
     SearchService.getCurrentSearchResult = function() {
         return angular.copy(SearchService.searchResult);
-    }
+    };
+
+	SearchService.getBasicLabels = function(){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/getBasiclabel',
+			crossDomain: true
+		});
+	};
+
+	SearchService.getServiceLabels = function(){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/getservicelabel',
+			crossDomain: true
+		});
+	};
+
+	SearchService.mergeLabels = function(basicLabels, serviceLabels){
+		var temp = {};
+		var result = [];
+		for(item in basicLabels){
+			basicLabels[item].services = [];
+			temp[basicLabels[item].id] = basicLabels[item];
+		}
+		for(item in serviceLabels){
+			temp[serviceLabels[item].basicTypeId].services.push(serviceLabels[item]);
+		}
+		for(item in temp){
+			result.push(temp[item]);
+		}
+		return result;
+	}
+
+	SearchService.searchByLabel = function(serviceLabelId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbylabel?labelid=' + serviceLabelId,
+			crossDomain: true
+		})
+	}
+
+	SearchService.searchByWord = function(word){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbyword?word=' + word,
+			crossDomain: true
+		})
+	}
+
+	SearchService.searchByPosition = function(longitude, latitude){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbylocation?longitude=' + longitude + '&latitude=' + latitude,
+			crossDomain: true
+		})
+	}
 
     SearchService.searchByType = function(searchInfo) {
         return $http({
@@ -161,6 +223,56 @@ angular.module('starter.services', [])
     var MyFollowsService = {};
 
     return MyFollowsService;
+})
+
+.factory('ServiceService', function($http, baseUrl, port){
+	var ServiceService = {};
+
+	ServiceService.publishService = function(serviceInfo){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/service/publish',
+			data: JSON.stringify(serviceInfo),
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		});
+	}
+
+	ServiceService.followService = function(serviceId, userId){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/interact/follow',
+			data: {
+				'serviceId': serviceId,
+				'userId': userId
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		});
+	}
+
+	ServiceService.unfollowService = function(serviceId, userId){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/interact/follow/remove',
+			data: {
+				'serviceId': serviceId,
+				'userId': userId
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		});
+	}
+
+	ServiceService.getFollowServices = function(userId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/interact/findByUserId?userId=' + userId,
+			crossDomain: true
+		})
+	}
+
+	return ServiceService;
 })
 
 .factory('Chats', function() {
@@ -211,7 +323,6 @@ angular.module('starter.services', [])
     }
   };
 }])
-
 
 .factory('messageService', ['localStorageService', 'dateService',
     function(localStorageService, dateService) {
