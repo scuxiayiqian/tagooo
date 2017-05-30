@@ -1,0 +1,84 @@
+<ion-view view-title="找服务">
+
+    <ion-nav-buttons side="right">
+            <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()">登录
+            </button>
+            <button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册
+            </button>
+    </ion-nav-buttons>
+
+<!--     <ion-nav-bar class="bar-positive">
+        <ion-nav-back-button>
+        </ion-nav-back-button>
+    </ion-nav-bar>
+ -->
+    <ion-content>
+
+        <div class="list">
+
+            <!-- <div class="item item-divider item-button-right">
+                <span class="input-label">分类搜索</span>
+                <button class="button button-clear button-positive">
+                    <i class="icon ion-ios-search"></i>
+                </button>
+            </div> -->
+
+            <div class="item item-divider">
+                分类搜索
+            </div>
+
+            <a class="item" href="#">
+	            <form id="typeSearchForm" name="typeSearchForm">
+					<div class="list">
+					    <label class="item item-input item-select">
+					        <span class="input-label">服务类型</span>
+						    <select ng-model="selectedLabel.basic" ng-options="label.type for label in labels">
+						    </select>
+					    </label>
+					    <label class="item item-input item-select">
+					        <span class="input-label">可选服务</span>
+					        <select ng-model="selectedLabel.service" ng-options="service.type for service in selectedLabel.basic.services">
+					        </select>
+					    </label>
+					</div>
+		            <button class="button button-outline button-small button-block button-positive" ng-click="searchByLabel()">
+		                提交
+		            </button>
+	            </form>
+            </a>
+
+            <div class="item item-divider">
+                关键字搜索
+            </div>
+
+            <div class="item item-input-inset">
+                <label class="item-input-wrapper">
+                    <input type="text" placeholder="输入关键字" ng-model="searchWord">
+                </label>
+                <button class="button button-small button-positive button-outline" ng-click="searchByWord()">
+                    确定
+                </button>
+                <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
+                    login
+                </button> -->
+                <!-- <a class="button button-icon icon ion-search"></a> -->
+            </div>
+
+	        <div class="item item-divider">
+                区域搜索
+	        </div>
+	        <div id="mapContainer" style="height: 240px">
+		        <input placeholder="请输入地址" type="text" id="search-place" style="position: absolute; right: 8px; top: 8px;
+                    padding-left: 8px; z-index: 100; padding-right: 8px; background: #eee; opacity: 0.88; border-radius: 4px; border:1px white solid" ng-keyup="processEnter($event)">
+	        </div>
+	        <div class="item item-input-inset">
+				<label class="item-input-wrapper">
+			        <p style="height: 29px; line-height: 29px; font-size: 13px">选择的位置: 经度{{searchPosition.longitude.toFixed(4)}} 纬度{{searchPosition.latitude.toFixed(4)}}</p>
+		        </label>
+		        <button class="button button-small button-positive button-outline" ng-click="searchByPosition()">
+			        搜索
+		        </button>
+	        </div>
+        </div>
+    </ion-content>
+</ion-view>

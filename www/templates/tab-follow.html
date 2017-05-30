@@ -1,0 +1,30 @@
+<!-- <ion-header-bar align-title="left" class="bar-positive">
+  <div class="h1 title">学车-搜索</div>
+  <div class="buttons">
+      <button class="button no-animation button-icon icon ion-android-search">
+      </button>
+      <button class="button no-animation button-icon icon ion-android-add">
+      </button>
+  </div>
+</ion-header-bar> -->
+
+<ion-view view-title="我的关注">
+  <!-- <ion-nav-bar class="bar-positive">
+    <ion-nav-back-button>
+    </ion-nav-back-button>
+  </ion-nav-bar> -->
+
+	<ion-content>
+		<div class="list">
+			<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myFollowServices">
+				<img src="http://www.runoob.com/try/demo_source/blue-album.jpg" style="top: 16px">
+				<h2>{{service.serviceLabelName}}</h2>
+				<p>{{service.slogan}}</p>
+				<p>{{service | distance: position}}</p>
+				<i class="icon ion-android-favorite positive first" ng-click="unfollowService(service, $event)"></i>
+
+			</div>
+
+		</div>
+	</ion-content>
+</ion-view>

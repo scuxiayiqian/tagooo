@@ -1,0 +1,40 @@
+<ion-modal-view>
+	<ion-header-bar>
+		<h1 class="title">新建服务</h1>
+		<div class="buttons">
+			<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
+		</div>
+	</ion-header-bar>
+	<ion-content>
+		<form>
+			<div class="list">
+				<label class="item item-input">
+					<span class="input-label">服务大类</span>
+					<select ng-model="newService.basic" ng-options="label.type for label in labels">
+					</select>
+				</label>
+				<label class="item item-input">
+					<span class="input-label">服务类型</span>
+					<select ng-model="newService.service" ng-options="service.type for service in newService.basic.services">
+					</select>
+				</label>
+				<label class="item item-input">
+					<span class="input-label">经度</span>
+					<input type="number" ng-model="newService.longitude">
+				</label>
+				<label class="item item-input">
+					<span class="input-label">纬度</span>
+					<input type="number" ng-model="newService.latitude">
+				</label>
+				<label class="item item-input">
+					<span class="input-label">广告语</span>
+					<input type="text" ng-model="newService.slogan">
+				</label>
+			</div>
+		</form>
+
+		<div class="register-login-btn">
+			<button class="button button-block button-positive" ng-click="publishService()">发布服务</button>
+		</div>
+	</ion-content>
+</ion-modal-view>

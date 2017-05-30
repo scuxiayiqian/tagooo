@@ -1,0 +1,31 @@
+<ion-view view-title="搜索结果">
+  <!-- <ion-nav-bar class="bar-positive">
+    <ion-nav-back-button class="button-clear"><i class="icon ion-ios7-arrow-back"></i>Back</ion-nav-back-button>
+  </ion-nav-bar> -->
+
+  <ion-content>
+
+	  <div class="list">
+		  <div ng-repeat="item in searchResults">
+			  <div class="item item-divider">
+				  {{item.label}}
+			  </div>
+
+			  <div class="item item-thumbnail-left lty-list-item" ng-repeat="result in item.results">
+				  <img src="http://www.runoob.com/try/demo_source/blue-album.jpg">
+				  <div style="display: inline-block; width: auto;">
+					  <h2>{{result.slogan}}</h2>
+					  <p>{{result | distance:position}}</p>
+				  </div>
+				  <i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>
+				  <i ng-if="followList.includes(result.id)" class="icon ion-android-favorite positive second" ng-click="unfollowService(result, $event)"></i>
+				  <i class="icon ion-chatboxes positive first"></i>
+
+
+			  </div>
+		  </div>
+
+	  </div>
+  </ion-content>
+
+</ion-view>
