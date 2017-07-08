@@ -61,3 +61,14 @@
 .lty-list-item .second {
 	right: 40px;
 }
+
+.lty-menu-item {
+	color: rgba(0,0,0,0.65);
+	font-size: 14px;
+	margin-bottom: 5px;
+	padding: 2px 0px;
+}
+
+.lty-menu-item:active, .lty-menu-item:hover {
+	color: rgba(0,0,0,0.85);
+}

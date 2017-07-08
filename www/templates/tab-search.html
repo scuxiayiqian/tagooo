@@ -1,10 +1,12 @@
 <ion-view view-title="找服务">
 
     <ion-nav-buttons side="right">
-            <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()">登录
-            </button>
-            <button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册
-            </button>
+        <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()">登录
+        </button>
+        <!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
+        <!--</button>-->
+	    <button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i>
+	    </button>
     </ion-nav-buttons>
 
 <!--     <ion-nav-bar class="bar-positive">
@@ -12,8 +14,13 @@
         </ion-nav-back-button>
     </ion-nav-bar>
  -->
-    <ion-content>
-
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag">
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div class="lty-menu-item">当前页分享</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div class="lty-menu-item">举报</div>
+	</div>
+    <ion-content on-tap="showMenu.flag = false">
         <div class="list">
 
             <!-- <div class="item item-divider item-button-right">
@@ -27,7 +34,7 @@
                 分类搜索
             </div>
 
-            <a class="item" href="#">
+            <div class="item" >
 	            <form id="typeSearchForm" name="typeSearchForm">
 					<div class="list">
 					    <label class="item item-input item-select">
@@ -45,7 +52,7 @@
 		                提交
 		            </button>
 	            </form>
-            </a>
+            </div>
 
             <div class="item item-divider">
                 关键字搜索

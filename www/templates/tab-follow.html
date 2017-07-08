@@ -9,15 +9,19 @@
 </ion-header-bar> -->
 
 <ion-view view-title="我的关注">
-  <!-- <ion-nav-bar class="bar-positive">
-    <ion-nav-back-button>
-    </ion-nav-back-button>
-  </ion-nav-bar> -->
-
-	<ion-content>
+	<ion-nav-buttons side="right">
+		<button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
+	</ion-nav-buttons>
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag">
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div class="lty-menu-item">当前页分享</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div class="lty-menu-item">举报</div>
+	</div>
+	<ion-content on-tap="showMenu.flag = false">
 		<div class="list">
-			<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myFollowServices">
-				<img src="http://www.runoob.com/try/demo_source/blue-album.jpg" style="top: 16px">
+			<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myFollowServices | sortByDistance:position">
+				<img get-svc-pic pic-id="{{service.id}}" style="top: 16px">
 				<h2>{{service.serviceLabelName}}</h2>
 				<p>{{service.slogan}}</p>
 				<p>{{service | distance: position}}</p>

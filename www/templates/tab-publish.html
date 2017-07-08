@@ -2,59 +2,32 @@
 	<ion-nav-buttons side="right">
 		<button class="button button-clear button-small" ng-click="showServiceModal()" ng-show="!isLogin()">新服务
 		</button>
+		<button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
 	</ion-nav-buttons>
-    <ion-content>
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag">
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div class="lty-menu-item">当前页分享</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div class="lty-menu-item">举报</div>
+	</div>
+    <ion-content on-tap="showMenu.flag = false">
         <div class="list card">
             <div class="item item-avatar item-icon-right" ng-click="showProfileModal()">
-                <img ng-src="{{userProfile}}" ng-click="editProfile()">
+                <img src="img/ben.png" ng-click="editProfile()">
                  <!--<img src="http://202.120.40.175:21181/student/getphoto?phone=18116214088">-->
                 <h2>{{loginUser.userName}}</h2>
                 <p>{{loginUser.description}}</p>
                 <i class="icon fa fa-qrcode" aria-hidden="true"></i>
                 <p>当前位置: 经度{{position.getLng().toFixed(4)}} 纬度{{position.getLat().toFixed(4)}}</p>
             </div>
-
-        <!--<div class="list">-->
-                <!--<a class="item item-avatar" href="#">-->
-                    <!--<img src="img/adam.jpg">-->
-                    <!--<span class="rj-sm-red-icon" ng-show="true"><p ng-bind="1"></p></span>-->
-                    <!--<h2>Venkman</h2>-->
-                    <!--<p>Back off, man. I'm a scientist.</p>-->
-                    <!--<span class="rj-push-right">2016</span>-->
-                <!--</a>-->
-                <!--<a class="item item-avatar" href="#">-->
-                    <!--<img src="img/adam.jpg">-->
-                    <!--<span class="rj-sm-red-icon" ng-show="true"><p ng-bind="1"></p></span>-->
-                    <!--<h2>Venkman</h2>-->
-                    <!--<p>Back off, man. I'm a scientist.</p>-->
-                    <!--<span class="rj-push-right">2016</span>-->
-                <!--</a>-->
-                <!--<a class="item item-avatar" href="#">-->
-                    <!--<img src="img/adam.jpg">-->
-                    <!--<span class="rj-sm-red-icon" ng-show="true"><p ng-bind="1"></p></span>-->
-                    <!--<h2>Venkman</h2>-->
-                    <!--<p>Back off, man. I'm a scientist.</p>-->
-                    <!--<span class="rj-push-right">2016</span>-->
-                <!--</a>-->
-        <!--</div>-->
-
-        <!--<ion-list rj-close-back-drop ng-show="!isShow()">-->
-                <!--<ion-item class="item-avatar" ng-class="{'rj-item-top': message.isTop}" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="message in allchatmessages | orderBy:['isTop', 'lastMessage.timeFrome1970']:true" ng-click="messageDetils(message)">-->
-                        <!--<img ng-src="{{message.pic}}">-->
-                        <!--<span class="rj-sm-red-icon" ng-show="showRedIcon"><p>1</p></span>-->
-                        <!--<h2 ng-bind="message.name"></h2>-->
-                        <!--<p class="rj-list-p" ng-bind="message.lastMessage.content"></p>-->
-                        <!--<span class="rj-push-right" ng-bind="message.lastMessage.time"></span>-->
-                <!--</ion-item>-->
-        <!--</ion-list>-->
 		</div>
 	    <div class="list">
-		    <a class="item item-thumbnail-left lty-list-item" href="#" style="padding-bottom: 8px !important; padding-top: 8px !important;">
-			    <img src="img/adam.jpg">
-			    <h2>家电维修 - 空调</h2>
-			    <p>维修服务</p>
-			    <p>广告语</p>
-		    </a>
+		    <div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myPublishServices" style="padding-bottom: 8px !important; padding-top: 8px !important;" ng-click="showModifyServiceModal(service)">
+			    <img get-svc-pic pic-id="{{service.id}}">
+			    <h2>{{service.serviceLabelName}}</h2>
+			    <p>{{service.slogan}}</p>
+			    <p>经度{{position.getLng().toFixed(4)}} 纬度{{position.getLat().toFixed(4)}}</p>
+		    </div>
 	    </div>
     </ion-content>
 </ion-view>

@@ -1,4 +1,4 @@
-angular.module('starter.controllers', [])
+angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 .controller('AppCtrl', function($scope, $ionicModal, $timeout, 
   $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService,
@@ -74,12 +74,7 @@ angular.module('starter.controllers', [])
           $scope.loginError.flag = true;
           $scope.loginError.info = "用户名密码不匹配";
           // $timeout(clearLoginError,1200);
-          ToastService.showCenterToast($scope.loginError.info)
-          .then(function(success) {
-            clearLoginError();
-          }, function (error) {
-            console.log("show toast error");
-          });
+	        $cordovaToast.showShortBottom('用户名密码错误');
         }
         else if(data.status == 200){
           // for真机
@@ -246,6 +241,10 @@ angular.module('starter.controllers', [])
 
 .controller('SearchCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$cordovaToast', '$cordovaGeolocation',
     function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService, $cordovaToast, $cordovaGeolocation) {
+
+	    $scope.showMenu = {
+		    'flag': false
+	    };
 
 	    $rootScope.position = new AMap.LngLat(116.397428, 39.90923);
 
@@ -517,6 +516,9 @@ angular.module('starter.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
+	$scope.showMenu = {
+		'flag': false
+	};
 	var getFollowServices = function(){
 		if(UserService.getCurrentUser().id == undefined){
 			return;
@@ -601,7 +603,128 @@ angular.module('starter.controllers', [])
 })
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, $ionicModal, $filter, localStorageService, messageService, UserService, ImageService, SearchService, ServiceService,
-  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port) {
+  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer) {
+
+	$scope.showMenu = {
+		'flag': false
+	};
+
+	var getPublishServices = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			return;
+		}
+		ServiceService.getPublishServices(UserService.getCurrentUser().id)
+			.success(function(data){
+				$scope.myPublishServices = data.serviceinfoDTOList;
+
+			})
+	}
+
+	getPublishServices();
+
+	$scope.showModifyServiceModal = function(service){
+		$ionicModal.fromTemplateUrl('templates/service.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.modifyService = service;
+			$scope.serviceModal = modal;
+			$scope.mode = 'modify';
+			$scope.serviceModal.show();
+		});
+	}
+
+	$scope.selectServicePicture = function(service){
+		var actionSheetOptions = {
+			title: '上传产品图片',
+			buttonLabels: ['相机', '从图库选择'],
+			addCancelButtonWithLabel: '取消',
+			androidEnableCancelButton: true
+		};
+		$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
+			var imageSource;
+			if(btnIndex == 1){
+				imageSource = Camera.PictureSourceType.CAMERA;
+			}
+			else if(btnIndex == 2){
+				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+			}
+			else{
+				return;
+			}
+			var cameraOptions = {
+				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+				quality: 70,                                            //相片质量0-100
+				destinationType: Camera.DestinationType.DATA_URL,        //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+				sourceType: imageSource,             //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+				allowEdit: false,                                        //在选择之前允许修改截图
+				encodingType:Camera.EncodingType.JPEG,                   //保存的图片格式： JPEG = 0, PNG = 1
+				mediaType:0,                                             //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+				cameraDirection:0                                      //枪后摄像头类型：Back= 0,Front-facing = 1
+			};
+			$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
+				ServiceService.uploadPicture(service.id, imageURI)
+					.success(function(data){
+						console.log(data);
+					})
+			}, function(err) {
+				// error
+
+			});
+		});
+	}
+
+	$scope.selectServiceVideo = function(service){
+		var cameraOptions = {
+			//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			quality: 70,                                            //相片质量0-100
+			destinationType: Camera.DestinationType.FILE_URI,        //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			sourceType: Camera.PictureSourceType.PHOTOLIBRARY,             //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			allowEdit: false,                                        //在选择之前允许修改截图
+			mediaType:1,                                             //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			cameraDirection:0                                      //枪后摄像头类型：Back= 0,Front-facing = 1
+		};
+		$cordovaCamera.getPicture(cameraOptions).then(function(videoURI) {
+			console.log(videoURI);
+
+			//ServiceService.uploadVideo(service.id, videoURI)
+			//	.then(function (result) {
+			//		// Success!
+			//		console.log('uploadVideo',result);
+			//	}, function (err) {
+			//		// Error
+			//	}, function (progress) {
+			//		// constant progress updates
+			//	});
+			var server = baseUrl + port + '/service/uploadvideo';
+			var filePath = videoURI;
+			var options = new FileUploadOptions();
+			options.fileKey = "file";
+			options.params = {'id': service.id};
+			options.httpMethod = "POST";
+			options.mimeType="multipart/form-data";
+			options.headers= {
+				'Connection': 'keep-alive'
+			}
+			options.timeout = 100000000;
+
+			$cordovaFileTransfer.upload(server, filePath ,options, true)
+				.then(function (result) {
+					// Success!
+					console.log('uploadVideo',result);
+					$cordovaToast.showShortBottom("上传视频成功");
+				}, function (err) {
+					// Error
+					console.log('uploadVideoError',err);
+				}, function (progress) {
+					// constant progress updates
+				});
+
+
+		}, function(err) {
+			// error
+
+		});
+	}
 
 	$scope.showProfileModal = function(){
 		if(UserService.getCurrentUser().id == undefined){
@@ -648,9 +771,10 @@ angular.module('starter.controllers', [])
 				UserService.uploadPhoto(imageURI, UserService.getCurrentUser().phone)
 					.success(function(data){
 						var currentUser = UserService.getCurrentUser();
-						currentUser.photo = imageURI;
+						currentUser.photo = 'data:image/jpeg;base64,' + imageURI;
+						$scope.profile.photo = 'data:image/jpeg;base64,' + imageURI;
 						UserService.setCurrentUser(currentUser);
-						$cordovaToast.showShortBottom("上传头像");
+						$cordovaToast.showShortBottom("上传头像成功");
 					})
 			}, function(err) {
 				// error
@@ -659,11 +783,20 @@ angular.module('starter.controllers', [])
 		});
 	}
 
+	$scope.logout = function(){
+		UserService.setCurrentUser({});
+		UserService.isLogin = false;
+		$scope.profile = {};
+		$scope.profileModal.remove();
+		$state.go('tab.search')
+	}
+
 	$scope.showServiceModal = function(){
 		$ionicModal.fromTemplateUrl('templates/service.html', {
 			scope: $scope
 		}).then(function(modal) {
 			$scope.serviceModal = modal;
+			$scope.mode = 'new';
 			$scope.serviceModal.show();
 		});
 
@@ -708,6 +841,12 @@ angular.module('starter.controllers', [])
 			})
 
 	}
+
+
+
+
+
+
   $scope.loginUser = {};
 
   $scope.$on("$ionicView.beforeEnter", function(){
@@ -932,6 +1071,10 @@ angular.module('starter.controllers', [])
 
 .controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService) {
   // $ionicTabsDelegate.showBar(false);
+
+	$scope.showMenu = {
+		'flag': false
+	};
 
 	$scope.followList = [];
 

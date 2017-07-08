@@ -12,6 +12,15 @@ angular.module('starter.directives', [])
 		}
 	})
 
+	.filter('sortByDistance', function($filter){
+		return function(input, currentPosition){
+			for(var i = 0; i < input.length; i++){
+				input[i].distance = currentPosition.distance([input[i].longitude, input[i].latitude]);
+			}
+			return $filter('orderBy')(input, 'distance', false);
+		}
+	})
+
   .directive('hideTabs', function($rootScope, $ionicTabsDelegate) {
     return {
       restrict: 'A',
@@ -123,6 +132,23 @@ angular.module('starter.directives', [])
               }
           }
       }
-  }]);
+  }])
+	.directive('getSvcPic', function($http, baseUrl, port){
+		return {
+			replace: false,
+			scope:{
+				'picId': '@'
+			},
+			link: function(scope, ele, attr, controller){
+				$http({
+					url: baseUrl + port + '/service/getpicture?id=' + scope.picId,
+					method: 'GET',
+					crossDomain: true
+				}).success(function(data){
+					attr.$set('src', data);
+				})
+			}
+		}
+	});
 
 

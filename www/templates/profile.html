@@ -10,7 +10,7 @@
 			<div class="list">
 				<label class="item item-input">
 					<span class="input-label">头像</span>
-					<img src="img/adam.jpg" style="max-width: 60px">
+					<img src="img/ben.png" style="max-width: 60px">
 					<button class="button button-positive" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px" ng-click="selectPhoto()">上传头像</button>
 				</label>
 				<label class="item item-input">
@@ -23,7 +23,7 @@
 				</label>
 				<label class="item item-input">
 					<span class="input-label">性别</span>
-					<input type="tel" ng-model="profile.gender" disabled>
+					<input type="tel" ng-value="profile.gender ? '男':'女'" disabled>
 				</label>
 				<label class="item item-input">
 					<span class="input-label">手机号</span>
@@ -38,7 +38,7 @@
 		</form>
 
 		<div class="register-login-btn">
-			<button class="button button-block button-positive" ng-click="doLogin()">登录</button>
+			<button class="button button-block button-positive" ng-click="logout()">注销</button>
 		</div>
 	</ion-content>
 </ion-modal-view>

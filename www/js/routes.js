@@ -26,6 +26,7 @@ angular.module('starter.routes', [])
 
     .state('tab.search', {
       url: '/search',
+	    cache: false,
       views: {
         'tab-search': {
           templateUrl: 'templates/tab-search.html',
@@ -69,6 +70,7 @@ angular.module('starter.routes', [])
 
     .state('tab.publish', {
       url: '/publish',
+	    cache: false,
       views: {
         'tab-publish': {
           templateUrl: 'templates/tab-publish.html',

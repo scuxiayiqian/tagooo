@@ -1,4 +1,4 @@
-angular.module('starter.services', [])
+angular.module('starter.services', ['ngCordova'])
 
 .factory('ToastService', function($cordovaToast){
     var ToastService = {};
@@ -225,7 +225,7 @@ angular.module('starter.services', [])
     return MyFollowsService;
 })
 
-.factory('ServiceService', function($http, baseUrl, port){
+.factory('ServiceService', function($http, baseUrl, port, $cordovaFileTransfer){
 	var ServiceService = {};
 
 	ServiceService.publishService = function(serviceInfo){
@@ -270,6 +270,36 @@ angular.module('starter.services', [])
 			url: baseUrl + port + '/interact/findByUserId?userId=' + userId,
 			crossDomain: true
 		})
+	}
+
+	ServiceService.getPublishServices = function(userId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/interact/findByPublishUserId?userId=' + userId,
+			crossDomain: true
+		})
+	}
+
+	ServiceService.uploadPicture = function(serviceId, image){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/service/uploadpicture',
+			data: {
+				'id': serviceId,
+				'pictureImageValue': image
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	}
+
+	ServiceService.uploadVideo = function(serviceId, videoURI){
+		var server = baseUrl + port + '/service/uploadvideo';
+		var filePath = videoURI;
+		var options = new FileUploadOptions();
+		options.id = serviceId;
+		options.httpMethod = "POST";
+		return $cordovaFileTransfer.upload(server, filePath, options)
 	}
 
 	return ServiceService;
