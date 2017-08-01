@@ -20,7 +20,7 @@
 	</div>
 	<ion-content on-tap="showMenu.flag = false">
 		<div class="list">
-			<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myFollowServices | sortByDistance:position">
+			<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myFollowServices | sortByDistance:position" ng-click="showModifyServiceModal(service)">
 				<img get-svc-pic pic-id="{{service.id}}" style="top: 16px">
 				<h2>{{service.serviceLabelName}}</h2>
 				<p>{{service.slogan}}</p>

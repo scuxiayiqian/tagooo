@@ -83,5 +83,46 @@
 		</ion-content>
 	</div>
 
+	<div ng-if="mode == 'read'">
+		<ion-header-bar>
+			<h1 class="title">服务详情</h1>
+			<div class="buttons">
+				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
+			</div>
+		</ion-header-bar>
+		<ion-content>
+			<form>
+				<div class="list">
+					<label class="item item-input">
+						<span class="input-label">服务类型</span>
+						<input type="text" ng-model="modifyService.serviceLabelName" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">经度</span>
+						<input type="number" ng-value="modifyService.longitude.toFixed(4)" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">纬度</span>
+						<input type="number" ng-value="modifyService.latitude.toFixed(4)"  disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告语</span>
+						<input type="text" ng-model="modifyService.slogan" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告图片</span>
+						<img get-svc-pic pic-id="{{modifyService.id}}" style="max-width: 80px">
+						<!--<button class="button button-positive" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px" ng-click="selectServicePicture(modifyService)">上传图片</button>-->
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告视频</span>
+						<p style="display: inline" ng-if="modifyService.video=='' || modifyService.video==null">还未上传</p>
+						<button class="button button-positive" ng-if="!(modifyService.video=='' || modifyService.video==null)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">查看视频</button>
+						<!--<button class="button button-positive" ng-click="selectServiceVideo(modifyService)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">上传视频</button>-->
+					</label>
+				</div>
+			</form>
+		</ion-content>
+	</div>
 
 </ion-modal-view>

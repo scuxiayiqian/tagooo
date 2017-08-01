@@ -72,3 +72,10 @@
 .lty-menu-item:active, .lty-menu-item:hover {
 	color: rgba(0,0,0,0.85);
 }
+
+.lty-operation-button {
+	height: 33%;
+	line-height: 25.734px;
+	font-size: 13px;
+	font-color: #aaa;
+}

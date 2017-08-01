@@ -241,6 +241,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 .controller('SearchCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$cordovaToast', '$cordovaGeolocation',
     function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService, $cordovaToast, $cordovaGeolocation) {
+		$rootScope.isSearchAddress = false;
 
 	    $scope.showMenu = {
 		    'flag': false
@@ -266,6 +267,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	    $scope.searchByLabel = function(){
 		    return SearchService.searchByLabel($scope.selectedLabel.service.id)
 			    .success(function(data){
+				    $rootScope.isSearchAddress = false;
 				    var geolocation = new AMap.Geolocation({
 					    enableHighAccuracy: true,//是否使用高精度定位，默认:true
 					    timeout: 10000        //超过10秒后停止定位，默认：无穷大
@@ -300,6 +302,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	    $scope.searchByWord = function(){
 		    return SearchService.searchByWord($scope.searchWord)
 			    .success(function(data){
+				    $rootScope.isSearchAddress = false;
 				    if($rootScope.position == undefined) {
 					    var geolocation = new AMap.Geolocation({
 						    enableHighAccuracy: true,//是否使用高精度定位，默认:true
@@ -308,6 +311,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					    geolocation.getCurrentPosition();
 					    AMap.event.addListener(geolocation, 'complete', function (data) {
 						    $rootScope.position = data.position
+						    console.log('$rootScope.position', $rootScope.position)
 					    })
 				    }
 				    console.log('word-search', data);
@@ -333,43 +337,60 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			    })
 	    }
 
-	    $scope.searchPosition = {}
+	    $scope.searchPosition = {};
+	    $scope.searchAddress = "";
 	    $scope.searchByPosition = function(){
-		    if($scope.searchPosition.longitude == undefined || $scope.searchPosition.latitude == undefined){
-			    $cordovaToast.showShortBottom('请选择位置');
-			    return;
-		    }
-		    SearchService.searchByPosition($scope.searchPosition.longitude, $scope.searchPosition.latitude)
-			    .success(function(data){
-
-				    var geolocation = new AMap.Geolocation({
-					    enableHighAccuracy: true,//是否使用高精度定位，默认:true
-					    timeout: 10000        //超过10秒后停止定位，默认：无穷大
-				    });
-				    geolocation.getCurrentPosition();
-				    AMap.event.addListener(geolocation, 'complete', function (data) {
-					    $rootScope.position = data.position
-				    })
-
-				    console.log('word-search', data);
-				    var temp = {};
-				    for(i in data){
-					    if(!temp.hasOwnProperty(data[i].serviceLabelId)){
-						    temp[data[i].serviceLabelId] = [];
-					    }
-					    data[i].distance = $rootScope.position.distance([data[i].longitude, data[i].latitude]);
-					    temp[data[i].serviceLabelId].push(data[i]);
+		    var geocoder = new AMap.Geocoder({
+			    radius: 1000000 //范围，默认：500
+		    });
+		    $rootScope.searchAddress = $scope.searchAddress;
+		    $rootScope.isSearchAddress = true;
+		    //地理编码,返回地理编码结果
+		    geocoder.getLocation($scope.searchAddress, function(status, result) {
+			    if (status === 'complete' && result.info === 'OK') {
+				    var geocode = result.geocodes;
+				    $scope.searchPosition = {
+					    'longitude': geocode[0].location.getLng(),
+					    'latitude': geocode[0].location.getLat()
 				    }
-				    $rootScope.searchResults = [];
-				    for(i in temp){
-					    $rootScope.searchResults.push({
-						    'label': temp[i][0].serviceLabelName,
-						    'results': temp[i]
+				    console.log('searchPosition', $scope.searchPosition);
+				    SearchService.searchByPosition($scope.searchPosition.longitude, $scope.searchPosition.latitude)
+					    .success(function(data){
+
+						    var geolocation = new AMap.Geolocation({
+							    enableHighAccuracy: true,//是否使用高精度定位，默认:true
+							    timeout: 10000        //超过10秒后停止定位，默认：无穷大
+						    });
+						    geolocation.getCurrentPosition();
+						    AMap.event.addListener(geolocation, 'complete', function (data) {
+							    $rootScope.position = data.position
+						    })
+
+						    console.log('word-search', data);
+						    var temp = {};
+						    for(i in data){
+							    if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+								    temp[data[i].serviceLabelId] = [];
+							    }
+							    data[i].distance = $rootScope.position.distance([data[i].longitude, data[i].latitude]);
+							    temp[data[i].serviceLabelId].push(data[i]);
+						    }
+						    $rootScope.searchResults = [];
+						    for(i in temp){
+							    $rootScope.searchResults.push({
+								    'label': temp[i][0].serviceLabelName,
+								    'results': temp[i]
+							    })
+						    }
+						    $state.go('tab.searchresult',{'searchAddress': true});
 					    })
-				    }
-				    $state.go('tab.searchresult');
-			    })
+			    }
+		    });
 
+		    //if($scope.searchPosition.longitude == undefined || $scope.searchPosition.latitude == undefined){
+			 //   $cordovaToast.showShortBottom('请选择位置');
+			 //   return;
+		    //}
 	    }
 
 
@@ -397,8 +418,10 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			    //str.push('精度：' + data.accuracy + ' 米');
 			    //str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
 			    //document.getElementById('tip').innerHTML = str.join('<br>');
-			    console.log(data.position);
+			    console.log(data);
 			    $rootScope.position = data.position;
+			    $scope.searchAddress = data.formattedAddress;
+			    $scope.$digest();
 		    })
 	    })
 
@@ -427,6 +450,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			    placeSearch.search(document.getElementById("search-place").value);
 		    }
 	    }
+
 
 
     //$scope.typeSearch = {};
@@ -543,58 +567,69 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			})
 	}
 
-  $scope.myFollowedCoasts = [];
-  $scope.qualityHash = {
-    "jiaoche": "轿车"
-  }
+	$scope.showModifyServiceModal = function(service){
+		$ionicModal.fromTemplateUrl('templates/service.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.modifyService = service;
+			$scope.serviceModal = modal;
+			$scope.mode = 'read';
+			$scope.serviceModal.show();
+		});
+	}
 
-  $scope.$on('$ionicView.beforeEnter', function(){
-    UserService.searchAllFollows()
-      .success(function(data){
-        $scope.myFollowedCoasts = data.coachinfoDTOList;
-      })
-      .error(function(data){
-        console.log("get my follow error");
-      })
-  });
-
-  $scope.unfollow = function(coast) {
-    var pair = {};
-    pair.coachId = coast.id;
-    pair.studentId = UserService.getCurrentUser().id;
-
-    console.log(pair);
-
-    UserService.unFollow(pair)
-      .success(function(data){
-        if (data.status == 0) {
-          console.log("取关成功");
-          $scope.removeCoast(coast);
-          $ionicListDelegate.closeOptionButtons();
-        }
-        else {
-          console.log("取关失败");
-          $ionicListDelegate.closeOptionButtons();
-        }
-      })
-      .error(function(data){
-        console.log(data);
-        $ionicListDelegate.closeOptionButtons();
-      });
-    
-  };
-
-  $scope.removeCoast = function(coast) {
-    // for (var i = 0; i < $scope.myFollowedCoasts.length; i++) {
-    //   if ($scope.myFollowedCoasts[i].coachId == coast.coachId) {
-    //     console.log("aha");
-    //     $scope.myFollowedCoasts.splice(i, 1);
-    //     return;
-    //   }
-    // }
-    $scope.myFollowedCoasts.splice($scope.myFollowedCoasts.indexOf(coast), 1);
-    console.log($scope.myFollowedCoasts.length);
-  }
+  //$scope.myFollowedCoasts = [];
+  //$scope.qualityHash = {
+  //  "jiaoche": "轿车"
+  //}
+  //
+  //$scope.$on('$ionicView.beforeEnter', function(){
+  //  UserService.searchAllFollows()
+  //    .success(function(data){
+  //      $scope.myFollowedCoasts = data.coachinfoDTOList;
+  //    })
+  //    .error(function(data){
+  //      console.log("get my follow error");
+  //    })
+  //});
+  //
+  //$scope.unfollow = function(coast) {
+  //  var pair = {};
+  //  pair.coachId = coast.id;
+  //  pair.studentId = UserService.getCurrentUser().id;
+  //
+  //  console.log(pair);
+  //
+  //  UserService.unFollow(pair)
+  //    .success(function(data){
+  //      if (data.status == 0) {
+  //        console.log("取关成功");
+  //        $scope.removeCoast(coast);
+  //        $ionicListDelegate.closeOptionButtons();
+  //      }
+  //      else {
+  //        console.log("取关失败");
+  //        $ionicListDelegate.closeOptionButtons();
+  //      }
+  //    })
+  //    .error(function(data){
+  //      console.log(data);
+  //      $ionicListDelegate.closeOptionButtons();
+  //    });
+  //
+  //};
+  //
+  //$scope.removeCoast = function(coast) {
+  //  // for (var i = 0; i < $scope.myFollowedCoasts.length; i++) {
+  //  //   if ($scope.myFollowedCoasts[i].coachId == coast.coachId) {
+  //  //     console.log("aha");
+  //  //     $scope.myFollowedCoasts.splice(i, 1);
+  //  //     return;
+  //  //   }
+  //  // }
+  //  $scope.myFollowedCoasts.splice($scope.myFollowedCoasts.indexOf(coast), 1);
+  //  console.log($scope.myFollowedCoasts.length);
+  //}
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, messageService, 
@@ -830,7 +865,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$scope.newService.serviceLabelId = $scope.newService.service.id;
 		delete $scope.newService.service;
 		$scope.newService.publishUserId = UserService.getCurrentUser().id;
-		$scope.newService.datetime = $filter('date')(new Date(), 'yyyy-MM-dd HH:mm:ss');
+		$scope.newService.datetime = $filter('date')(new Date(), 'yyyyMMdd');
 		console.log($scope.newService);
 		ServiceService.publishService($scope.newService)
 			.success(function(data){
@@ -1069,9 +1104,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
   }
 ])
 
-.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService) {
+.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, $stateParams, $ionicModal) {
   // $ionicTabsDelegate.showBar(false);
-
+	console.log('searchAddress', $scope.searchAddress);
 	$scope.showMenu = {
 		'flag': false
 	};
@@ -1126,6 +1161,16 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$cordovaToast.showShortBottom("取消关注失败");
 				}
 			})
+	}
+	$scope.showModifyServiceModal = function(service){
+		$ionicModal.fromTemplateUrl('templates/service.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.modifyService = service;
+			$scope.serviceModal = modal;
+			$scope.mode = 'read';
+			$scope.serviceModal.show();
+		});
 	}
 
 

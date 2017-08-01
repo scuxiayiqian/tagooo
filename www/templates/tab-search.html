@@ -29,6 +29,21 @@
                     <i class="icon ion-ios-search"></i>
                 </button>
             </div> -->
+	        <div class="item item-divider">
+		        地址搜索
+	        </div>
+	        <div class="item item-input-inset">
+		        <label class="item-input-wrapper">
+			        <input type="text" placeholder="输入地址" ng-model="searchAddress" style="width: 100%">
+		        </label>
+		        <button class="button button-small button-positive button-outline" ng-click="searchByPosition()">
+			        搜附近
+		        </button>
+		        <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
+					login
+				</button> -->
+		        <!-- <a class="button button-icon icon ion-search"></a> -->
+	        </div>
 
             <div class="item item-divider">
                 分类搜索
@@ -71,14 +86,14 @@
                 <!-- <a class="button button-icon icon ion-search"></a> -->
             </div>
 
-	        <div class="item item-divider">
+	        <div class="item item-divider" ng-if="false">
                 区域搜索
 	        </div>
-	        <div id="mapContainer" style="height: 240px">
+	        <div id="mapContainer" style="height: 240px" ng-if="false">
 		        <input placeholder="请输入地址" type="text" id="search-place" style="position: absolute; right: 8px; top: 8px;
                     padding-left: 8px; z-index: 100; padding-right: 8px; background: #eee; opacity: 0.88; border-radius: 4px; border:1px white solid" ng-keyup="processEnter($event)">
 	        </div>
-	        <div class="item item-input-inset">
+	        <div class="item item-input-inset" ng-if="false">
 				<label class="item-input-wrapper">
 			        <p style="height: 29px; line-height: 29px; font-size: 13px">选择的位置: 经度{{searchPosition.longitude.toFixed(4)}} 纬度{{searchPosition.latitude.toFixed(4)}}</p>
 		        </label>
