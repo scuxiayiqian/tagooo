@@ -12,7 +12,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
 
 .constant('baseUrl', 'http://202.120.40.177:')
 
-.constant('port', '28101')
+.constant('port', '22201')
 
 .config(function($ionicConfigProvider){
   //$ionicConfigProvider.views.maxCache(0);

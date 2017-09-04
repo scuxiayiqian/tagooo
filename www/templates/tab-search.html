@@ -45,29 +45,53 @@
 		        <!-- <a class="button button-icon icon ion-search"></a> -->
 	        </div>
 
-            <div class="item item-divider">
-                分类搜索
-            </div>
+            <!--<div class="item item-divider">-->
+                <!--分类搜索-->
+            <!--</div>-->
 
-            <div class="item" >
-	            <form id="typeSearchForm" name="typeSearchForm">
-					<div class="list">
-					    <label class="item item-input item-select">
-					        <span class="input-label">服务类型</span>
-						    <select ng-model="selectedLabel.basic" ng-options="label.type for label in labels">
-						    </select>
-					    </label>
-					    <label class="item item-input item-select">
-					        <span class="input-label">可选服务</span>
-					        <select ng-model="selectedLabel.service" ng-options="service.type for service in selectedLabel.basic.services">
-					        </select>
-					    </label>
-					</div>
-		            <button class="button button-outline button-small button-block button-positive" ng-click="searchByLabel()">
-		                提交
-		            </button>
-	            </form>
-            </div>
+            <!--<div class="item" >-->
+	            <!--<form id="typeSearchForm" name="typeSearchForm">-->
+					<!--<div class="list">-->
+					    <!--<label class="item item-input item-select">-->
+					        <!--<span class="input-label">服务类型</span>-->
+						    <!--<select ng-model="selectedLabel.basic" ng-options="label.type for label in labels">-->
+						    <!--</select>-->
+					    <!--</label>-->
+					    <!--<label class="item item-input item-select">-->
+					        <!--<span class="input-label">可选服务</span>-->
+					        <!--<select ng-model="selectedLabel.service" ng-options="service.type for service in selectedLabel.basic.services">-->
+					        <!--</select>-->
+					    <!--</label>-->
+					<!--</div>-->
+		            <!--<button class="button button-outline button-small button-block button-positive" ng-click="searchByLabel()">-->
+		                <!--提交-->
+		            <!--</button>-->
+	            <!--</form>-->
+            <!--</div>-->
+
+	        <div class="item item-divider">
+		        分类搜索
+		        <div style="float: right; color: rgba(0,0,0, 0.6); font-size: 14px" ng-click="showSearchLabel.flag = !showSearchLabel.flag">
+			        {{{true: '收起', false: '展开'}[showSearchLabel.flag]}}
+		        </div>
+	        </div>
+
+	        <div class="item" ng-if="showSearchLabel.flag">
+		        <form name="typeSearchForm">
+			        <div class="list">
+				        <div>
+					        <div class="item item-input" ng-repeat="label in labels">
+						        <span class="input-label" >{{label.type}}</span>
+						        <div style="overflow-x: scroll">
+							        <div ng-repeat="service in label.services" class="type-label" ng-click="searchByLabel(service.id)">
+										{{service.type}}
+							        </div>
+						        </div>
+					        </div>
+				        </div>
+			        </div>
+		        </form>
+	        </div>
 
             <div class="item item-divider">
                 关键字搜索

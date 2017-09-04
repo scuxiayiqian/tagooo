@@ -13,7 +13,7 @@
     <ion-content on-tap="showMenu.flag = false">
         <div class="list card">
             <div class="item item-avatar item-icon-right" ng-click="showProfileModal()">
-                <img src="img/ben.png" ng-click="editProfile()">
+                <img src="img/ben.png">
                  <!--<img src="http://202.120.40.175:21181/student/getphoto?phone=18116214088">-->
                 <h2>{{loginUser.userName}}</h2>
                 <p>{{loginUser.description}}</p>
@@ -26,7 +26,7 @@
 			    <img get-svc-pic pic-id="{{service.id}}">
 			    <h2>{{service.serviceLabelName}}</h2>
 			    <p>{{service.slogan}}</p>
-			    <p>经度{{position.getLng().toFixed(4)}} 纬度{{position.getLat().toFixed(4)}}</p>
+			    <p>经度{{service.longitude.toFixed(4)}} 纬度{{service.latitude.toFixed(4)}}</p>
 		    </div>
 	    </div>
     </ion-content>

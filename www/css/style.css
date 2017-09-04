@@ -79,3 +79,13 @@
 	font-size: 13px;
 	font-color: #aaa;
 }
+
+.type-label {
+	display: inline-flex;
+	padding: 3px 5px;
+	color: #387ef5;
+	border: #387ef5 1px solid;
+	border-radius: 5px;
+	margin-right: 8px;
+	font-size: 15px;
+}
