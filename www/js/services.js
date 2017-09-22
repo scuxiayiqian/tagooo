@@ -305,6 +305,80 @@ angular.module('starter.services', ['ngCordova'])
 	return ServiceService;
 })
 
+.factory('ChatService', function($http, baseUrl,  port) {
+	var chatService = {};
+	var stompClient = null;
+
+	chatService.connect = function (username, callback) {
+		var socket = new SockJS(baseUrl + port + '/gs-guide-websocket/');
+		console.log('socket', socket);
+		stompClient = Stomp.over(socket);
+		stompClient.connect({"user": username}, function (frame) {
+
+			console.log('Connected: ' + frame);
+			if(callback != null && callback != undefined){
+				callback();
+			}
+
+			stompClient.subscribe('/user/topic/chat', function (greeting) {
+				console.log('---------', greeting)
+			});
+			//订阅这个是为了收到报错信息，如发送的用户不存在
+			stompClient.subscribe('/user/topic/console', function (greeting) {
+				console.log('---------', greeting)
+			});
+			stompClient.subscribe('/user/topic/unreceived', function (greeting) {
+
+				//showGreeting(JSON.parse(greeting.body).chatMessageDTOs);
+				console.log('---------', greeting)
+			});
+		})
+	};
+
+	chatService.disconnect = function(){
+		if (stompClient !== null) {
+			stompClient.disconnect();
+			console('disconnect', stompClient);
+		}
+	};
+
+	chatService.sendMessage = function(sender, receiver, content){
+		console.log('client', stompClient);
+		//发消息的接口，需要sender和receiver的用户都connect了
+		stompClient.send("/app/msg/sendMes", {}, JSON.stringify({
+			'sender': sender,
+			'receiver': receiver,
+			'message': content
+		}));
+	};
+
+	chatService.getAllRecord = function(user1, user2){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/chat/allrecord?user1=' + user1 + '&user2=' + user2,
+			crossDomain: true
+		})
+	};
+
+	chatService.getSingleUnreceived = function(receiver){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/chat/unreceived/single/record?receiver=' + receiver,
+			crossDomain: true
+		})
+	};
+
+	chatService.getPairUnreceived = function(user1, user2){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/chat/unreceived/pair/record?user1=' + user1 + '&user2=' + user2,
+			crossDomain: true
+		})
+	};
+
+	return chatService;
+})
+
 .factory('Chats', function() {
   // Might use a resource here that returns a JSON array
 

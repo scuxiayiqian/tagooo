@@ -79,13 +79,11 @@
 	        <div class="item" ng-if="showSearchLabel.flag">
 		        <form name="typeSearchForm">
 			        <div class="list">
-				        <div>
-					        <div class="item item-input" ng-repeat="label in labels">
-						        <span class="input-label" >{{label.type}}</span>
-						        <div style="overflow-x: scroll">
-							        <div ng-repeat="service in label.services" class="type-label" ng-click="searchByLabel(service.id)">
-										{{service.type}}
-							        </div>
+				        <div class="item item-input" ng-repeat="label in labels">
+					        <span class="input-label" >{{label.type}}</span>
+					        <div style="overflow-x: scroll">
+						        <div ng-repeat="service in label.services" class="type-label" ng-click="searchByLabel(service.id)">
+									{{service.type}}
 						        </div>
 					        </div>
 				        </div>

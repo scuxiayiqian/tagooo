@@ -18,11 +18,11 @@
                 <h2>{{loginUser.userName}}</h2>
                 <p>{{loginUser.description}}</p>
                 <i class="icon fa fa-qrcode" aria-hidden="true"></i>
-                <p>当前位置: 经度{{position.getLng().toFixed(4)}} 纬度{{position.getLat().toFixed(4)}}</p>
+                <p>当前位置: 经度{{position.getLng().toFixed(3)}} 纬度{{position.getLat().toFixed(3)}}</p>
             </div>
 		</div>
 	    <div class="list">
-		    <div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myPublishServices" style="padding-bottom: 8px !important; padding-top: 8px !important;" ng-click="showModifyServiceModal(service)">
+		    <div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myPublishServices" style="padding-bottom: 8px !important; padding-top: 8px !important;" ng-click="showPublishServiceInfoModal(service)">
 			    <img get-svc-pic pic-id="{{service.id}}">
 			    <h2>{{service.serviceLabelName}}</h2>
 			    <p>{{service.slogan}}</p>

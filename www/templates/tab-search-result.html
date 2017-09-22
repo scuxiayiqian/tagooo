@@ -25,7 +25,7 @@
 				  {{item.label}}
 			  </div>
 
-			  <div class="item item-thumbnail-left lty-list-item" ng-repeat="result in item.results | sortByDistance:position" ng-click="showModifyServiceModal(result)">
+			  <div class="item item-thumbnail-left lty-list-item" ng-repeat="result in item.results | sortByDistance:position" ng-click="showUserServiceInfoModal(result)">
 				  <img get-svc-pic pic-id="{{result.id}}">
 				  <div style="display: inline-block; width: auto;">
 					  <h2>{{result.serviceLabelName}}</h2>

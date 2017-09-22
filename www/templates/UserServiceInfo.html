@@ -1,0 +1,68 @@
+<ion-modal-view>
+	<ion-header-bar>
+		<h1 class="title">服务详情</h1>
+		<div class="buttons">
+			<button class="button button-clear button-small" ng-click="showMenu.flag1 = !showMenu.flag1" style="color: #387ef5"><i class="icon ion-wrench"></i></button>
+			<button class="button button-positive" ng-click="userServiceInfoModal.remove()">关闭</button>
+		</div>
+	</ion-header-bar>
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag1">
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div class="lty-menu-item">当前页分享</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div class="lty-menu-item">举报</div>
+	</div>
+	<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px; position: absolute; width: 100%; top: 43px; left: 1px" id="userServiceInfo">
+		<div style="padding-left: 53px">
+			<img get-svc-pic pic-id="{{userServiceInfo.id}}" id="userServiceInfoImage">
+			<h2>{{userServiceInfo.serviceLabelName}}</h2>
+			<p>{{userServiceInfo.slogan}}</p>
+		</div>
+		<div style="margin-top: 6px">
+			<img get-svc-pic pic-id="{{userServiceInfo.id}}" style="max-height: 150px; max-width:150px; width: 100%; height: 100%">
+		</div>
+		<div>
+			<span style="display: inline-block">广告视频: </span>
+			<label style="display: inline-flex">还未上传</label>
+		</div>
+		<p>经度{{userServiceInfo.longitude.toFixed(3)}} 纬度{{userServiceInfo.latitude.toFixed(3)}}</p>
+	</div>
+	<ion-content on-tap="showMenu.flag1 = false" id="userServiceChat">
+		<div class="list rj-stable-content" style="overflow-y: scroll !important;">
+			<div ng-repeat="item in messageDetils" >
+				<p class="rj-message-time" ng-bind="item.time" ng-if="false"></p>
+				<div class="rj-message-wrap" ng-if="!item.isFromeMe">
+					<img ng-src="{{message.pic}}" class="rj-head-pic">
+					<span class="rj-triangle-left"></span>
+					<p class="rj-message" ng-bind="item.content"></p>
+				</div>
+				<div class="rj-message-wrap" ng-if="item.isFromeMe">
+					<img src="img/me.png" class="rj-head-pic-right">
+					<span class="rj-triangle-right"></span>
+					<p class="rj-message-right" ng-bind="item.content"></p>
+				</div>
+			</div>
+		</div>
+	</ion-content>
+	<ion-footer-bar align-title="left" class="" resize-foot-bar>
+		<!--<div class="rj-footer-btn-wrap">-->
+			<!--<button class="button button-icon icon ion-ios-mic-outline rj-footer-btn-left">-->
+			<!--</button>-->
+		<!--</div>-->
+		<label class="item item-input rj-footer-input">
+			<textarea msd-elastic ng-model="send_content.message" ng-focus="needLogin()"></textarea>
+			<!--<div class="buttons">-->
+				<!--<button class="rj-footer-btn button button-icon icon ion-happy-outline"></button>-->
+			<!--</div>-->
+		</label>
+		<div class="rj-footer-btn-wrap" style="width: 100px">
+			<!--<div class="buttons" ng-show="!send_content || send_content === ''">-->
+				<!--<button class="button button-icon icon ion-ios-plus-outline rj-footer-btn-left">-->
+				<!--</button>-->
+			<!--</div>-->
+			<button class="button button-balanced"   ng-disabled="send_content.message == ''" style="width: 50px; left: 20px; line-height: inherit" ng-click="sendMessage()">
+				发送
+			</button>
+		</div>
+	</ion-footer-bar>
+</ion-modal-view>

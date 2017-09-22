@@ -1,6 +1,6 @@
 angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, $http, baseUrl, port, $state) {
+.controller('AppCtrl', function($scope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter) {
 
 	// 解决tab切换时nav返回按钮消失的问题
 	$scope.onTabSelected = function(){
@@ -90,13 +90,14 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					// for console
 					UserService.setCurrentUser(data);
 					UserService.isLogin = true;
+					ChatService.connect(UserService.getCurrentUser().userName, null);
 					clearLoginError();
 					$scope.closeLogin();
 
 					if (data.photo != null) {
 						UserService.usersProfile = baseUrl + port + '/student/getphoto?phone=' + data.phone;
 					}
-					$state.go("tab.search");
+					//$state.go("tab.search");
 				}
 				else {
 					console.log(data);
@@ -632,7 +633,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 })
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, $ionicModal, $filter, localStorageService, messageService, UserService, ImageService, SearchService, ServiceService,
-                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer) {
+                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer, $http) {
 
 	$scope.showMenu = {
 		'flag': false
@@ -651,6 +652,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	getPublishServices();
 
+	//此函数废弃不用 以下
 	$scope.showModifyServiceModal = function(service){
 		$ionicModal.fromTemplateUrl('templates/service.html', {
 			scope: $scope
@@ -660,7 +662,18 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.mode = 'modify';
 			$scope.serviceModal.show();
 		});
-	}
+	};
+	//此函数废弃不用 以上
+
+	$scope.showPublishServiceInfoModal = function(service){
+		$scope.publishServiceInfo = service;
+		$ionicModal.fromTemplateUrl('templates/publishServiceInfo.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.publishServiceInfoModal = modal;
+			$scope.publishServiceInfoModal.show();
+		});
+	};
 
 	$scope.selectServicePicture = function(service){
 		var actionSheetOptions = {
@@ -869,7 +882,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				ToastService.showBottomToast("发布服务失败");
 			})
 
-	}
+	};
+	$http.get("data/messages.json").then(function(response) {
+		// localStorageService.update("messages", response.data.messages);
+		$scope.messages = response.data.messages
+
+	});
 
 
 
@@ -885,7 +903,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				$scope.loginUser = UserService.getCurrentUser();
 				$scope.userProfile = baseUrl + port + '/student/getphoto?phone=' + $scope.loginUser.phone;
 				UserService.usersProfile = $scope.userProfile;
-				console.log("bebe");
 			}
 		}
 		else {
@@ -1098,11 +1115,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	}
 ])
 
-.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, $stateParams, $ionicModal) {
+.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, ChatService, $stateParams, $ionicModal) {
 	// $ionicTabsDelegate.showBar(false);
 	console.log('searchAddress', $scope.searchAddress);
 	$scope.showMenu = {
-		'flag': false
+		'flag': false,
+		'flag1': false
 	};
 
 	$scope.followList = [];
@@ -1156,16 +1174,72 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				}
 			})
 	}
-	$scope.showModifyServiceModal = function(service){
-		$ionicModal.fromTemplateUrl('templates/service.html', {
+	$scope.showUserServiceInfoModal = function(service){
+		$scope.userServiceInfo = service;
+
+		$ionicModal.fromTemplateUrl('templates/userServiceInfo.html', {
 			scope: $scope
 		}).then(function(modal) {
-			$scope.modifyService = service;
-			$scope.serviceModal = modal;
-			$scope.mode = 'read';
-			$scope.serviceModal.show();
+			$scope.userServiceInfoModal = modal;
+			$scope.userServiceInfoModal.show();
+			$('#userServiceInfoImage')[0].onload = function(){
+				$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
+			};
+
 		});
+	};
+
+	$scope.messageDetils = [
+		{"isFromeMe":false,"content":"你好!","time":"2015-11-22 08:50:22"},
+		{"isFromeMe":true,"content":"你好, 你是谁?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"你在干什么?","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"知道怎么搞的吗?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"这是一道可以测出一个人有没有商业头脑的数学题","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":false,"content":"喝咖啡对身体好吗?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"在澳洲申请新西兰签证","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"说走就走的旅行","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"ok","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"拉玛西亚","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":true,"content":"拉玛西亚影视学院招生简章","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"去黑头产品排行榜","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"美国大使馆 北京","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":false,"content":"被开水烫伤怎么办?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"谁说菜鸟不会数据分析?","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"谁念西风独自凉","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"被酒莫惊春睡重，赌书消得泼茶香，当时只道是寻常","time":"2015-11-27 06:34:55"}
+	]
+
+	$scope.message = {
+		"id": 8,
+		"name": "李明",
+		"pic": "img/adam.jpg",
+		"lastMessage": {
+			"originalTime": "2015-11-27 06:34:55",
+			"time": "",
+			"timeFrome1970": 1451169295000,
+			"content": "你在干什么?",
+			"isFromeMe": false
+		},
+		"noReadMessages": 0,
+		"showHints": false,
+		"isTop": 0,
+		"message": $scope.messageDetils
+	};
+
+	$scope.send_content = {
+		'message': ''
 	}
+
+	$scope.needLogin = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			$scope.modal.show();
+			$cordovaToast.showShortBottom('请先登录');
+		}
+	};
+
+	$scope.sendMessage = function(){
+		ChatService.sendMessage('test', 'test1', $scope.send_content.message);
+	};
 
 
 	//$scope.$on("$ionicView.beforeEnter", function(){
@@ -1190,108 +1264,5 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	//            })
 	//    }
 	//});
-
-	$scope.filtMyFollow = function(allCoachs, followedCoachs) {
-		var out = [];
-		$scope.coachStudentPair = {};
-		$scope.coachStudentPair.studentId = UserService.getCurrentUser().id;
-		// console.log("------");
-		// console.log(allCoachs);
-		// console.log(followedCoachs);
-
-		for(var i = 0; i < allCoachs.length; i++) {
-			for(var j = 0; j < followedCoachs.length; j++) {
-				if (followedCoachs[j].id == allCoachs[i].id) {
-					allCoachs[i].isFollowd = true;
-				}
-			}
-			if(allCoachs[i].isFollowd) {
-				out.push(allCoachs[i]);
-			}
-			else {
-				allCoachs[i].isFollowd = false;
-				out.push(allCoachs[i]);
-			}
-		}
-
-		return out;
-	}
-
-	$scope.follow = function(coach) {
-		if (UserService.getCurrentUser().id == null) {
-			// console.log("unavailable");
-			// $scope.modal.show();
-
-			// for 真机
-			$cordovaToast.showShortBottom('请先登录').then(function(success) {
-				// success
-				$scope.modal.show();
-				return;
-			}, function (error) {
-				// error
-				return;
-			});
-		}
-
-		$scope.coachStudentPair.coachId = coach.id;
-
-		// console.log($scope.coachStudentPair);
-
-		UserService.follow($scope.coachStudentPair)
-			.success(function(data){
-				console.log("followed");
-				coach.isFollowd = true;
-			})
-			.error(function(data){
-				console.log(data);
-			})
-
-		// coach.isFollowd = true;
-
-		$cordovaToast.showShortBottom('关注成功').then(function(success) {
-			// success
-		}, function (error) {
-			// error
-		});
-	};
-
-	$scope.unfollow = function(coach) {
-
-		if ($scope.coachStudentPair.studentId == null) {
-			console.log("unavailable");
-			// $scope.modal.show();
-
-			// for 真机
-			$cordovaToast.showShortBottom('请先登录').then(function(success) {
-				// success
-				$scope.modal.show();
-			}, function (error) {
-				// error
-			});
-
-			return;
-		}
-
-		$scope.coachStudentPair.coachId = coach.id;
-
-		// console.log($scope.coachStudentPair);
-
-		UserService.unFollow($scope.coachStudentPair)
-			.success(function(data){
-				console.log("unfollowed");
-				coach.isFollowd = false;
-			})
-			.error(function(data){
-				console.log(data);
-			})
-
-		// coach.isFollowd = false;
-
-		$cordovaToast.showShortBottom('取消关注').then(function(success) {
-			// success
-		}, function (error) {
-			// error
-		});
-	}
 
 });
