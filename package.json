@@ -8,6 +8,7 @@
     "gulp-minify-css": "^0.3.0",
     "gulp-rename": "^1.2.0",
     "gulp-sass": "^2.0.4",
+    "leancloud-realtime-plugin-typed-messages": "^2.0.0",
     "stompjs": "^2.3.3"
   },
   "devDependencies": {

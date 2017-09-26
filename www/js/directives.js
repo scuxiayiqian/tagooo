@@ -21,6 +21,35 @@ angular.module('starter.directives', [])
 		}
 	})
 
+	.filter('getServiceConversations', function(){
+		return function(input, serviceId){
+			var result = [];
+			for(var i = 0; i < input.length; i++){
+				if(input[i]._attributes.serviceId == serviceId){
+					result.push(input[i]);
+				}
+			}
+			return result;
+		}
+	})
+
+	.filter('getConversationName', function(){
+		return function(conversation, userName){
+			for(var i = 0; i < conversation.members.length; i++){
+				if(conversation.members[i] != userName && conversation.members[i] != conversation._attributes.serviceId){
+					return conversation.members[i];
+				}
+			}
+		}
+	})
+
+	.filter('getMessageTime', function($filter){
+		return function(input){
+			var date = new Date(input);
+			return $filter('date')(date, "yyyy-MM-dd");
+		}
+	})
+
   .directive('hideTabs', function($rootScope, $ionicTabsDelegate) {
     return {
       restrict: 'A',

@@ -1,6 +1,6 @@
 <ion-modal-view>
 	<ion-header-bar>
-		<h1 class="title">服务详情</h1>
+		<h1 class="title">我的发布-服务详情</h1>
 		<div class="buttons">
 			<button class="button button-positive" ng-click="publishServiceInfoModal.remove()">关闭</button>
 		</div>
@@ -30,12 +30,12 @@
 			</div>
 
 			<ion-list rj-close-back-drop>
-				<ion-item class="item-avatar" ng-class="{'rj-item-top': message.isTop}" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="message in messages | orderBy:['isTop', 'lastMessage.timeFrome1970']:true" >
-					<img ng-src="{{message.pic}}">
-					<span class="rj-sm-red-icon" ng-show="message.showHints"><p ng-bind="message.noReadMessages"></p></span>
-					<h2 ng-bind="message.name"></h2>
-					<p class="rj-list-p" ng-bind="message.lastMessage.content"></p>
-					<span class="rj-push-right" ng-bind="message.lastMessage.time"></span>
+				<ion-item class="item-avatar" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="conversation in currentChat.conversationList | getServiceConversations : publishServiceInfo.id" ng-click="showMessageDetails(conversation)">
+					<img ng-src="img/ben.png">
+					<span class="rj-sm-red-icon" ng-show="false"><p>2</p></span>
+					<h2 ng-bind="conversation | getConversationName:currentChat.user.userName"></h2>
+					<p class="rj-list-p" ng-bind="conversation.lastMessage._lctext"></p>
+					<span class="rj-push-right" ng-bind="conversation.lastMessage.timestamp | getMessageTime"></span>
 				</ion-item>
 			</ion-list>
 

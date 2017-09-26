@@ -1,0 +1,41 @@
+{
+  "name": "leancloud-storage",
+  "version": "3.2.1",
+  "homepage": "https://github.com/leancloud/javascript-sdk",
+  "authors": [
+    "LeanCloud <support@leancloud.rocks>"
+  ],
+  "description": "LeanCloud JavaScript SDK",
+  "main": "dist/av.js",
+  "ignore": [
+    "demo",
+    "src",
+    "test",
+    "tools",
+    "script",
+    "README.md",
+    "changelog.md",
+    "gulpfile.babel.js",
+    "package.json",
+    "readme.txt"
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "keywords": [
+    "LeanCloud",
+    "JavaScript",
+    "SDK"
+  ],
+  "license": "MIT",
+  "_release": "3.2.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.2.1",
+    "commit": "5089c495e026c3bc8805f408e09d2d621f17b4c9"
+  },
+  "_source": "https://github.com/leancloud/javascript-sdk.git",
+  "_target": "^3.2.1",
+  "_originalSource": "leancloud-storage",
+  "_direct": true
+}

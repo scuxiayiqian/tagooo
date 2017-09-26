@@ -7,7 +7,8 @@
   "dependencies": {
     "jquery": "^3.2.1",
     "sockjs-client": "https://github.com/sockjs/sockjs-client.git#1.1.4",
-    "leancloud-realtime": "^3.5.7"
+    "leancloud-realtime": "^3.5.7",
+    "leancloud-storage": "^3.2.1"
   },
   "resolutions": {
     "sockjs-client": "1.1.4"

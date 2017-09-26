@@ -30,6 +30,7 @@
 				  <div style="display: inline-block; width: auto;">
 					  <h2>{{result.serviceLabelName}}</h2>
 					  <p>{{result.slogan}}</p>
+					  <p>发布人 {{result.userName}}</p>
 					  <!--<p>{{result | distance:position}}</p>-->
 				  </div>
 				  <!--<i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>-->
@@ -43,7 +44,7 @@
 					  </div>
 					  <div class="lty-operation-button" ng-if="!(followList.includes(result.id))" ng-click="followService(result, $event)">
 						  <div style="display: inline; z-index: 999">
-							  关注
+							  收藏
 							  <i class="icon ion-android-favorite-outline positive " style="font-size: 25px; vertical-align: middle"></i>
 						  </div>
 					  </div>

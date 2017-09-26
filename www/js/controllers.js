@@ -1,6 +1,98 @@
 angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter, $ionicScrollDelegate) {
+
+	AV.init({
+		appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
+		appKey:'tw1q4AEWHIvpPBnQhKmfH8rO',
+	});
+
+	var Realtime = AV.Realtime;
+	var realtime = new Realtime({
+		appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
+		region: 'cn', //美国节点为 "us"
+		plugins: [AV.TypedMessagesPlugin]
+	});
+
+	$rootScope.currentChat = {
+		'user': null,
+		'conversation': null, //当前活动的对话
+		'messages': null,   //当前活动对话对应的消息记录
+		'conversationList': null //用户的所有对话列表
+	};
+
+	$rootScope.send_content = {
+		'message': null
+	};
+
+	$rootScope.$watch('currentChat.messages', function(newValue,oldValue){
+		$timeout(function(){
+			$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+		},500);
+	});
+
+	$rootScope.sendMessage = function(content){
+		if($rootScope.currentChat.conversation == null){
+			$cordovaToast.showShortBottom("请先登录");
+			return;
+		}
+		else{
+			$rootScope.currentChat.conversation.send(new AV.TextMessage(content))
+				.then(function(message) {
+					console.log("消息发送成功", message);
+
+					$rootScope.currentChat.messages.push(message);
+					$rootScope.$apply();
+					console.log("消息记录为", $rootScope.currentChat.messages);
+					$rootScope.currentChat.lastMessage = message;
+					$rootScope.send_content.message = null;
+					$rootScope.$apply();
+					$timeout(function(){
+						$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+					},50);
+				})
+				.catch(console.error);
+
+		}
+	};
+
+	$rootScope.sendImageMessage = function(){
+		var cameraOptions = {
+			//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			quality: 80,                                                                                        //相片质量0-100
+			destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			sourceType: Camera.PictureSourceType.PHOTOLIBRARY,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			allowEdit: true,                                                                                //在选择之前允许修改截图
+			encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+			targetWidth: 200,                                                                                //照片宽度
+			targetHeight: 200,                                                                             //照片高度
+			mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+		};
+
+		$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
+
+			var file = new AV.File(new Date().getTime() + '.jpeg', {
+				base64: imageData
+			});
+			file.save().then(function() {
+				var message = new AV.ImageMessage(file);
+				return $rootScope.currentChat.conversation.send(message);
+			}).then(function(imageMessage) {
+				$rootScope.currentChat.messages.push(imageMessage);
+				$rootScope.$apply();
+				console.log('发送成功');
+				$timeout(function(){
+					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+				},50);
+			}).catch(console.error.bind(console));
+
+		}, function(err) {
+			// error
+			console.log("get pic err");
+		});
+
+	};
 
 	// 解决tab切换时nav返回按钮消失的问题
 	$scope.onTabSelected = function(){
@@ -45,7 +137,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	$scope.isLogin = function() {
 		return !UserService.isLogin;
-	}
+	};
+
+
 
 	// Perform the login action when the user submits the login form
 	$scope.doLogin = function() {
@@ -68,6 +162,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 		UserService.login($scope.loginData)
 			.success(function(data){
+				console.log('login', data);
 				if(data.status == 404){
 					$scope.loginError.flag = true;
 					$scope.loginError.info = "用户名密码不匹配";
@@ -75,22 +170,49 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$cordovaToast.showShortBottom('用户名密码错误');
 				}
 				else if(data.status == 200){
-					// for真机
-					// ToastService.showCenterToast("登录成功")
-					// .then(function(success) {
-					//     UserService.setCurrentUser(data);
-					//     UserService.isLogin = true;
-					//     clearLoginError();
-					//     $scope.closeLogin();
-					//     $state.go("tab.dash");
-					// }, function (error) {
-					//     // error
-					// });
-
-					// for console
+					realtime.createIMClient(data.userName).then(function(me) {
+						$scope.IMClient = me;
+						me.on('message', function(message, conversation) {
+							$timeout(function(){
+								$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+							},50);
+							//switch (message.type) {
+							//	case AV.TextMessage.TYPE:
+							console.log('receive message', message);
+							if ($rootScope.currentChat.conversation.id == conversation.id) {
+								$rootScope.currentChat.messages.push(message);
+								$rootScope.currentChat.conversation = conversation;
+							}
+							else if ($rootScope.currentChat.conversationList != null) {
+								for (var i = 0; i < $rootScope.currentChat.conversationList.length; i++) {
+									if ($rootScope.currentChat.conversationList[i].id == conversation.id) {
+										$rootScope.currentChat.conversationList[i] = conversation;
+										$rootScope.$apply();
+										return;
+									}
+								}
+								$rootScope.currentChat.conversationList.push(conversation);
+							}
+							$rootScope.$apply();
+								//	break;
+								//case AV.ImageMessage.TYPE:
+								//	console.log('收到图片消息，url: ' + message.getFile().url() + ', width: ' + message.getFile().metaData('width'));
+								//	break;
+								//default:
+								//	console.warn('收到未知类型消息');
+							//}
+						});
+						me.getQuery().limit(1000).containsMembers([data.userName]).withLastMessagesRefreshed(true).find()
+							.then(function(conversations){
+								$scope.currentChat.conversationList = conversations;
+								console.log('conbersationList', conversations);
+							})
+							.catch(console.error.bind(console));
+					});
+					$scope.currentChat.user = data;
 					UserService.setCurrentUser(data);
 					UserService.isLogin = true;
-					ChatService.connect(UserService.getCurrentUser().userName, null);
+					//ChatService.connect(UserService.getCurrentUser().userName, null);
 					clearLoginError();
 					$scope.closeLogin();
 
@@ -227,16 +349,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		});
 	};
 
-	$scope.getAllFollowedCoach = function() {
-		UserService.searchAllFollows()
-			.success(function(data){
-				UserService.setFollowedCoach(data);
-				console.log(data);
-			})
-			.error(function(data){
-				console.log("get all follows error");
-			})
-	}
 })
 
 .controller('SearchCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$cordovaToast', '$cordovaGeolocation',
@@ -528,7 +640,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	}
 ])
 
-.controller('FollowCtrl', function($scope, UserService, $state, $ionicListDelegate, ServiceService, $cordovaToast, $ionicModal) {
+.controller('FollowCtrl', function($scope, $rootScope, UserService, $state, $ionicListDelegate, ServiceService, $cordovaToast, $ionicModal, $timeout) {
 	// With the new view caching in Ionic, Controllers are only called
 	// when they are recreated or on app start, instead of every page change.
 	// To listen for when this page is active (for example, to refresh data),
@@ -561,7 +673,56 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$cordovaToast.showShortBottom("取消关注失败");
 				}
 			})
-	}
+	};
+
+	$scope.showUserServiceInfoModal = function(service){
+		$rootScope.currentChat.conversation = null;
+		$rootScope.currentChat.messages = null;
+		$scope.userServiceInfo = service;
+		//$rootScope.$apply();
+		//获得聊天记录、创建对话
+		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
+			$scope.IMClient.createConversation({
+				members: [service.userName, service.id],
+				serviceId: service.id,
+				unique: true,
+			}).then(function (conversation) {
+				$rootScope.currentChat.conversation = conversation;
+				$rootScope.$apply();
+				//console.log('user service conversation', conversation);
+				conversation.queryMessages({
+					limit: 1000, // limit 取值范围 1~1000，默认 20
+				}).then(function (messages) {
+					$rootScope.currentChat.messages = messages;
+					//console.log('user service messages', messages);
+					$rootScope.$apply();
+
+				}).catch(console.error.bind(console))
+			});
+		};
+
+		$ionicModal.fromTemplateUrl('templates/UserServiceInfo.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.userServiceInfoModal = modal;
+			$scope.userServiceInfoModal.show();
+
+			$timeout(function(){
+				$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			},50);
+			$('#userServiceInfoImage')[0].onload = function(){
+				$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
+			};
+
+			//$('#messageList')[0].onload = function(){
+			//	console.log($('#messageList')[0]);
+			//	$timeout(function(){
+			//		$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			//	},500);
+			//}
+
+		});
+	};
 
 	$scope.showModifyServiceModal = function(service){
 		$ionicModal.fromTemplateUrl('templates/service.html', {
@@ -633,10 +794,11 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 })
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, $ionicModal, $filter, localStorageService, messageService, UserService, ImageService, SearchService, ServiceService,
-                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer, $http) {
+                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer, $http, $rootScope, $ionicScrollDelegate) {
 
 	$scope.showMenu = {
-		'flag': false
+		'flag': false,
+		'flag1': false
 	};
 
 	var getPublishServices = function(){
@@ -674,6 +836,30 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.publishServiceInfoModal.show();
 		});
 	};
+
+	$scope.showMessageDetails = function(conversation){
+		$rootScope.currentChat.conversation = conversation;
+		$rootScope.currentChat.messages = null;
+		conversation.queryMessages({
+			limit: 1000, // limit 取值范围 1~1000，默认 20
+		}).then(function (messages) {
+			$rootScope.currentChat.messages = messages;
+			console.log('user service messages', messages);
+			$rootScope.$apply();
+		}).catch(console.error.bind(console))
+		$ionicModal.fromTemplateUrl('templates/messageDetails.html', {
+			scope: $scope
+		}).then(function(modal) {
+			var viewScroll = $ionicScrollDelegate.$getByHandle('messageDetailsScroll');
+			viewScroll.scrollBottom();
+			$scope.messageDetailsModal = modal;
+			$scope.messageDetailsModal.show();
+			$timeout(function(){
+				$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			},50);
+		});
+	};
+
 
 	$scope.selectServicePicture = function(service){
 		var actionSheetOptions = {
@@ -830,6 +1016,11 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		UserService.isLogin = false;
 		$scope.profile = {};
 		$scope.profileModal.remove();
+		$rootScope.currentChat = {
+			'conversation': null, //当前活动的对话
+			'messages': null,   //当前活动对话对应的消息记录
+			'conversationList': null //用户的所有对话列表
+		};
 		$state.go('tab.search')
 	}
 
@@ -1115,13 +1306,14 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	}
 ])
 
-.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, ChatService, $stateParams, $ionicModal) {
+.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, $stateParams, $ionicModal, $ionicScrollDelegate, $timeout) {
 	// $ionicTabsDelegate.showBar(false);
 	console.log('searchAddress', $scope.searchAddress);
 	$scope.showMenu = {
 		'flag': false,
 		'flag1': false
 	};
+
 
 	$scope.followList = [];
 
@@ -1175,16 +1367,50 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			})
 	}
 	$scope.showUserServiceInfoModal = function(service){
+		$rootScope.currentChat.conversation = null;
+		$rootScope.currentChat.messages = null;
 		$scope.userServiceInfo = service;
+		//$rootScope.$apply();
+		//获得聊天记录、创建对话
+		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
+			$scope.IMClient.createConversation({
+				members: [service.userName, service.id],
+				serviceId: service.id,
+				unique: true,
+			}).then(function (conversation) {
+				$rootScope.currentChat.conversation = conversation;
+				$rootScope.$apply();
+				//console.log('user service conversation', conversation);
+				conversation.queryMessages({
+					limit: 1000, // limit 取值范围 1~1000，默认 20
+				}).then(function (messages) {
+					$rootScope.currentChat.messages = messages;
+					//console.log('user service messages', messages);
+					$rootScope.$apply();
 
-		$ionicModal.fromTemplateUrl('templates/userServiceInfo.html', {
+				}).catch(console.error.bind(console))
+			});
+		};
+
+		$ionicModal.fromTemplateUrl('templates/UserServiceInfo.html', {
 			scope: $scope
 		}).then(function(modal) {
 			$scope.userServiceInfoModal = modal;
 			$scope.userServiceInfoModal.show();
+
+			$timeout(function(){
+				$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			},50);
 			$('#userServiceInfoImage')[0].onload = function(){
 				$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
 			};
+
+			//$('#messageList')[0].onload = function(){
+			//	console.log($('#messageList')[0]);
+			//	$timeout(function(){
+			//		$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			//	},500);
+			//}
 
 		});
 	};
@@ -1226,20 +1452,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		"message": $scope.messageDetils
 	};
 
-	$scope.send_content = {
-		'message': ''
-	}
-
-	$scope.needLogin = function(){
-		if(UserService.getCurrentUser().id == undefined){
-			$scope.modal.show();
-			$cordovaToast.showShortBottom('请先登录');
-		}
-	};
-
-	$scope.sendMessage = function(){
-		ChatService.sendMessage('test', 'test1', $scope.send_content.message);
-	};
 
 
 	//$scope.$on("$ionicView.beforeEnter", function(){
