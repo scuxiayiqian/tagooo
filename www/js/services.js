@@ -225,7 +225,7 @@ angular.module('starter.services', ['ngCordova'])
     return MyFollowsService;
 })
 
-.factory('ServiceService', function($http, baseUrl, port, $cordovaFileTransfer){
+.factory('ServiceService', function($http, baseUrl, port, managePort, $cordovaFileTransfer){
 	var ServiceService = {};
 
 	ServiceService.publishService = function(serviceInfo){
@@ -236,7 +236,7 @@ angular.module('starter.services', ['ngCordova'])
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		});
-	}
+	};
 
 	ServiceService.followService = function(serviceId, userId){
 		return $http({
@@ -249,7 +249,7 @@ angular.module('starter.services', ['ngCordova'])
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		});
-	}
+	};
 
 	ServiceService.unfollowService = function(serviceId, userId){
 		return $http({
@@ -262,7 +262,7 @@ angular.module('starter.services', ['ngCordova'])
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		});
-	}
+	};
 
 	ServiceService.getFollowServices = function(userId){
 		return $http({
@@ -270,7 +270,7 @@ angular.module('starter.services', ['ngCordova'])
 			url: baseUrl + port + '/interact/findByUserId?userId=' + userId,
 			crossDomain: true
 		})
-	}
+	};
 
 	ServiceService.getPublishServices = function(userId){
 		return $http({
@@ -278,7 +278,7 @@ angular.module('starter.services', ['ngCordova'])
 			url: baseUrl + port + '/interact/findByPublishUserId?userId=' + userId,
 			crossDomain: true
 		})
-	}
+	};
 
 	ServiceService.uploadPicture = function(serviceId, image){
 		return $http({
@@ -291,7 +291,7 @@ angular.module('starter.services', ['ngCordova'])
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		})
-	}
+	};
 
 	ServiceService.uploadVideo = function(serviceId, videoURI){
 		var server = baseUrl + port + '/service/uploadvideo';
@@ -300,7 +300,27 @@ angular.module('starter.services', ['ngCordova'])
 		options.id = serviceId;
 		options.httpMethod = "POST";
 		return $cordovaFileTransfer.upload(server, filePath, options)
-	}
+	};
+
+	ServiceService.modifyService = function(service){
+		return $http({
+			method: 'POST',
+			url: baseUrl + managePort + '/service/modify',
+			data: service,
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+
+	};
+
+	ServiceService.deleteService = function(serviceId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + managePort + '/service/remove?serviceid=' + serviceId,
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	};
 
 	return ServiceService;
 })

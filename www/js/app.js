@@ -14,6 +14,8 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
 
 .constant('port', '22201')
 
+.constant('managePort', '22202')
+
 .config(function($ionicConfigProvider){
   //$ionicConfigProvider.views.maxCache(0);
   //$ionicConfigProvider.backButton.icon("ion-chevron-left");

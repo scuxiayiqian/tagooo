@@ -7,7 +7,7 @@
 	</ion-header-bar>
 	<ion-content>
 		<div class="list">
-			<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px" >
+			<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px" on-hold="showModifyServiceModal(publishServiceInfo)">
 				<div style="padding-left: 53px">
 					<img get-svc-pic pic-id="{{publishServiceInfo.id}}">
 					<h2>{{publishServiceInfo.serviceLabelName}}</h2>
@@ -21,7 +21,7 @@
 					<label style="display: inline-flex">还未上传</label>
 				</div>
 				<p>经度{{publishServiceInfo.longitude.toFixed(3)}} 纬度{{publishServiceInfo.latitude.toFixed(3)}}</p>
-				<div class='del-svc-btn'>删除服务</div>
+				<div class='del-svc-btn' ng-click="showDeleteServiceConfirm(publishServiceInfo)">删除服务</div>
 			</div>
 			<div class="item">
 				被关注

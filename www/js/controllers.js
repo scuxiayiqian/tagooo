@@ -814,7 +814,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	getPublishServices();
 
-	//此函数废弃不用 以下
 	$scope.showModifyServiceModal = function(service){
 		$ionicModal.fromTemplateUrl('templates/service.html', {
 			scope: $scope
@@ -825,10 +824,61 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.serviceModal.show();
 		});
 	};
-	//此函数废弃不用 以上
+
+	$scope.commitModifyService = function(service){
+		var temp = {};
+		temp.id = service.id;
+		temp.longitude = service.longitude;
+		temp.latitude = service.latitude;
+		temp.serviceLabelId = service.serviceLabelId;
+		temp.slogan = service.slogan;
+		temp.status = service.status;
+		ServiceService.modifyService(temp)
+			.success(function(data){
+				getPublishServices();
+				$cordovaToast.showShortBottom('修改服务信息成功');
+				$scope.serviceModal.remove();
+			})
+			.error(function(err){
+				$cordovaToast.showShortBottom('修改服务信息失败,请检查网络');
+			})
+	};
+
+	$scope.showDeleteServiceConfirm = function(publishServiceInfo){
+		if(confirm('删除后无法恢复,确认删除该服务?')){
+			ServiceService.deleteService(publishServiceInfo.id)
+				.success(function(data){
+					$cordovaToast.showShortBottom('删除服务成功');
+					$scope.serviceModal.remove();
+					getPublishServices();
+				})
+				.error(function(err){
+					$cordovaToast.showShortBottom('删除服务失败,请检查网络');
+				})
+		};
+		//var confirmPopup = $ionicPopup.confirm({
+		//	title: '删除服务',
+		//	template: '确认删除该服务? 此操作不可撤销'
+		//});
+		//confirmPopup.then(function(res) {
+		//	if(res) {
+		//		ServiceService.deleteService(publishServiceInfo.id)
+		//			.success(function(data){
+		//				$cordovaToast.showShortBottom('删除服务成功');
+		//				getPublishServices();
+		//			})
+		//			.error(function(err){
+		//				$cordovaToast.showShortBottom('删除服务失败,请检查网络');
+		//			})
+		//	} else {
+		//		console.log('You are not sure');
+		//	}
+		//});
+
+	};
 
 	$scope.showPublishServiceInfoModal = function(service){
-		$scope.publishServiceInfo = service;
+		$scope.publishServiceInfo = angular.copy(service);
 		$ionicModal.fromTemplateUrl('templates/publishServiceInfo.html', {
 			scope: $scope
 		}).then(function(modal) {
@@ -836,6 +886,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.publishServiceInfoModal.show();
 		});
 	};
+
+
 
 	$scope.showMessageDetails = function(conversation){
 		$rootScope.currentChat.conversation = conversation;
@@ -1068,6 +1120,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		ServiceService.publishService($scope.newService)
 			.success(function(data){
 				ToastService.showBottomToast("发布服务成功");
+				getPublishServices();
 			})
 			.error(function(error){
 				ToastService.showBottomToast("发布服务失败");
