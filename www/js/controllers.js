@@ -94,6 +94,17 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	};
 
+	$rootScope.showImageOfMessage = function(imageUrl){
+		$scope.displayImageOfMessage = imageUrl;
+		$ionicModal.fromTemplateUrl('templates/imageModal.html', {
+			scope: $scope,
+		}).then(function(modal) {
+			$scope.imageOfMessageModal = modal;
+			$scope.imageOfMessageModal.show();
+		});
+	};
+
+
 	// 解决tab切换时nav返回按钮消失的问题
 	$scope.onTabSelected = function(){
 		$ionicHistory.clearHistory();
@@ -794,7 +805,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 })
 
 .controller('PublishCtrl', function($scope, $state, $ionicPopup, $ionicModal, $filter, localStorageService, messageService, UserService, ImageService, SearchService, ServiceService,
-                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer, $http, $rootScope, $ionicScrollDelegate) {
+                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer, $http, $rootScope, $ionicScrollDelegate, $timeout) {
 
 	$scope.showMenu = {
 		'flag': false,
@@ -856,25 +867,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$cordovaToast.showShortBottom('删除服务失败,请检查网络');
 				})
 		};
-		//var confirmPopup = $ionicPopup.confirm({
-		//	title: '删除服务',
-		//	template: '确认删除该服务? 此操作不可撤销'
-		//});
-		//confirmPopup.then(function(res) {
-		//	if(res) {
-		//		ServiceService.deleteService(publishServiceInfo.id)
-		//			.success(function(data){
-		//				$cordovaToast.showShortBottom('删除服务成功');
-		//				getPublishServices();
-		//			})
-		//			.error(function(err){
-		//				$cordovaToast.showShortBottom('删除服务失败,请检查网络');
-		//			})
-		//	} else {
-		//		console.log('You are not sure');
-		//	}
-		//});
-
 	};
 
 	$scope.showPublishServiceInfoModal = function(service){

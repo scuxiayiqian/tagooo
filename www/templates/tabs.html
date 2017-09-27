@@ -25,6 +25,19 @@ navigation history that also transitions its views in and out.
 	</ion-tab>
 </ion-tabs>
 
+<script id="templates/imageModal.html" type="text/ng-template">
+	<ion-modal-view>
+		<ion-header-bar>
+			<h1 class="title">聊天图片</h1>
+			<div class="buttons">
+				<button class="button button-positive" ng-click="imageOfMessageModal.hide()">关闭</button>
+			</div>
+		</ion-header-bar>
+		<ion-content>
+			<img ng-src="{{displayImageOfMessage}}" style="width: 100%; height: 100%">
+		</ion-content>
+	</ion-modal-view>
+</script>
 
 <!-- <ion-tabs class="tabs-icon-top tabs-color-active-balanced">
     <ion-tab title="微信" icon-on="ion-ios-chatbubble" icon-off="ion-ios-chatbubble-outline" ui-sref="tab.message">
