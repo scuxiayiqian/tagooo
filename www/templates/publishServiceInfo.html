@@ -33,9 +33,10 @@
 			<ion-list rj-close-back-drop>
 				<ion-item class="item-avatar" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="conversation in currentChat.conversationList | getServiceConversations : publishServiceInfo.id" ng-click="showMessageDetails(conversation)">
 					<img ng-src="img/ben.png">
-					<span class="rj-sm-red-icon" ng-show="false"><p>2</p></span>
+					<span class="rj-sm-red-icon" ng-if="conversation.unreadMessagesCount > 0"><p ng-bind="conversation.unreadMessagesCount"></p></span>
 					<h2 ng-bind="conversation | getConversationName:currentChat.user.userName"></h2>
-					<p class="rj-list-p" ng-bind="conversation.lastMessage._lctext"></p>
+					<p class="rj-list-p" ng-bind="conversation.lastMessage._lctext" ng-if="conversation.lastMessage.type == -1"></p>
+					<p class="rj-list-p" ng-if="conversation.lastMessage.type == -2">图片</p>
 					<span class="rj-push-right" ng-bind="conversation.lastMessage.timestamp | getMessageTime"></span>
 				</ion-item>
 			</ion-list>

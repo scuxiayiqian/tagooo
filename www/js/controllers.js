@@ -11,6 +11,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	var realtime = new Realtime({
 		appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
 		region: 'cn', //美国节点为 "us"
+		pushOfflineMessages: true,
 		plugins: [AV.TypedMessagesPlugin]
 	});
 
@@ -44,7 +45,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$rootScope.currentChat.messages.push(message);
 					$rootScope.$apply();
 					console.log("消息记录为", $rootScope.currentChat.messages);
-					$rootScope.currentChat.lastMessage = message;
+					$rootScope.currentChat.conversation.lastMessage = message;
 					$rootScope.send_content.message = null;
 					$rootScope.$apply();
 					$timeout(function(){
@@ -82,6 +83,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				$rootScope.currentChat.messages.push(imageMessage);
 				$rootScope.$apply();
 				console.log('发送成功');
+				$rootScope.currentChat.conversation.lastMessage = message;
 				$timeout(function(){
 					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
 				},50);
@@ -190,9 +192,11 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 							//switch (message.type) {
 							//	case AV.TextMessage.TYPE:
 							console.log('receive message', message);
+							console.log('receive message conversation', conversation);
 							if ($rootScope.currentChat.conversation.id == conversation.id) {
 								$rootScope.currentChat.messages.push(message);
 								$rootScope.currentChat.conversation = conversation;
+								$rootScope.currentChat.conversation.read();
 							}
 							else if ($rootScope.currentChat.conversationList != null) {
 								for (var i = 0; i < $rootScope.currentChat.conversationList.length; i++) {
@@ -219,6 +223,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 								console.log('conbersationList', conversations);
 							})
 							.catch(console.error.bind(console));
+						me.on('unreadmessagescountupdate', function(conversations) {
+							console.log('unread', conversations);
+							//for(var i = 0; i < conversation.length(); i++) {
+							//	//console.log(conv.id, conv.name, conv.unreadMessagesCount);
+							//}
+						});
 					});
 					$scope.currentChat.user = data;
 					UserService.setCurrentUser(data);
@@ -316,7 +326,27 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		//     $scope.closeReserve();
 		// }, 1000);
 	};
+	//上传营业执照和身份证
+	$scope.uploadMock = function(){
+		var cameraOptions = {
+			//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			quality: 80,                                                                                        //相片质量0-100
+			destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			sourceType: 0,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			allowEdit: true,                                                                                //在选择之前允许修改截图
+			encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+			mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+		};
+		$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
 
+			$cordovaToast.showShortBottom("读取文件成功");
+
+		}, function(err) {
+			// error
+			console.log("get pic err");
+		});
+	}
 	// 上传头像
 	$scope.pickPhoto = function() {
 		var actionSheetOptions = {
@@ -886,6 +916,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		}).then(function (messages) {
 			$rootScope.currentChat.messages = messages;
 			console.log('user service messages', messages);
+			conversation.read();
 			$rootScope.$apply();
 		}).catch(console.error.bind(console))
 		$ionicModal.fromTemplateUrl('templates/messageDetails.html', {
@@ -1062,6 +1093,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			'messages': null,   //当前活动对话对应的消息记录
 			'conversationList': null //用户的所有对话列表
 		};
+		$scope.IMClient.close().then(function() {
+			console.log('退出聊天登录');
+		}).catch(console.error.bind(console));
 		$state.go('tab.search')
 	}
 

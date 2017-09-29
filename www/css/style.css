@@ -44,6 +44,7 @@
 .lty-list-item > img{
 	max-height: 60px !important;
 	max-width: 60px !important;
+	top: 16px !important;
 }
 
 .lty-list-item .first, .lty-list-item .second{
