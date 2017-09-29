@@ -178,6 +178,34 @@ angular.module('starter.directives', [])
 				})
 			}
 		}
+	})
+
+	.directive('getPosition', function(){
+		return {
+			replace: false,
+			scope:{
+				'longitude': '@',
+				'latitude': '@'
+			},
+			restrict : 'A',
+			link: function(scope, ele, attr){
+				console.log('定位', [scope.longitude, scope.latitude]);
+				console.log('ele', ele);
+				ele[0].innerHTML = "定位中";
+				var geocoder = new AMap.Geocoder({
+					radius: 1000
+				});
+				console.log('geocoder', geocoder);
+				geocoder.getAddress([scope.longitude, scope.latitude], function(status, result) {
+					if (status === 'complete' && result.info === 'OK') {
+						ele[0].innerHTML = result.regeocode.formattedAddress;
+					}
+					else{
+						ele[0].innerHTML = '获取地址失败,经度' + scope.longitude + ' 纬度' + scope.latitude;
+					}
+				});
+			}
+		}
 	});
 
 

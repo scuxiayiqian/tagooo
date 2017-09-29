@@ -460,7 +460,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$scope.searchAddress = "";
 		$scope.searchByPosition = function(){
 			var geocoder = new AMap.Geocoder({
-				radius: 1000000 //范围，默认：500
+				radius: 500 //范围，默认：500
 			});
 			$rootScope.searchAddress = $scope.searchAddress;
 			$rootScope.isSearchAddress = true;
@@ -483,9 +483,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 							geolocation.getCurrentPosition();
 							AMap.event.addListener(geolocation, 'complete', function (data) {
 								$rootScope.position = data.position
-							})
-
-							console.log('word-search', data);
+							});
 							var temp = {};
 							for(i in data){
 								if(!temp.hasOwnProperty(data[i].serviceLabelId)){
@@ -537,7 +535,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				//str.push('精度：' + data.accuracy + ' 米');
 				//str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
 				//document.getElementById('tip').innerHTML = str.join('<br>');
-				console.log(data);
 				$rootScope.position = data.position;
 				$scope.searchAddress = data.formattedAddress;
 				$scope.$digest();

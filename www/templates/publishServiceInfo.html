@@ -20,7 +20,8 @@
 					<span style="display: inline-block">广告视频: </span>
 					<label style="display: inline-flex">还未上传</label>
 				</div>
-				<p>经度{{publishServiceInfo.longitude.toFixed(3)}} 纬度{{publishServiceInfo.latitude.toFixed(3)}}</p>
+				<!--<p>经度{{publishServiceInfo.longitude.toFixed(3)}} 纬度{{publishServiceInfo.latitude.toFixed(3)}}</p>-->
+				<p get-position longitude="{{publishServiceInfo.longitude}}" latitude="{{publishServiceInfo.latitude}}"></p>
 				<div class='del-svc-btn' ng-click="showDeleteServiceConfirm(publishServiceInfo)">删除服务</div>
 			</div>
 			<div class="item">
