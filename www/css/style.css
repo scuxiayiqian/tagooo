@@ -115,11 +115,28 @@
 	display: inline-block;
 	position: absolute;
 	bottom: 8px;
-	right: 13px
+	right: 13px;
+
 }
 
 .del-svc-btn:active {
 	background-color: #e42112;
+	color: white;
+}
+
+.edit-svc-btn {
+	padding: 2px 10px;
+	border:1px solid #0c60ee;
+	border-radius: 6px;
+	color: #0c60ee;
+	display: inline-block;
+	position: absolute;
+	bottom: 50px;
+	right: 13px
+}
+
+.edit-svc-btn:active {
+	background-color: #0c60ee;
 	color: white;
 }
 

@@ -22,6 +22,7 @@
 				</div>
 				<!--<p>经度{{publishServiceInfo.longitude.toFixed(3)}} 纬度{{publishServiceInfo.latitude.toFixed(3)}}</p>-->
 				<p get-position longitude="{{publishServiceInfo.longitude}}" latitude="{{publishServiceInfo.latitude}}"></p>
+				<div class='edit-svc-btn' ng-click="showModifyServiceModal(publishServiceInfo)">修改服务</div>
 				<div class='del-svc-btn' ng-click="showDeleteServiceConfirm(publishServiceInfo)">删除服务</div>
 			</div>
 			<div class="item">

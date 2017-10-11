@@ -22,6 +22,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		'conversationList': null //用户的所有对话列表
 	};
 
+	$scope.isLogin = false;
+	//$scope.$apply();
+
 	$rootScope.send_content = {
 		'message': null
 	};
@@ -148,9 +151,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$scope.modal.show();
 	};
 
-	$scope.isLogin = function() {
-		return !UserService.isLogin;
-	};
+	//$scope.isLogin = function() {
+	//	return !UserService.isLogin;
+	//};
 
 
 
@@ -232,8 +235,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					});
 					$scope.currentChat.user = data;
 					UserService.setCurrentUser(data);
-					UserService.isLogin = true;
-					//ChatService.connect(UserService.getCurrentUser().userName, null);
+					$scope.isLogin = true;//ChatService.connect(UserService.getCurrentUser().userName, null);
 					clearLoginError();
 					$scope.closeLogin();
 
@@ -254,6 +256,24 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				console.log(data);
 			})
 	};
+
+	$scope.logout = function(){
+		UserService.setCurrentUser({});
+		$scope.isLogin = false;
+		//$scope.profile = {};
+		//$scope.profileModal.remove();
+		$rootScope.currentChat = {
+			'conversation': null, //当前活动的对话
+			'messages': null,   //当前活动对话对应的消息记录
+			'conversationList': null //用户的所有对话列表
+		};
+		if($scope.IMClient) {
+			$scope.IMClient.close().then(function () {
+				console.log('退出聊天登录');
+			}).catch(console.error.bind(console));
+		}
+		$state.go('tab.search')
+	}
 
 	$scope.reservation = {};
 	$scope.reservation.photo = "img/noprofile.png";
@@ -671,10 +691,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$state.go('tab.searchresult');
 
 		};
-
-		$scope.isLogin = function() {
-			return !UserService.isLogin;
-		}
 	}
 ])
 
@@ -1081,24 +1097,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 			});
 		});
-	}
-
-	$scope.logout = function(){
-		UserService.setCurrentUser({});
-		UserService.isLogin = false;
-		$scope.profile = {};
-		$scope.profileModal.remove();
-		$rootScope.currentChat = {
-			'conversation': null, //当前活动的对话
-			'messages': null,   //当前活动对话对应的消息记录
-			'conversationList': null //用户的所有对话列表
-		};
-		$rootScope.position = undefined;
-		$scope.IMClient.close().then(function() {
-			console.log('退出聊天登录');
-		}).catch(console.error.bind(console));
-		$state.go('tab.search')
-	}
+	};
 
 	$scope.showServiceModal = function(){
 		$ionicModal.fromTemplateUrl('templates/service.html', {
@@ -1109,7 +1108,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.serviceModal.show();
 		});
 
-	}
+	};
 	$scope.newService = {};
 	$scope.$watch('newService.basic', function(){
 		$scope.newService.service = $scope.newService.basic.services[0];
@@ -1151,199 +1150,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			})
 
 	};
-	$http.get("data/messages.json").then(function(response) {
-		// localStorageService.update("messages", response.data.messages);
-		$scope.messages = response.data.messages
-
-	});
-
-
-
-
-
-
-	$scope.loginUser = {};
-
-	$scope.$on("$ionicView.beforeEnter", function(){
-
-		if (UserService.isLogin) {
-			if (!UserService.profileUpdated) {
-				$scope.loginUser = UserService.getCurrentUser();
-				$scope.userProfile = baseUrl + port + '/student/getphoto?phone=' + $scope.loginUser.phone;
-				UserService.usersProfile = $scope.userProfile;
-			}
-		}
-		else {
-			$scope.userProfile = "img/noprofile.png";
-		}
-	});
-
-	$scope.profileInfo = {};
-	$scope.showRedIcon = true;
-
-	if (UserService.getCurrentUser().id == null) {
-		$scope.loginUser.description = "未登录";
-	}
-	else {
-		if ($scope.loginUser.description == null) {
-			// console.log("null description");
-			$scope.loginUser.description = "暂无介绍";
-		}
-	}
-
-	$scope.isShow = function() {
-		return !UserService.isLogin;
-	}
-
-	$scope.editProfile = function() {
-
-		console.log("edit profile");
-
-		if (!UserService.isLogin) {
-			return;
-		}
-
-		$scope.profileInfo.phone = UserService.getCurrentUser().phone;
-
-		var option = {
-			title: '编辑头像',
-			buttonLabels: ['相机', '从图库选择'],
-			addCancelButtonWithLabel: '取消',
-			androidEnableCancelButton: true
-		};
-		$cordovaActionSheet.show(option).then(function (btnIndex) {
-			var imageSource;
-			if(btnIndex == 1){
-				imageSource = Camera.PictureSourceType.CAMERA;
-			}
-			else if(btnIndex == 2){
-				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
-			}
-			else{
-				return;
-			}
-			var cameraOptionss = {
-				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
-				quality: 80,                                                                                        //相片质量0-100
-				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
-				sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
-				allowEdit: true,                                                                                //在选择之前允许修改截图
-				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
-				targetWidth: 200,                                                                                //照片宽度
-				targetHeight: 200,                                                                             //照片高度
-				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
-				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
-			};
-
-			$cordovaCamera.getPicture(cameraOptionss).then(function(imageData) {
-
-				// $scope.begin = imageData.indexOf("base64") + 7;
-				// $scope.myUploadPic = imageData.substr($scope.begin);
-
-				$scope.profileInfo.photoImageValue = imageData;
-
-				ImageService.uploadProfile($scope.profileInfo)
-					.success(function(data){
-						if (data.result == "OK") {
-							ToastService.showTopToast("上传成功")
-								.then(function(success) {
-									$scope.userProfile = 'data:image/jpeg;base64,' + imageData;
-									UserService.usersProfile = $scope.userProfile;
-								}, function (error) {
-									console.log("show toast error");
-								});
-							UserService.profileUpdated = true;
-						}
-						else {
-							ToastService.showTopToast("上传失败")
-								.then(function(success) {
-
-								}, function (error) {
-									console.log("show toast error");
-								});
-						}
-					})
-					.error(function(data){
-						ToastService.showTopToast(data)
-							.then(function(success) {
-
-							}, function (error) {
-								console.log("show toast error");
-							});
-					})
-
-			}, function(err) {
-				// error
-				console.log("get pic err");
-			});
-		});
-	}
-
-	// copied from ionic wechat - start
-	$scope.allchatmessages = Chats.all();
-	// console.log(JSON.stringify($scope.messages));
-
-	$scope.onSwipeLeft = function() {
-		$state.go("tab.friends");
-	};
-	$scope.popupMessageOpthins = function(message) {
-		$scope.popup.index = $scope.messages.indexOf(message);
-		$scope.popup.optionsPopup = $ionicPopup.show({
-			templateUrl: "templates/popup.html",
-			scope: $scope,
-		});
-		$scope.popup.isPopup = true;
-	};
-	$scope.markMessage = function() {
-		var index = $scope.popup.index;
-		var message = $scope.messages[index];
-		if (message.showHints) {
-			message.showHints = false;
-			message.noReadMessages = 0;
-		} else {
-			message.showHints = true;
-			message.noReadMessages = 1;
-		}
-		$scope.popup.optionsPopup.close();
-		$scope.popup.isPopup = false;
-		messageService.updateMessage(message);
-	};
-	$scope.deleteMessage = function() {
-		var index = $scope.popup.index;
-		var message = $scope.messages[index];
-		$scope.messages.splice(index, 1);
-		$scope.popup.optionsPopup.close();
-		$scope.popup.isPopup = false;
-		messageService.deleteMessageId(message.id);
-		messageService.clearMessage(message);
-	};
-	$scope.topMessage = function() {
-		var index = $scope.popup.index;
-		var message = $scope.messages[index];
-		if (message.isTop) {
-			message.isTop = 0;
-		} else {
-			message.isTop = new Date().getTime();
-		}
-		$scope.popup.optionsPopup.close();
-		$scope.popup.isPopup = false;
-		messageService.updateMessage(message);
-	};
-	$scope.messageDetils = function(message) {
-		$scope.showRedIcon = false;
-		$state.go("tab.messageDetail", {
-			"messageId": message.id
-		});
-	};
-	$scope.$on("$ionicView.beforeEnter", function(){
-		// console.log($scope.messages);
-		$scope.messages = messageService.getAllMessages();
-		$scope.popup = {
-			isPopup: false,
-			index: 0
-		};
-	});
-	// copied from ionic wechat - end
+	$scope.loginUser = UserService.getCurrentUser();
+	//$http.get("data/messages.json").then(function(response) {
+	//	// localStorageService.update("messages", response.data.messages);
+	//	$scope.messages = response.data.messages
+	//
+	//});
 })
 
 .controller('messageDetailCtrl', ['$scope', '$stateParams',
