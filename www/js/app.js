@@ -10,7 +10,7 @@
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
   'starter.services', 'starter.directives', 'baiduMap', 'ngCordova', 'ngAnimate'])
 
-.constant('baseUrl', 'http://202.120.40.177:')
+.constant('baseUrl', 'http://202.120.40.108:')
 
 .constant('port', '22201')
 
