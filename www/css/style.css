@@ -84,8 +84,8 @@
 .type-label {
 	display: inline-flex;
 	padding: 3px 5px;
-	color: #387ef5;
-	border: #387ef5 1px solid;
+	color: #cc0404;
+	border: #cc0404 1px solid;
 	border-radius: 5px;
 	margin-right: 8px;
 	font-size: 15px;
@@ -109,9 +109,9 @@
 
 .del-svc-btn {
 	padding: 2px 10px;
-	border:1px solid #e42112;
+	border:1px solid #cc0404;
 	border-radius: 6px;
-	color: #e42112;
+	color: #cc0404;
 	display: inline-block;
 	position: absolute;
 	bottom: 8px;
@@ -120,15 +120,15 @@
 }
 
 .del-svc-btn:active {
-	background-color: #e42112;
+	background-color: #cc0404;
 	color: white;
 }
 
 .edit-svc-btn {
 	padding: 2px 10px;
-	border:1px solid #0c60ee;
+	border:1px solid #cc0404;
 	border-radius: 6px;
-	color: #0c60ee;
+	color: #cc0404;
 	display: inline-block;
 	position: absolute;
 	bottom: 50px;
@@ -136,11 +136,52 @@
 }
 
 .edit-svc-btn:active {
-	background-color: #0c60ee;
+	background-color: #cc0404;
 	color: white;
 }
 
 .rj-send-button:disabled {
 	background-color: rgba(0,0,0,0.6);
 	color: white
+}
+
+
+/* modify color to red */
+.bar-lty{
+	background-color: #cc0404 !important;
+	color: white;
+}
+
+.bar-lty button, .bar-lty button:active, .bar-lty .icon, .bar-lty h1{
+	color: white !important;
+	opacity: 1 !important;
+}
+
+.icon {
+	color: #cc0404 !important;
+}
+
+.tab-item-active span.tab-title {
+	opacity: 1 !important;
+}
+
+span.tab-title {
+	color: #cc0404 !important;
+	opacity: 0.8;
+}
+
+.button.button-positive.button-outline{
+	color: #cc0404 !important;
+	border-color: #cc0404 !important;
+	background-color: white !important;
+}
+
+.button.button-positive.button-outline.active, .button.button-positive.button-outline.activated {
+	background-color: white !important;
+}
+
+.button.button-positive {
+	color: white !important;
+	border-color: #cc0404 !important;
+	background-color: #cc0404 !important;
 }
