@@ -1,7 +1,7 @@
 <ion-view view-title="找服务">
 
     <ion-nav-buttons side="right">
-        <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()">登录
+        <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()" ng-if="false">登录
         </button>
         <!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
         <!--</button>-->
@@ -20,6 +20,7 @@
 		<div class="lty-menu-item">联系客服</div>
 		<div class="lty-menu-item">举报</div>
 	</div>
+
     <ion-content on-tap="showMenu.flag = false">
         <div class="list">
 
@@ -29,14 +30,14 @@
                     <i class="icon ion-ios-search"></i>
                 </button>
             </div> -->
-	        <div class="item item-divider">
+	        <div class="item item-divider" ng-if="false">
 		        地址搜索
 	        </div>
 	        <div class="item item-input-inset">
 		        <label class="item-input-wrapper">
-			        <input type="text" placeholder="输入地址" ng-model="searchAddress" style="width: 100%">
+			        <input type="text" placeholder="定位中..." ng-model="searchAddress" style="width: 100%">
 		        </label>
-		        <button class="button button-small button-positive button-outline" ng-click="searchByPosition()">
+		        <button class="button button-small button-positive button-outline" ng-click="searchByPosition()" ng-if="false">
 			        搜附近
 		        </button>
 		        <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
@@ -99,8 +100,8 @@
                 <label class="item-input-wrapper">
                     <input type="text" placeholder="输入关键字" ng-model="searchWord">
                 </label>
-                <button class="button button-small button-positive button-outline" ng-click="searchByWord()">
-                    确定
+                <button class="button button-small button-positive button-outline" ng-click="searchByWord()" style="min-width: 36px">
+	                <i class="icon ion-search"></i>
                 </button>
                 <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
                     login

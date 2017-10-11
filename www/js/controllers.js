@@ -1093,6 +1093,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			'messages': null,   //当前活动对话对应的消息记录
 			'conversationList': null //用户的所有对话列表
 		};
+		$rootScope.position = undefined;
 		$scope.IMClient.close().then(function() {
 			console.log('退出聊天登录');
 		}).catch(console.error.bind(console));
@@ -1390,7 +1391,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		'flag1': false
 	};
 
-
 	$scope.followList = [];
 
 	$scope.$on('$ionicView.beforeEnter', function(){
@@ -1526,6 +1526,16 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		"showHints": false,
 		"isTop": 0,
 		"message": $scope.messageDetils
+	};
+
+	$scope.needLogin = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			$scope.modal.show();
+			$cordovaToast.showShortBottom("请先登录");
+			if($scope.userServiceInfoModal != null){
+				$scope.userServiceInfoModal.remove();
+			}
+		}
 	};
 
 

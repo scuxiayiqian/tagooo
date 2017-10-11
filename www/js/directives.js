@@ -193,14 +193,31 @@ angular.module('starter.directives', [])
 				var geocoder = new AMap.Geocoder({
 					radius: 1000
 				});
-				geocoder.getAddress([scope.longitude, scope.latitude], function(status, result) {
-					if (status === 'complete' && result.info === 'OK') {
-						ele[0].innerHTML = result.regeocode.formattedAddress;
-					}
-					else{
-						ele[0].innerHTML = '获取地址失败,经度' + scope.longitude + ' 纬度' + scope.latitude;
-					}
-				});
+				if(scope.longitude == undefined || scope.latitude == undefined){
+					var geolocation = new AMap.Geolocation({
+						enableHighAccuracy: true,//是否使用高精度定位，默认:true
+						timeout: 10000          //超过10秒后停止定位，默认：无穷
+					});
+					geolocation.getCurrentPosition();
+					AMap.event.addListener(geolocation, 'complete', function (data) {
+						//var str=['定位成功'];
+						//str.push('经度：' + data.position.getLng());
+						//str.push('纬度：' + data.position.getLat());
+						//str.push('精度：' + data.accuracy + ' 米');
+						//str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
+						//document.getElementById('tip').innerHTML = str.join('<br>');
+						ele[0].innerHTML = data.formattedAddress;
+					})
+				} else {
+					geocoder.getAddress([scope.longitude, scope.latitude], function (status, result) {
+						if (status === 'complete' && result.info === 'OK') {
+							ele[0].innerHTML = result.regeocode.formattedAddress;
+						}
+						else {
+							ele[0].innerHTML = '获取地址失败,经度' + scope.longitude + ' 纬度' + scope.latitude;
+						}
+					});
+				}
 			}
 		}
 	});
