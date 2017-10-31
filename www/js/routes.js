@@ -36,7 +36,6 @@ angular.module('starter.routes', [])
     })
 
     .state('tab.searchresult', {
-            // url: '/messageDetail/:messageId',
         url: '/searchresult',
 	    cache: false,
         views: {
@@ -44,7 +43,7 @@ angular.module('starter.routes', [])
             templateUrl: "templates/tab-search-result.html",
             controller: "SearchResultCtrl"
           }
-        } 
+        }
     })
 
     .state('tab.follow', {
@@ -78,17 +77,6 @@ angular.module('starter.routes', [])
         }
       }
     })
-
-    .state('tab.messageDetail', {
-      url: '/messageDetail/:messageId',
-      views: {
-        'tab-publish': {
-          templateUrl: "templates/message-detail.html",
-          controller: "messageDetailCtrl"
-        }
-      }
-    })
-
 
 
   // if none of the above states are matched, use this as the fallback

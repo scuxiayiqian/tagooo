@@ -1,6 +1,6 @@
 <ion-modal-view>
 	<ion-header-bar>
-		<h1 class="title" ng-bind="currentChat.conversation | getConversationName:currentChat.user.userName"></h1>
+		<h1 class="title" ng-bind="currentChat.conversation | getConversationName:currentChat.user.id"></h1>
 		<div class="buttons">
 			<button class="button button-clear button-small" ng-click="showMenu.flag1 = !showMenu.flag1" style="color: #387ef5"><i class="icon ion-wrench"></i></button>
 			<button class="button button-positive" ng-click="messageDetailsModal.remove()">关闭</button>

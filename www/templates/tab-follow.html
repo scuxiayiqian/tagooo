@@ -10,7 +10,7 @@
 
 <ion-view view-title="我的收藏">
 	<ion-nav-buttons side="right">
-		<button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
+		<button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag" style="font-size: 8px !important;"><i class="icon ion-wrench" style="font-size: 8px !important;"></i></button>
 	</ion-nav-buttons>
 	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag">
 		<div ng-click="register()" class="lty-menu-item">注册</div>
@@ -22,32 +22,39 @@
 	</div>
 	<ion-content on-tap="showMenu.flag = false">
 		<div class="list">
-			<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in myFollowServices | sortByDistance:position" ng-click="showUserServiceInfoModal(service)">
-				<img get-svc-pic pic-id="{{service.id}}">
-				<div style="display: inline-block; width: auto;">
-					<h2>{{service.serviceLabelName}}</h2>
-					<p>{{service.slogan}}</p>
-					<p>发布人 {{service.userName}}</p>
-					<!--<p>{{result | distance:position}}</p>-->
+			<div ng-repeat = "item in myFollowServices">
+				<div class="item item-divider">
+					<label>{{item.address}} &nbsp附近</label>
 				</div>
-				<!--<i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>-->
-				<!--<i ng-if="followList.includes(result.id)" class="icon ion-android-favorite positive second" ng-click="unfollowService(result, $event)"></i>-->
+				<div class="item item-thumbnail-left lty-list-item" ng-repeat="service in item.services | sortByDistance:position" ng-click="showUserServiceInfoModal(service)">
+					<img get-svc-pic pic-id="{{service.id}}">
+					<div style="display: inline-block; width: auto;">
+						<h2>{{service.serviceLabelName}}</h2>
+						<p>{{service.slogan}}</p>
+						<p>发布人 {{service.userName}}</p>
+						<p style="display: inline">聊天消息:</p>
+						<p style="display: inline" ng-bind="currentChat.conversationList | getLastMessage:service.id:service.userName:currentChat.user.userName"></p>
 
-				<div style="position: absolute; right: 13px; height: 100%; width: 30%; top: 0px; text-align: right; z-index: 800">
-					<div class="lty-operation-button">{{service | distance:position}}</div>
-					<div class="lty-operation-button">
-						工商部门认定
-						<i class="icon ion-chatboxes positive" style="font-size: 25px; vertical-align: middle"></i>
+						<!--<p>{{result | distance:position}}</p>-->
 					</div>
-					<div class="lty-operation-button"  ng-click="unfollowService(service, $event)">
-						<div style="display: inline; z-index: 999">
-							取消关注
-							<i class="icon ion-android-favorite positive " style="font-size: 25px; vertical-align: middle"></i>
+					<!--<i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>-->
+					<!--<i ng-if="followList.includes(result.id)" class="icon ion-android-favorite positive second" ng-click="unfollowService(result, $event)"></i>-->
+
+					<div style="position: absolute; right: 13px; height: 80%; width: 30%; top: 10%; text-align: right; z-index: 800">
+						<div class="lty-operation-button">{{service.distance | distance}}</div>
+						<div class="lty-operation-button">
+							工商部门认定
+							<i class="icon ion-chatboxes positive" style="font-size: 25px; vertical-align: middle"></i>
+						</div>
+						<div class="lty-operation-button"  ng-click="unfollowService(service, $event)">
+							<div style="display: inline; z-index: 999">
+								取消关注
+								<i class="icon ion-android-favorite positive " style="font-size: 25px; vertical-align: middle"></i>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-
 		</div>
 	</ion-content>
 </ion-view>

@@ -22,89 +22,54 @@
 		<div class="lty-menu-item">联系客服</div>
 		<div class="lty-menu-item">举报</div>
 	</div>
-
-    <ion-content on-tap="showMenu.flag = false">
+	<div class="list" style="margin-top: 44px; margin-bottom: 0px">
+		<div class="item item-input-inset">
+			<label class="item-input-wrapper">
+				<input type="text" placeholder="定位中..." ng-model="searchPosition.address" style="width: 100%">
+			</label>
+			<label style="padding-left: 5px">
+				附近
+			</label>
+		</div>
+	</div>
+    <ion-content on-tap="showMenu.flag = false" style="top: 87px;" overflow-scroll="true" scrollbar-y="true">
         <div class="list">
-
-            <!-- <div class="item item-divider item-button-right">
-                <span class="input-label">分类搜索</span>
-                <button class="button button-clear button-positive">
-                    <i class="icon ion-ios-search"></i>
-                </button>
-            </div> -->
-	        <div class="item item-divider" ng-if="false">
-		        地址搜索
-	        </div>
-	        <div class="item item-input-inset">
-		        <label class="item-input-wrapper">
-			        <input type="text" placeholder="定位中..." ng-model="searchAddress" style="width: 100%">
-		        </label>
-		        <button class="button button-small button-positive button-outline" ng-click="searchByPosition()" ng-if="false">
-			        搜附近
-		        </button>
-		        <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
-					login
-				</button> -->
-		        <!-- <a class="button button-icon icon ion-search"></a> -->
-	        </div>
-
-            <!--<div class="item item-divider">-->
-                <!--分类搜索-->
-            <!--</div>-->
-
-            <!--<div class="item" >-->
-	            <!--<form id="typeSearchForm" name="typeSearchForm">-->
-					<!--<div class="list">-->
-					    <!--<label class="item item-input item-select">-->
-					        <!--<span class="input-label">服务类型</span>-->
-						    <!--<select ng-model="selectedLabel.basic" ng-options="label.type for label in labels">-->
-						    <!--</select>-->
-					    <!--</label>-->
-					    <!--<label class="item item-input item-select">-->
-					        <!--<span class="input-label">可选服务</span>-->
-					        <!--<select ng-model="selectedLabel.service" ng-options="service.type for service in selectedLabel.basic.services">-->
-					        <!--</select>-->
-					    <!--</label>-->
-					<!--</div>-->
-		            <!--<button class="button button-outline button-small button-block button-positive" ng-click="searchByLabel()">-->
-		                <!--提交-->
-		            <!--</button>-->
-	            <!--</form>-->
-            <!--</div>-->
-
-	        <div class="item item-divider">
-		        分类搜索
-		        <div style="float: right; color: rgba(0,0,0, 0.6); font-size: 14px" ng-click="showSearchLabel.flag = !showSearchLabel.flag" ng-if="false">
-			        {{{true: '收起', false: '展开'}[showSearchLabel.flag]}}
-		        </div>
-	        </div>
-
-	        <div class="item" ng-if="showSearchLabel.flag">
-		        <form name="typeSearchForm">
+	        <div class="item">
+		        <form name="typeSearchForm" id="typeSearchForm" style="position: relative">
 			        <div class="list">
 				        <div class="item item-input" ng-repeat="label in labels">
-					        <span class="input-label" >{{label.type}}</span>
-					        <div style="overflow-x: scroll">
-						        <div ng-repeat="service in label.services" class="type-label" ng-click="searchByLabel(service.id)">
-									{{service.type}}
+					        <span class="input-label" style="width: 25%; white-space: normal">{{label.type}}</span>
+					        <div style="white-space: normal; width: 75%">
+						        <div ng-repeat="serviceLabel in label.serviceLabel" class="type-label" ng-click="getElementPosition($event,serviceLabel)" ng-class="{true: 'select-label'}[selectSvcId == serviceLabel.id]">
+							        {{serviceLabel.type}}
 						        </div>
+					        </div>
+				        </div>
+			        </div>
+			        <div class="float-window" id="float-window" style="display: none">
+				        <div id="float-triangle">
+					        <div class="triangle"></div>
+					        <div class="triangle" style="border-bottom-color: white; margin-top: -11px"></div>
+				        </div>
+				        <div style="margin-left: 5px; margin-bottom: 2px; white-space: normal">
+					        <div class="type-label" ng-repeat="item in thirdLabel" ng-click="searchByLabelAndPosition(item)">
+						        {{item.type}}
 					        </div>
 				        </div>
 			        </div>
 		        </form>
 	        </div>
 
-            <div class="item item-divider">
-                关键字搜索
-            </div>
-
             <div class="item item-input-inset">
+	            <label style="padding-right: 5px">
+		            关键字搜索
+	            </label>
                 <label class="item-input-wrapper">
                     <input type="text" placeholder="输入关键字" ng-model="searchWord">
                 </label>
-                <button class="button button-small button-positive button-outline" ng-click="searchByWord()" style="min-width: 36px">
-	                <i class="icon ion-search"></i>
-                </button>
+				<div style="width: 35px; text-align: center">
+	                <i class="icon ion-search" ng-click="searchByWord()" style="font-size: 25px;"></i>
+				</div>
                 <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
                     login
                 </button> -->
@@ -127,5 +92,7 @@
 		        </button>
 	        </div>
         </div>
+
     </ion-content>
+
 </ion-view>

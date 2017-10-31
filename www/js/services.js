@@ -63,6 +63,32 @@ angular.module('starter.services', ['ngCordova'])
         });
     }
 
+	UserService.sendValidateCode = function(phone, code){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/sendmessage?phone=' + phone + "&code=" + code,
+			crossDomain: true
+		})
+	}
+
+	UserService.smsLogin = function(phone, validateCode){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/user/smslogin?phone=' + phone + "&validateCode=" + validateCode,
+			crossDomain: true
+		});
+	}
+
+
+	UserService.smsRegister = function(phone, validateCode, regDate){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/user/smsregister?phone=' + phone + "&validateCode=" + validateCode + "&regDate=" + regDate,
+			crossDomain: true
+		});
+	}
+
+	//以下函数废弃,先别删
     UserService.searchAllFollows = function() {
         return $http({
             method: 'GET',
@@ -146,6 +172,15 @@ angular.module('starter.services', ['ngCordova'])
         return angular.copy(SearchService.searchResult);
     };
 
+	SearchService.getAllLabels = function(){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/getAlllabels',
+			crossDomain: true
+		});
+	};
+
+	//begin 以下三个函数废弃,但是先别删
 	SearchService.getBasicLabels = function(){
 		return $http({
 			method: 'GET',
@@ -176,7 +211,8 @@ angular.module('starter.services', ['ngCordova'])
 			result.push(temp[item]);
 		}
 		return result;
-	}
+	};
+	// end
 
 	SearchService.searchByLabel = function(serviceLabelId){
 		return $http({
@@ -198,6 +234,14 @@ angular.module('starter.services', ['ngCordova'])
 		return $http({
 			method: 'GET',
 			url: baseUrl + port + '/service/findbylocation?longitude=' + longitude + '&latitude=' + latitude,
+			crossDomain: true
+		})
+	}
+
+	SearchService.searchByLabelAndPosition = function(labelId, longitude, latitude){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbylabelandlocation?longitude=' + longitude + '&latitude=' + latitude + '&labelid=' + labelId,
 			crossDomain: true
 		})
 	}
@@ -238,13 +282,15 @@ angular.module('starter.services', ['ngCordova'])
 		});
 	};
 
-	ServiceService.followService = function(serviceId, userId){
+	ServiceService.followService = function(serviceId, userId, distance, address){
 		return $http({
 			method: 'POST',
 			url: baseUrl + port + '/interact/follow',
 			data: {
 				'serviceId': serviceId,
-				'userId': userId
+				'userId': userId,
+				'distance': distance,
+				'address': address
 			},
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
@@ -270,6 +316,28 @@ angular.module('starter.services', ['ngCordova'])
 			url: baseUrl + port + '/interact/findByUserId?userId=' + userId,
 			crossDomain: true
 		})
+	};
+
+	ServiceService.parseFollowService = function(data){
+		var followList = data.serviceinfoDTOList;
+		var addressList = data.addressList;
+		var distanceList = data.distanceList;
+		var temp = {};
+		for(var i in addressList){
+			if(!temp.hasOwnProperty(addressList[i])){
+				temp[addressList[i]] = [];
+			}
+			followList[i].distance = distanceList[i];
+			temp[addressList[i]].push(followList[i]);
+		}
+		var result = [];
+		for(var i in temp){
+			result.push({
+				'address': i,
+				'services': temp[i]
+			});
+		}
+		return result;
 	};
 
 	ServiceService.getPublishServices = function(userId){

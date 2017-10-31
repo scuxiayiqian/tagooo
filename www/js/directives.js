@@ -2,6 +2,14 @@ angular.module('starter.directives', [])
 
 	.filter('distance', function(){
 		return function(input, currentPosition){
+			if(currentPosition == undefined){
+				if(input > 1000){
+					return (input / 1000.0).toFixed(2) + '千米'
+				}
+				else{
+					return input.toFixed(2) + '米'
+				}
+			}
 			var distance = currentPosition.distance([input.longitude, input.latitude]);
 			if(distance > 1000){
 				return (distance / 1000.0).toFixed(2) + '千米'
@@ -47,6 +55,28 @@ angular.module('starter.directives', [])
 		return function(input){
 			var date = new Date(input);
 			return $filter('date')(date, "yyyy-MM-dd");
+		}
+	})
+
+	.filter('getLastMessage', function(){ //get last message by conversation lists, username, publish username and service id
+		return function(conversations, serviceId, username, publishUsername){
+			for(var i in conversations){
+				if(conversations[i].members.indexOf(serviceId) >= 0
+					&& conversations[i].members.indexOf(username) >= 0
+					&& conversations[i].members.indexOf(publishUsername) >= 0){
+					if(conversations[i].lastMessage.type == -1){ //文本消息
+						return conversations[i].lastMessage._lctext;
+					}
+					else if(conversations[i].lastMessage.type == -2){ //图片消息
+						return "[图片]";
+					}
+					else{
+						return "未知消息类型";
+					}
+					break;
+				}
+			}
+			return "[暂无聊天信息]";
 		}
 	})
 
@@ -221,5 +251,3 @@ angular.module('starter.directives', [])
 			}
 		}
 	});
-
-

@@ -15,12 +15,21 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		plugins: [AV.TypedMessagesPlugin]
 	});
 
+	if($rootScope.isFirst == undefined){
+		$rootScope.isFirst = true;
+		$state.go('tab.searchresult');
+	}
+
 	$rootScope.currentChat = {
 		'user': null,
 		'conversation': null, //当前活动的对话
 		'messages': null,   //当前活动对话对应的消息记录
 		'conversationList': null //用户的所有对话列表
 	};
+
+	$rootScope.currentPosition = {};
+
+	$rootScope.searchResultPosition = {};
 
 	$scope.isLogin = false;
 	//$scope.$apply();
@@ -49,6 +58,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$rootScope.$apply();
 					console.log("消息记录为", $rootScope.currentChat.messages);
 					$rootScope.currentChat.conversation.lastMessage = message;
+					for(var i in $rootScope.currentChat.conversationList){
+						if($rootScope.currentChat.conversationList[i].id == $rootScope.currentChat.conversation.id){
+							$rootScope.currentChat.conversationList[i] = $rootScope.currentChat.conversation;
+							break;
+						}
+					}
 					$rootScope.send_content.message = null;
 					$rootScope.$apply();
 					$timeout(function(){
@@ -87,6 +102,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				$rootScope.$apply();
 				console.log('发送成功');
 				$rootScope.currentChat.conversation.lastMessage = message;
+				for(var i in $rootScope.currentChat.conversationList){
+					if($rootScope.currentChat.conversationList[i].id == $rootScope.currentChat.conversation.id){
+						$rootScope.currentChat.conversationList[i] = $rootScope.currentChat.conversation;
+						break;
+					}
+				}
 				$timeout(function(){
 					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
 				},50);
@@ -147,6 +168,20 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$scope.modal.hide();
 	};
 
+	$scope.getValidateCode = function(phone, code){
+		if(phone == undefined ||phone == ""){
+			$cordovaToast.showShortBottom("请填写手机号");
+			return;
+		}
+		UserService.sendValidateCode(phone, code)
+			.success(function(data){
+				$cordovaToast.showShortBottom("验证码已发送");
+			})
+			.error(function(err){
+				$cordovaToast.showShortBottom("验证码发送失败");
+			})
+	};
+
 	$scope.login = function() {
 		$scope.modal.show();
 	};
@@ -162,9 +197,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 		console.log('Doing login', $scope.loginData);
 		if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
-			|| $scope.loginData.password == '' || $scope.loginData.password == undefined){
+			|| $scope.loginData.validateCode == '' || $scope.loginData.validateCode == undefined){
 			$scope.loginError.flag = true;
-			$scope.loginError.info = "用户名或密码未填写";
+			$scope.loginError.info = "手机号或验证码未填写";
 
 			ToastService.showCenterToast($scope.loginError.info)
 				.then(function(success) {
@@ -176,17 +211,17 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			return;
 		}
 
-		UserService.login($scope.loginData)
+		UserService.smsLogin($scope.loginData.phone, $scope.loginData.validateCode)
 			.success(function(data){
 				console.log('login', data);
 				if(data.status == 404){
 					$scope.loginError.flag = true;
-					$scope.loginError.info = "用户名密码不匹配";
+					$scope.loginError.info = "手机号验证码不匹配";
 					// $timeout(clearLoginError,1200);
-					$cordovaToast.showShortBottom('用户名密码错误');
+					$cordovaToast.showShortBottom('手机号验证码不匹配');
 				}
 				else if(data.status == 200){
-					realtime.createIMClient(data.userName).then(function(me) {
+					realtime.createIMClient(data.id).then(function(me) {
 						$scope.IMClient = me;
 						me.on('message', function(message, conversation) {
 							$timeout(function(){
@@ -220,7 +255,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 								//	console.warn('收到未知类型消息');
 							//}
 						});
-						me.getQuery().limit(1000).containsMembers([data.userName]).withLastMessagesRefreshed(true).find()
+						me.getQuery().limit(1000).containsMembers([data.id]).withLastMessagesRefreshed(true).find()
 							.then(function(conversations){
 								$scope.currentChat.conversationList = conversations;
 								console.log('conbersationList', conversations);
@@ -233,6 +268,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 							//}
 						});
 					});
+					$scope.loginData = {};
 					$scope.currentChat.user = data;
 					UserService.setCurrentUser(data);
 					$scope.isLogin = true;//ChatService.connect(UserService.getCurrentUser().userName, null);
@@ -297,10 +333,18 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	// Perform the reserve action when the user submits the reserve form
 	$scope.doReserve = function() {
+		if($scope.reservation.phone == '' || $scope.reservation.phone == undefined){
+			$cordovaToast.showShortBottom("请填写手机号");
+			return;
+		}
+		if($scope.reservation.validateCode == '' || $scope.reservation.validateCode == undefined){
+			$cordovaToast.showShortBottom("请填写验证码");
+			return;
+		}
 		console.log('Doing reservation', $scope.reservation);
 		$scope.reservation.regDate = $filter('date')(new Date(), 'yyyyMMdd');
 
-		UserService.register($scope.reservation)
+		UserService.smsRegister($scope.reservation.phone, $scope.reservation.validateCode, $scope.reservation.regDate)
 			.success(function(data){
 				if(data.status == 2){
 					console.log("错误");
@@ -313,22 +357,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				}
 				else if(data.status == 0){
 					console.log("注册成功");
-					// // for真机
-					ToastService.showCenterToast("注册成功")
-						.then(function(success) {
-							UserService.setCurrentUser(data);
-							UserService.isLogin = true;
-							clearLoginError();
-							$scope.closeReserve();
-						}, function (error) {
-							// error
-						});
-
-					// for console
-					// UserService.setCurrentUser(data);
-					// UserService.isLogin = true;
-					// clearLoginError();
-					// $scope.closeReserve();
+					$scope.reservation = {};
+					$cordovaToast.showCenterToast("注册成功");
+					UserService.setCurrentUser(data);
+					UserService.isLogin = true;
+					clearLoginError();
+					$scope.closeReserve();
 				}
 				else {
 					console.log(data);
@@ -341,10 +375,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				clearLoginError();
 				console.log(data);
 			})
-
-		// $timeout(function() {
-		//     $scope.closeReserve();
-		// }, 1000);
 	};
 	//上传营业执照和身份证
 	$scope.uploadMock = function(){
@@ -414,7 +444,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 .controller('SearchCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$cordovaToast', '$cordovaGeolocation',
 	function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService, $cordovaToast, $cordovaGeolocation) {
-		$rootScope.isSearchAddress = false;
 
 		$scope.showMenu = {
 			'flag': false
@@ -426,13 +455,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 		$rootScope.position = new AMap.LngLat(116.397428, 39.90923);
 
-		SearchService.getBasicLabels()
-			.success(function(basicLabels){
-				SearchService.getServiceLabels()
-					.success(function(serviceLabels) {
-						$scope.labels = SearchService.mergeLabels(basicLabels, serviceLabels);
-					})
+		SearchService.getAllLabels()
+			.success(function(data){
+				$scope.labels = data;
 			});
+
+		//Deprecated
 		$scope.searchByLabel = function(serviceId){
 			SearchService.searchByLabel(serviceId)
 				.success(function(data){
@@ -506,8 +534,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				})
 		}
 
-		$scope.searchPosition = {};
-		$scope.searchAddress = "";
+
+		//Deprecated
 		$scope.searchByPosition = function(){
 			var geocoder = new AMap.Geocoder({
 				radius: 500 //范围，默认：500
@@ -521,7 +549,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$scope.searchPosition = {
 						'longitude': geocode[0].location.getLng(),
 						'latitude': geocode[0].location.getLat()
-					}
+					};
 					console.log('searchPosition', $scope.searchPosition);
 					SearchService.searchByPosition($scope.searchPosition.longitude, $scope.searchPosition.latitude)
 						.success(function(data){
@@ -549,148 +577,103 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 									'results': temp[i]
 								})
 							}
-							$state.go('tab.searchresult',{'searchAddress': true});
+							$state.go('tab.searchresult');
 						})
 				}
 			});
+		};
 
-			//if($scope.searchPosition.longitude == undefined || $scope.searchPosition.latitude == undefined){
-			//     $cordovaToast.showShortBottom('请选择位置');
-			//     return;
-			//}
-		}
-
-
-		var map = new AMap.Map('mapContainer', {
-			resizeEnable: true,
-			zoom:14,
-			center: [116.397428, 39.90923]
-
-		});
-		map.plugin(['AMap.Geolocation', 'AMap.ToolBar'], function() {
-			geolocation = new AMap.Geolocation({
-				enableHighAccuracy: true,//是否使用高精度定位，默认:true
-				timeout: 10000,                    //超过10秒后停止定位，默认：无穷大
-				buttonOffset: new AMap.Pixel(10, 20),//定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
-				zoomToAccuracy: true,            //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
-				buttonPosition: 'LB'
+		$scope.searchPosition = {
+			'address': ""
+		};
+		$scope.searchByLabelAndPosition = function(thirdLabel){
+			if($scope.searchPosition.address == "" || $scope.searchPosition.address == undefined){
+				$cordovaToast.showShortBottom("搜索地址不能为空");
+				return;
+			}
+			var geocoder = new AMap.Geocoder({
+				radius: 500 //范围，默认：500
 			});
-			map.addControl(geolocation);
-			map.addControl(new AMap.ToolBar());
-			geolocation.getCurrentPosition();
-			AMap.event.addListener(geolocation, 'complete', function (data) {
-				//var str=['定位成功'];
-				//str.push('经度：' + data.position.getLng());
-				//str.push('纬度：' + data.position.getLat());
-				//str.push('精度：' + data.accuracy + ' 米');
-				//str.push('是否经过偏移：' + (data.isConverted ? '是' : '否'));
-				//document.getElementById('tip').innerHTML = str.join('<br>');
-				$rootScope.position = data.position;
-				$scope.searchAddress = data.formattedAddress;
-				$scope.$digest();
+			//地理编码,返回地理编码结果
+			console.log($scope.searchPosition.address);
+			geocoder.getLocation($scope.searchPosition.address, function(status, result) {
+				if (status === 'complete' && result.info === 'OK') {
+					var geocode = result.geocodes;
+					var longitude = geocode[0].location.getLng();
+					var latitude = geocode[0].location.getLat();
+					SearchService.searchByLabelAndPosition(thirdLabel.id,longitude,latitude)
+						.success(function(data){
+							$rootScope.searchResultPosition.address = angular.copy($scope.searchPosition.address);
+							$rootScope.searchResultPosition.coordinate = angular.copy(geocode[0].location);
+							var temp = {};
+							for(i in data){
+								if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+									temp[data[i].serviceLabelId] = [];
+								}
+								data[i].distance = $rootScope.searchResultPosition.coordinate.distance([data[i].longitude, data[i].latitude]);
+								temp[data[i].serviceLabelId].push(data[i]);
+							}
+							$rootScope.searchResults = [];
+							for(i in temp){
+								$rootScope.searchResults.push({
+									'label': temp[i][0].serviceLabelName,
+									'results': temp[i]
+								})
+							}
+							$state.go('tab.searchresult');
+						})
+				}
 			})
-		})
+		};
 
-		var auto = new AMap.Autocomplete({
-			input: "search-place"
+		var geolocation = new AMap.Geolocation({
+			enableHighAccuracy: false,//是否使用高精度定位，默认:true
+			timeout: 10000,          //超过10秒后停止定位，默认：无穷大
 		});
-
-		var placeSearch = new AMap.PlaceSearch({
-			map: map
-		});
-
-		AMap.event.addListener(auto, "select", function select(e){
-			placeSearch.setCity(e.poi.adcode);
-			placeSearch.search(e.poi.name);    //关键字查询查询
-		});//注册监听，当选中某条记录时会触发
-		map.on('click', function(e) {
-			//alert('您在[ '+e.lnglat.getLng()+','+e.lnglat.getLat()+' ]的位置点击了地图！');
-			$scope.searchPosition.longitude = e.lnglat.getLng();
-			$scope.searchPosition.latitude = e.lnglat.getLat();
+		geolocation.getCurrentPosition();
+		AMap.event.addListener(geolocation, 'complete', function (data) {
+			$rootScope.position = data.position;
+			$rootScope.currentPosition.coordinate = data.position;
+			$rootScope.currentPosition.address = data.formattedAddress;
+			$scope.searchPosition.address = data.formattedAddress;
 			$scope.$digest();
 		});
 
-		$scope.processEnter = function(e){
-			var keycode = window.event ? e.keyCode : e.which;//获取按键编码
-			if (keycode == 13) {
-				placeSearch.search(document.getElementById("search-place").value);
+		AMap.event.addListener(geolocation, 'error', function(err){
+			console.log(err);
+		});
+
+
+		//三级服务弹出框
+		$scope.showPopupLabels = false;
+		$scope.getElementPosition = function($event, serviceLabel){
+			var window = $("#float-window");
+			if(serviceLabel.id == $scope.selectSvcId){
+				$scope.selectSvcId = undefined;
+				$scope.showPopupLabels = false;
+				window.hide();
+				return;
 			}
-		}
+			$scope.thirdLabel = serviceLabel.thirdLabel;
+			window.show();
+			$scope.selectSvcId = serviceLabel.id;
+			var rect = $event.target.getBoundingClientRect();
 
+			console.log('rect', rect);
+			var formRect = $("#typeSearchForm")[0].getBoundingClientRect();
+			console.log('formRect', formRect);
 
-
-		//$scope.typeSearch = {};
-		// $scope.type = ['小车', '卡车', '摩托车'];
-		// $scope.quality = ['认证教练', '非认证教练', '陪练'];
-		// $scope.language = ['国语', '英语', '粤语', '印度语', '菲语', '韩语', '日语'];
-		// $scope.gender = ['男', '女'];
-		//$scope.typeSearch.type = "C1";
-		//$scope.typeSearch.quality = "jiaoche";
-		//$scope.typeSearch.language = "zhongwen";
-		//$scope.typeSearch.gender = "1";
-
-		$scope.searchByType = function() {
-			console.log($scope.typeSearch);
-
-			SearchService.searchByType($scope.typeSearch)
-				.success(function(data){
-					// console.log(data);
-					SearchService.setCurrentSearchResult(data);
-					$state.go('tab.searchresult');
-				})
-				.error(function(data){
-
-				})
-		};
-
-		//Baidu map
-		//var map = new BMap.Map("mapContainer");
-		//map.centerAndZoom(new BMap.Point(116.404, 39.915), 11);
-		//map.addControl(new BMap.NavigationControl());
-		//map.addControl(new BMap.GeolocationControl());
-
-		// start - baidu map
-		$scope.offlineOpts = {retryInterval: 5000};
-
-		var longitude = 121.506191;
-		var latitude = 31.245554;
-
-		$scope.mapOptions = {
-			center: {
-				longitude: longitude,
-				latitude: latitude
-			},
-			zoom: 17,
-			city: 'ShangHai',
-			markers: [{
-				longitude: longitude,
-				latitude: latitude,
-				icon: 'img/mappiont.png',
-				width: 49,
-				height: 60,
-				title: 'Where',
-				content: 'Put description here'
-			}]
-		};
-
-		$scope.mapLoaded = function(map) {
-			console.log(map);
-		};
-
-		$timeout(function() {
-			$scope.mapOptions.center.longitude = 121.500885;
-			$scope.mapOptions.center.latitude = 31.190032;
-			$scope.mapOptions.markers[0].longitude = 121.500885;
-			$scope.mapOptions.markers[0].latitude = 31.190032;
-		}, 5000);
-
-		// end - baidu map
-
-		$scope.searchBtnClicked = function() {
-
-			$state.go('tab.searchresult');
+			var positionY = rect.top + rect.height + 15 - formRect.top;
+			console.log('positon',positionY);
+			window.css('top', positionY);
+			var windowRect = window[0].getBoundingClientRect();
+			console.log('windowRect', windowRect);
+			var marginLeft = rect.left - windowRect.left + rect.width / 2 - 15;
+			$("div.triangle").css('margin-left', marginLeft);
 
 		};
+
+
 	}
 ])
 
@@ -711,9 +694,10 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		}
 		ServiceService.getFollowServices(UserService.getCurrentUser().id)
 			.success(function(data){
-				$scope.myFollowServices = data.serviceinfoDTOList;
+				$scope.myFollowServices = ServiceService.parseFollowService(data);
+				$scope.$apply();
 			})
-	}
+	};
 	getFollowServices();
 	$scope.unfollowService = function(service, $event){
 		$event.stopPropagation();
@@ -737,7 +721,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		//获得聊天记录、创建对话
 		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
 			$scope.IMClient.createConversation({
-				members: [service.userName, service.id],
+				members: [service.publishUserId, service.id],
 				serviceId: service.id,
 				unique: true,
 			}).then(function (conversation) {
@@ -768,13 +752,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
 			};
 
-			//$('#messageList')[0].onload = function(){
-			//	console.log($('#messageList')[0]);
-			//	$timeout(function(){
-			//		$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
-			//	},500);
-			//}
-
 		});
 	};
 
@@ -787,60 +764,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.mode = 'read';
 			$scope.serviceModal.show();
 		});
-	}
-
-	//$scope.myFollowedCoasts = [];
-	//$scope.qualityHash = {
-	//    "jiaoche": "轿车"
-	//}
-	//
-	//$scope.$on('$ionicView.beforeEnter', function(){
-	//    UserService.searchAllFollows()
-	//        .success(function(data){
-	//            $scope.myFollowedCoasts = data.coachinfoDTOList;
-	//        })
-	//        .error(function(data){
-	//            console.log("get my follow error");
-	//        })
-	//});
-	//
-	//$scope.unfollow = function(coast) {
-	//    var pair = {};
-	//    pair.coachId = coast.id;
-	//    pair.studentId = UserService.getCurrentUser().id;
-	//
-	//    console.log(pair);
-	//
-	//    UserService.unFollow(pair)
-	//        .success(function(data){
-	//            if (data.status == 0) {
-	//                console.log("取关成功");
-	//                $scope.removeCoast(coast);
-	//                $ionicListDelegate.closeOptionButtons();
-	//            }
-	//            else {
-	//                console.log("取关失败");
-	//                $ionicListDelegate.closeOptionButtons();
-	//            }
-	//        })
-	//        .error(function(data){
-	//            console.log(data);
-	//            $ionicListDelegate.closeOptionButtons();
-	//        });
-	//
-	//};
-	//
-	//$scope.removeCoast = function(coast) {
-	//    // for (var i = 0; i < $scope.myFollowedCoasts.length; i++) {
-	//    //     if ($scope.myFollowedCoasts[i].coachId == coast.coachId) {
-	//    //         console.log("aha");
-	//    //         $scope.myFollowedCoasts.splice(i, 1);
-	//    //         return;
-	//    //     }
-	//    // }
-	//    $scope.myFollowedCoasts.splice($scope.myFollowedCoasts.indexOf(coast), 1);
-	//    console.log($scope.myFollowedCoasts.length);
-	//}
+	};
 })
 
 .controller('ChatDetailCtrl', function($scope, $stateParams, messageService, $ionicScrollDelegate, $timeout, UserService) {
@@ -922,8 +846,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		});
 	};
 
-
-
 	$scope.showMessageDetails = function(conversation){
 		$rootScope.currentChat.conversation = conversation;
 		$rootScope.currentChat.messages = null;
@@ -947,7 +869,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			},50);
 		});
 	};
-
 
 	$scope.selectServicePicture = function(service){
 		var actionSheetOptions = {
@@ -1110,52 +1031,57 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	};
 	$scope.newService = {};
-	$scope.$watch('newService.basic', function(){
-		$scope.newService.service = $scope.newService.basic.services[0];
-	});
-	SearchService.getBasicLabels()
-		.success(function(basicLabels){
-			SearchService.getServiceLabels()
-				.success(function(serviceLabels) {
-					$scope.labels = SearchService.mergeLabels(basicLabels, serviceLabels);
-					$scope.newService.basic = $scope.labels[0];
-				})
+
+	SearchService.getAllLabels()
+		.success(function(data){
+			$scope.labels = data;
 		});
+
 	$scope.publishService = function(){
-		if($scope.newService.longitude == undefined || $scope.newService.longitude == "" || isNaN($scope.newService.longitude)){
-			$cordovaToast.showShortBottom('请正确填写经度');
-			return;
-		}
-		if($scope.newService.latitude == undefined || $scope.newService.latitude == "" || isNaN($scope.newService.latitude)){
-			$cordovaToast.showShortBottom('请正确填写纬度');
+		console.log('publishService', $scope.newService);
+		if($scope.newService.address == undefined || $scope.newService.address == ""){
+			$cordovaToast.showShortBottom('请正确填写地址');
 			return;
 		}
 		if($scope.newService.slogan == undefined || $scope.newService.slogan == ""){
 			$cordovaToast.showShortBottom('请正确填写广告语');
 			return;
 		}
-		delete $scope.newService.basic;
-		$scope.newService.serviceLabelId = $scope.newService.service.id;
-		delete $scope.newService.service;
-		$scope.newService.publishUserId = UserService.getCurrentUser().id;
-		$scope.newService.datetime = $filter('date')(new Date(), 'yyyyMMdd');
-		console.log($scope.newService);
-		ServiceService.publishService($scope.newService)
-			.success(function(data){
-				ToastService.showBottomToast("发布服务成功");
-				getPublishServices();
-			})
-			.error(function(error){
-				ToastService.showBottomToast("发布服务失败");
-			})
+		console.log('publishService', $scope.newService);
+		var temp = {};
+		temp.datetime = $filter('date')(new Date(), 'yyyyMMdd');
+		temp.publishUserId = UserService.getCurrentUser().id;
+		temp.slogan = $scope.newService.slogan;
+		temp.thirdLabelId = $scope.newService.thirdLabel.id;
+
+		var geocoder = new AMap.Geocoder({
+			radius: 500 //范围，默认：500
+		});
+		//地理编码,返回地理编码结果
+		geocoder.getLocation($scope.newService.address, function(status, result) {
+			if (status === 'complete' && result.info === 'OK') {
+				var geocode = result.geocodes;
+				temp.longitude = geocode[0].location.getLng();
+				temp.latitude = geocode[0].location.getLat();
+				ServiceService.publishService(temp)
+					.success(function(data){
+						$scope.newService = {};
+						ToastService.showBottomToast("发布服务成功");
+						getPublishServices();
+						$scope.serviceModal.remove();
+					})
+					.error(function(error){
+						ToastService.showBottomToast("发布服务失败");
+					})
+			}else{
+				ToastService.showBottomToast("解析地址出错");
+			}
+		});
+
+
 
 	};
 	$scope.loginUser = UserService.getCurrentUser();
-	//$http.get("data/messages.json").then(function(response) {
-	//	// localStorageService.update("messages", response.data.messages);
-	//	$scope.messages = response.data.messages
-	//
-	//});
 })
 
 .controller('messageDetailCtrl', ['$scope', '$stateParams',
@@ -1197,7 +1123,47 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 .controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, $stateParams, $ionicModal, $ionicScrollDelegate, $timeout) {
 	// $ionicTabsDelegate.showBar(false);
-	console.log('searchAddress', $scope.searchAddress);
+	if($rootScope.isFirst){
+		//TODO: 定位
+		//$cordovaToast.showShortBottom('定位中...');
+		$rootScope.isFirst = false;
+		var geolocation = new AMap.Geolocation({
+			enableHighAccuracy: false,//是否使用高精度定位，默认:true
+			timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+		});
+		geolocation.getCurrentPosition();
+		AMap.event.addListener(geolocation, 'complete', function (data) {
+			$rootScope.currentPosition.coordinate = data.position;
+			$rootScope.currentPosition.address = data.formattedAddress;
+			$rootScope.searchResultPosition.address = data.formattedAddress;
+			$rootScope.searchResultPosition.coordinate = data.position;
+			SearchService.searchByPosition($rootScope.currentPosition.coordinate.getLng(), $rootScope.currentPosition.coordinate.getLat())
+				.success(function(data){
+					console.log("首次进入搜索", data);
+					var temp = {};
+					for(i in data){
+						if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+							temp[data[i].serviceLabelId] = [];
+						}
+						data[i].distance = $rootScope.searchResultPosition.coordinate.distance([data[i].longitude, data[i].latitude]);
+						temp[data[i].serviceLabelId].push(data[i]);
+					}
+					$rootScope.searchResults = [];
+					for(i in temp){
+						$rootScope.searchResults.push({
+							'label': temp[i][0].serviceLabelName,
+							'results': temp[i]
+						})
+					}
+				})
+
+		});
+		AMap.event.addListener(geolocation, 'error', function(err){
+			//$cordovaToast.showShortBottom('定位失败');
+		});
+
+	}
+
 	$scope.showMenu = {
 		'flag': false,
 		'flag1': false
@@ -1211,10 +1177,10 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		}
 		ServiceService.getFollowServices(UserService.getCurrentUser().id)
 			.success(function(data){
+				console.log("关注的服务", ServiceService.parseFollowService(data));
 				for(i in data.serviceinfoDTOList){
 					$scope.followList.push(data.serviceinfoDTOList[i].id);
 				}
-				console.log('followList', $scope.followList)
 			})
 	});
 
@@ -1228,17 +1194,19 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$cordovaToast.showShortBottom("不能关注自己发布的服务哦!");
 			return;
 		}
-		ServiceService.followService(service.id, UserService.getCurrentUser().id)
+		var distance = $rootScope.searchResultPosition.coordinate.distance([service.longitude, service.latitude]);
+		ServiceService.followService(service.id, UserService.getCurrentUser().id, distance, $rootScope.searchResultPosition.address)
 			.success(function(data){
 				if(data.status == 0){
 					$scope.followList.push(service.id);
 					$cordovaToast.showShortBottom('关注成功');
+					console.log("关注成功", data);
 				}
 				else{
 					$cordovaToast.showShortBottom("不能重复关注哦");
 				}
 			})
-	}
+	};
 
 	$scope.unfollowService = function(service, $event){
 		$event.stopPropagation();
@@ -1253,7 +1221,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$cordovaToast.showShortBottom("取消关注失败");
 				}
 			})
-	}
+	};
+
 	$scope.showUserServiceInfoModal = function(service){
 		$rootScope.currentChat.conversation = null;
 		$rootScope.currentChat.messages = null;
@@ -1262,7 +1231,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		//获得聊天记录、创建对话
 		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
 			$scope.IMClient.createConversation({
-				members: [service.userName, service.id],
+				members: [service.publishUserId, service.id],
 				serviceId: service.id,
 				unique: true,
 			}).then(function (conversation) {
@@ -1350,29 +1319,5 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		}
 	};
 
-
-
-	//$scope.$on("$ionicView.beforeEnter", function(){
-	//
-	//    $scope.coaches = SearchService.getCurrentSearchResult();
-	//    //console.log($scope.coaches);
-	//
-	//    if(UserService.getCurrentUser().id == null) {
-	//
-	//        $scope.filtedCoaches = $scope.coaches;
-	//        //console.log($scope.filtedCoaches);
-	//    }
-	//    else {
-	//        UserService.searchAllFollows()
-	//            .success(function(data){
-	//                // UserService.setFollowedCoach(data);
-	//
-	//                $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data.coachinfoDTOList);
-	//            })
-	//            .error(function(data){
-	//                console.log("get all follows error");
-	//            })
-	//    }
-	//});
 
 });

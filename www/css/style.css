@@ -82,13 +82,20 @@
 }
 
 .type-label {
-	display: inline-flex;
+	display: inline-block;
 	padding: 3px 5px;
 	color: #cc0404;
 	border: #cc0404 1px solid;
 	border-radius: 5px;
-	margin-right: 8px;
+	margin-right: 5px;
 	font-size: 15px;
+	margin-top: 3px;
+	margin-bottom: 3px;
+}
+
+.select-label {
+	background-color: #cc0404;
+	color: white;
 }
 
 .lty-service-info-list {
@@ -143,6 +150,27 @@
 .rj-send-button:disabled {
 	background-color: rgba(0,0,0,0.6);
 	color: white
+}
+
+.float-window {
+	position: absolute;
+	min-height: 28px;
+	border: 2px solid #cc0404;
+	z-index: 100000;
+	background-color: white;
+	border-radius: 8px;
+	width: 85%;
+	left: 50%;
+	transform: translateX(-50%)
+}
+
+.triangle {
+	height:0;
+	width:0;
+	border-bottom: 14px #cc0404 solid;
+	border-right: 14px transparent solid;
+	border-left: 14px transparent solid;
+	margin-top: -14px;
 }
 
 
