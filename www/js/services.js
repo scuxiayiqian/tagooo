@@ -18,7 +18,7 @@ angular.module('starter.services', ['ngCordova'])
     return ToastService;
 })
 
-.factory('UserService', function($http, baseUrl, port){
+.factory('UserService', function($http, baseUrl, port, managePort){
     var UserService = {};
     UserService.currentUser = {};
     UserService.followedCoach = [];
@@ -28,19 +28,19 @@ angular.module('starter.services', ['ngCordova'])
 
     UserService.setCurrentUser = function(currentUser){
         UserService.currentUser = currentUser;
-    }
+    };
 
     UserService.getCurrentUser = function(){
         return angular.copy(UserService.currentUser);
-    }
+    };
 
     UserService.setFollowedCoach = function(followedCoach){
         UserService.followedCoach = followedCoach;
-    }
+    };
 
     UserService.getFollowedCoach = function(){
         return angular.copy(UserService.followedCoach);
-    }
+    };
 
     UserService.register = function(registerInfo){
         return $http({
@@ -50,7 +50,7 @@ angular.module('starter.services', ['ngCordova'])
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         });
-    }
+    };
 
     UserService.login = function(loginInfo){
         console.log(JSON.stringify(loginInfo));
@@ -61,7 +61,7 @@ angular.module('starter.services', ['ngCordova'])
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         });
-    }
+    };
 
 	UserService.sendValidateCode = function(phone, code){
 		return $http({
@@ -69,7 +69,7 @@ angular.module('starter.services', ['ngCordova'])
 			url: baseUrl + port + '/sendmessage?phone=' + phone + "&code=" + code,
 			crossDomain: true
 		})
-	}
+	};
 
 	UserService.smsLogin = function(phone, validateCode){
 		return $http({
@@ -77,7 +77,7 @@ angular.module('starter.services', ['ngCordova'])
 			url: baseUrl + port + '/user/smslogin?phone=' + phone + "&validateCode=" + validateCode,
 			crossDomain: true
 		});
-	}
+	};
 
 
 	UserService.smsRegister = function(phone, validateCode, regDate){
@@ -86,7 +86,7 @@ angular.module('starter.services', ['ngCordova'])
 			url: baseUrl + port + '/user/smsregister?phone=' + phone + "&validateCode=" + validateCode + "&regDate=" + regDate,
 			crossDomain: true
 		});
-	}
+	};
 
 	//以下函数废弃,先别删
     UserService.searchAllFollows = function() {
@@ -95,7 +95,7 @@ angular.module('starter.services', ['ngCordova'])
             url: baseUrl + port + '/interact/findByStudentId?studentId=' + UserService.currentUser.id,
             crossDomain: true
         })
-    }
+    };
 
     UserService.follow = function(followPair) {
         return $http({
@@ -105,7 +105,7 @@ angular.module('starter.services', ['ngCordova'])
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         })
-    }
+    };
 
     UserService.unFollow = function(unFollowPair) {
         return $http({
@@ -115,7 +115,7 @@ angular.module('starter.services', ['ngCordova'])
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         })
-    }
+    };
 
 	UserService.uploadPhoto = function(picture, phone){
 		return $http({
@@ -125,6 +125,16 @@ angular.module('starter.services', ['ngCordova'])
 				'phone': phone + "",
 				'photoImageValue': picture
 			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	};
+
+	UserService.modifyUserProfile = function(profile){
+		return $http({
+			method: 'POST',
+			url: baseUrl + managePort + '/user/modify',
+			data: JSON.stringify(profile),
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		})

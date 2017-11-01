@@ -160,8 +160,8 @@
 	background-color: white;
 	border-radius: 8px;
 	width: 85%;
-	left: 50%;
-	transform: translateX(-50%)
+	left: 7.5%;
+	/*transform: translateX(-50%)*/
 }
 
 .triangle {
@@ -173,6 +173,13 @@
 	margin-top: -14px;
 }
 
+
+.button-config {
+	min-height: 0px !important;
+	min-width: 0px !important;
+	width: 20px;
+	height: 20px;
+}
 
 /* modify color to red */
 .bar-lty{

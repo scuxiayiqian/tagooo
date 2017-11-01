@@ -2,7 +2,7 @@ angular.module('starter.directives', [])
 
 	.filter('distance', function(){
 		return function(input, currentPosition){
-			if(currentPosition == undefined){
+			if(currentPosition == undefined || currentPosition == null){
 				if(input > 1000){
 					return (input / 1000.0).toFixed(2) + '千米'
 				}
@@ -59,11 +59,12 @@ angular.module('starter.directives', [])
 	})
 
 	.filter('getLastMessage', function(){ //get last message by conversation lists, username, publish username and service id
-		return function(conversations, serviceId, username, publishUsername){
+		return function(conversations, serviceId, userId1, userId2){
+			//console.log('directive', conversations);
 			for(var i in conversations){
 				if(conversations[i].members.indexOf(serviceId) >= 0
-					&& conversations[i].members.indexOf(username) >= 0
-					&& conversations[i].members.indexOf(publishUsername) >= 0){
+					&& conversations[i].members.indexOf(userId1) >= 0
+					&& conversations[i].members.indexOf(userId2) >= 0){
 					if(conversations[i].lastMessage.type == -1){ //文本消息
 						return conversations[i].lastMessage._lctext;
 					}
@@ -73,7 +74,6 @@ angular.module('starter.directives', [])
 					else{
 						return "未知消息类型";
 					}
-					break;
 				}
 			}
 			return "[暂无聊天信息]";

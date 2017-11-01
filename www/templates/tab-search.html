@@ -1,8 +1,6 @@
 <ion-view view-title="找服务">
 
     <ion-nav-buttons side="right">
-        <button ng-show="isLogin()" class="button button-clear button-small" ng-click="login()" ng-if="false">登录
-        </button>
         <!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
         <!--</button>-->
 	    <button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i>
@@ -32,11 +30,11 @@
 			</label>
 		</div>
 	</div>
-    <ion-content on-tap="showMenu.flag = false" style="top: 87px;" overflow-scroll="true" scrollbar-y="true">
+    <ion-content on-tap="showMenu.flag = false" style="top: 87px;" id="content">
         <div class="list">
 	        <div class="item">
 		        <form name="typeSearchForm" id="typeSearchForm" style="position: relative">
-			        <div class="list">
+			        <div class="list" style="margin-bottom: 0px">
 				        <div class="item item-input" ng-repeat="label in labels">
 					        <span class="input-label" style="width: 25%; white-space: normal">{{label.type}}</span>
 					        <div style="white-space: normal; width: 75%">

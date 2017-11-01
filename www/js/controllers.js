@@ -152,7 +152,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	//$scope.$on('$ionicView.enter', function(e) {
 	//});
 
-	$scope.loginData = {};
+	$scope.loginData = {
+		'gender': true
+	};
 	$scope.loginError = {};
 	$scope.loginError.flag = false;
 
@@ -194,8 +196,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	// Perform the login action when the user submits the login form
 	$scope.doLogin = function() {
-
-		console.log('Doing login', $scope.loginData);
 		if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
 			|| $scope.loginData.validateCode == '' || $scope.loginData.validateCode == undefined){
 			$scope.loginError.flag = true;
@@ -648,10 +648,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$scope.showPopupLabels = false;
 		$scope.getElementPosition = function($event, serviceLabel){
 			var window = $("#float-window");
+			var form = $("#typeSearchForm");
 			if(serviceLabel.id == $scope.selectSvcId){
 				$scope.selectSvcId = undefined;
 				$scope.showPopupLabels = false;
 				window.hide();
+				form.css('height', 'auto');
 				return;
 			}
 			$scope.thirdLabel = serviceLabel.thirdLabel;
@@ -660,16 +662,30 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			var rect = $event.target.getBoundingClientRect();
 
 			console.log('rect', rect);
-			var formRect = $("#typeSearchForm")[0].getBoundingClientRect();
-			console.log('formRect', formRect);
 
-			var positionY = rect.top + rect.height + 15 - formRect.top;
-			console.log('positon',positionY);
-			window.css('top', positionY);
-			var windowRect = window[0].getBoundingClientRect();
-			console.log('windowRect', windowRect);
-			var marginLeft = rect.left - windowRect.left + rect.width / 2 - 15;
-			$("div.triangle").css('margin-left', marginLeft);
+			window.ready(function(){
+				form.css('height', 'auto');
+				var formRect = form[0].getBoundingClientRect();
+				console.log('formRect', formRect);
+
+				var positionY = rect.top + rect.height + 15 - formRect.top;
+				console.log('positon',positionY);
+				window.css('top', positionY);
+				var windowRect = window[0].getBoundingClientRect();
+				console.log('windowRect', windowRect);
+
+				if(windowRect.bottom > formRect.bottom){
+					console.log(formRect.height + windowRect.bottom - formRect.bottom + 3);
+					form.css('height', formRect.height + windowRect.bottom - formRect.bottom);
+				}
+				else{
+					form.css('height', 'auto');
+				}
+
+				var marginLeft = rect.left - windowRect.left + rect.width / 2 - 15;
+				$("div.triangle").css('margin-left', marginLeft);
+
+			})
 
 		};
 
@@ -677,7 +693,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	}
 ])
 
-.controller('FollowCtrl', function($scope, $rootScope, UserService, $state, $ionicListDelegate, ServiceService, $cordovaToast, $ionicModal, $timeout) {
+.controller('FollowCtrl', function($scope, $rootScope, UserService, $state, $ionicListDelegate, $ionicScrollDelegate, ServiceService, $cordovaToast, $ionicModal, $timeout) {
 	// With the new view caching in Ionic, Controllers are only called
 	// when they are recreated or on app start, instead of every page change.
 	// To listen for when this page is active (for example, to refresh data),
@@ -695,7 +711,6 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		ServiceService.getFollowServices(UserService.getCurrentUser().id)
 			.success(function(data){
 				$scope.myFollowServices = ServiceService.parseFollowService(data);
-				$scope.$apply();
 			})
 	};
 	getFollowServices();
@@ -971,9 +986,31 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			scope: $scope
 		}).then(function(modal) {
 			$scope.profile = UserService.getCurrentUser();
+			$scope.profile.gender = String($scope.profile.gender);
 			$scope.profileModal = modal;
 			$scope.profileModal.show();
 		});
+	}
+
+	$scope.modifyUserProfile = function(profile){
+		if(profile.name == undefined || profile.name == ""
+			|| profile.userName == undefined || profile.userName == ""){
+			$cordovaToast.showShortBottom("请完整填写用户信息");
+			return;
+		}
+		UserService.modifyUserProfile(profile)
+			.success(function(data){
+				if(data.status == 0) {
+					$cordovaToast.showShortBottom("更新用户信息成功");
+					UserService.setCurrentUser(profile);
+				}
+				else{
+					$cordovaToast.showShortBottom("更新用户信息失败");
+				}
+			})
+			.error(function(err){
+				$cordovaToast.showShortBottom("网络错误,更新用户信息失败");
+			})
 	}
 
 	$scope.selectPhoto = function(){
@@ -1021,6 +1058,14 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	};
 
 	$scope.showServiceModal = function(){
+		var user = UserService.getCurrentUser();
+		if(user.name == undefined || user.name == ""
+			|| user.userName == undefined || user.userName == ""
+			|| user.gender == undefined){
+			$cordovaToast.showShortBottom("请先完善个人信息");
+			$scope.showProfileModal();
+			return;
+		}
 		$ionicModal.fromTemplateUrl('templates/service.html', {
 			scope: $scope
 		}).then(function(modal) {
