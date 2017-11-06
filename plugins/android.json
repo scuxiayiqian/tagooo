@@ -39,6 +39,9 @@
         },
         "cordova-plugin-camera": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
+        },
+        "cordova-plugin-x-socialsharing": {
+            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         }
     },
     "dependent_plugins": {
@@ -46,6 +49,9 @@
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         },
         "cordova-plugin-file": {
+            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
+        },
+        "es6-promise-plugin": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         }
     }
