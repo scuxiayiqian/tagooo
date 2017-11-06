@@ -347,22 +347,19 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		UserService.smsRegister($scope.reservation.phone, $scope.reservation.validateCode, $scope.reservation.regDate)
 			.success(function(data){
 				if(data.status == 2){
-					console.log("错误");
-					ToastService.showCenterToast("错误")
-						.then(function(success) {
-
-						}, function (error) {
-							console.log("show toast error");
-						});
+					$cordovaToast.showShortBottom("该手机号已被注册");
 				}
 				else if(data.status == 0){
 					console.log("注册成功");
 					$scope.reservation = {};
-					$cordovaToast.showCenterToast("注册成功");
+					$cordovaToast.showShortBottom("注册成功");
 					UserService.setCurrentUser(data);
 					UserService.isLogin = true;
 					clearLoginError();
 					$scope.closeReserve();
+				}
+				else if(data.status == 5){
+					$cordovaToast.showShortBottom("验证码错误");
 				}
 				else {
 					console.log(data);
@@ -444,6 +441,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 .controller('SearchCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$cordovaToast', '$cordovaGeolocation',
 	function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService, $cordovaToast, $cordovaGeolocation) {
+
+		$scope.labels = savedLabels;
 
 		$scope.showMenu = {
 			'flag': false
