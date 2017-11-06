@@ -3,5 +3,7 @@
 
 node_modules/
 platforms/
-plugins/
+plugins/*
 .idea/
+!plugins/android.json
+!plugins/fetch.json
