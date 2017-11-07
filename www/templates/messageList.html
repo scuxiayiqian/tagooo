@@ -1,14 +1,14 @@
 <div class="list rj-stable-content" style="overflow-y: scroll !important;" id="messageList">
 	<div ng-repeat="item in currentChat.messages" >
 		<!--<p class="rj-message-time" ng-bind="item.time" ng-if="false"></p>-->
-		<div class="rj-message-wrap" ng-if="item.from != currentChat.user.userName">
-			<img ng-src="img/ben.png" class="rj-head-pic"> <!--TODO 改成用户头像 -->
+		<div class="rj-message-wrap" ng-if="item.from != currentChat.user.id">
+			<img get-user-photo phone="{{messageService.phone}}" class="rj-head-pic">
 			<span class="rj-triangle-left"></span>
 			<p class="rj-message" ng-bind="item._lctext" ng-if="item.type == -1"></p>
 			<img class="rj-message" ng-src="{{item._lcfile.url}}" ng-if="item.type == -2" ng-click="showImageOfMessage(item._lcfile.url)"/>
 		</div>
-		<div class="rj-message-wrap" ng-if="item.from == currentChat.user.userName">
-			<img src="img/me.png" class="rj-head-pic-right">
+		<div class="rj-message-wrap" ng-if="item.from == currentChat.user.id">
+			<img get-user-photo class="rj-head-pic-right">
 			<span class="rj-triangle-right"></span>
 			<p class="rj-message-right" ng-bind="item._lctext" ng-if="item.type == -1"></p>
 			<img class="rj-message-right" ng-src="{{item._lcfile.url}}" ng-if="item.type == -2" ng-click="showImageOfMessage(item._lcfile.url)"/>

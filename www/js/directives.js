@@ -210,6 +210,32 @@ angular.module('starter.directives', [])
 		}
 	})
 
+	.directive('getUserPhoto', function($http, baseUrl, port, UserService){
+		return {
+			replace: false,
+			scope:{
+				'phone': '@'
+			},
+			link: function(scope, ele, attr, controller){
+				var phone;
+				if(scope.phone == undefined || scope.phone == null){
+					phone = UserService.getCurrentUser().phone;
+				}
+				else{
+					phone = scope.phone;
+				}
+				$http({
+					url: baseUrl + port + '/user/getphoto?phone=' + phone,
+					method: 'GET',
+					crossDomain: true
+				}).success(function(data){
+					attr.$set('src', data);
+				})
+
+			}
+		}
+	})
+
 	.directive('getPosition', function(){
 		return {
 			replace: false,

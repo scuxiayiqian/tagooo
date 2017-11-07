@@ -34,6 +34,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	$scope.isLogin = false;
 	//$scope.$apply();
 
+	$scope.messageService = {};
+
 	$rootScope.send_content = {
 		'message': null
 	};
@@ -731,6 +733,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$rootScope.currentChat.conversation = null;
 		$rootScope.currentChat.messages = null;
 		$scope.userServiceInfo = service;
+		$scope.messageService = service;
 		//$rootScope.$apply();
 		//获得聊天记录、创建对话
 		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
@@ -852,6 +855,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	$scope.showPublishServiceInfoModal = function(service){
 		$scope.publishServiceInfo = angular.copy(service);
+		$scope.messageService = service;
 		$ionicModal.fromTemplateUrl('templates/publishServiceInfo.html', {
 			scope: $scope
 		}).then(function(modal) {
@@ -1271,6 +1275,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$rootScope.currentChat.conversation = null;
 		$rootScope.currentChat.messages = null;
 		$scope.userServiceInfo = service;
+		$scope.messageService = service;
 		//$rootScope.$apply();
 		//获得聊天记录、创建对话
 		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
