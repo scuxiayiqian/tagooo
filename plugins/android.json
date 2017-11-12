@@ -10,10 +10,16 @@
         "cordova-plugin-actionsheet": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         },
+        "cordova-plugin-camera": {
+            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
+        },
         "cordova-plugin-console": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         },
         "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
+        },
+        "cordova-plugin-file-transfer": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         },
         "cordova-plugin-geolocation": {
@@ -34,12 +40,6 @@
         "ionic-plugin-keyboard": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         },
-        "cordova-plugin-file-transfer": {
-            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
-        },
-        "cordova-plugin-camera": {
-            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
-        },
         "cordova-plugin-x-socialsharing": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         }
@@ -49,9 +49,6 @@
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         },
         "cordova-plugin-file": {
-            "PACKAGE_NAME": "com.ionicframework.tagooo904232"
-        },
-        "es6-promise-plugin": {
             "PACKAGE_NAME": "com.ionicframework.tagooo904232"
         }
     }

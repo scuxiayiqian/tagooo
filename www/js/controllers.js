@@ -796,6 +796,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		'flag1': false
 	};
 
+	$scope.profileModalSource = "profile";
+
 	var getPublishServices = function(){
 		if(UserService.getCurrentUser().id == undefined){
 			return;
@@ -1004,15 +1006,21 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		UserService.modifyUserProfile(profile)
 			.success(function(data){
 				if(data.status == 0) {
+					$scope.profileModal.remove();
 					$cordovaToast.showShortBottom("更新用户信息成功");
 					UserService.setCurrentUser(profile);
+					if($scope.profileModalSource == "newService"){
+						$scope.showServiceModal()
+					}
 				}
 				else{
 					$cordovaToast.showShortBottom("更新用户信息失败");
 				}
+				$scope.profileModalSource = "profile";
 			})
 			.error(function(err){
 				$cordovaToast.showShortBottom("网络错误,更新用户信息失败");
+				$scope.profileModalSource = "profile";
 			})
 	}
 
@@ -1067,6 +1075,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			|| user.gender == undefined){
 			$cordovaToast.showShortBottom("请先完善个人信息");
 			$scope.showProfileModal();
+			$scope.profileModalSource = "newService";
 			return;
 		}
 		$ionicModal.fromTemplateUrl('templates/service.html', {

@@ -8,7 +8,7 @@
   </div>
 </ion-header-bar> -->
 
-<ion-view view-title="我的收藏">
+<ion-view view-title="我的关注">
 	<ion-nav-buttons side="right">
 		<button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
 	</ion-nav-buttons>
@@ -43,7 +43,7 @@
 					<div style="position: absolute; right: 13px; height: 80%; width: 30%; top: 10%; text-align: right; z-index: 800">
 						<div class="lty-operation-button">{{service.distance | distance:undefined}}</div>
 						<div class="lty-operation-button">
-							工商部门认定
+							工商户认定
 							<i class="icon ion-chatboxes positive" style="font-size: 25px; vertical-align: middle"></i>
 						</div>
 						<div class="lty-operation-button"  ng-click="unfollowService(service, $event)">
