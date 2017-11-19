@@ -273,7 +273,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$scope.loginData = {};
 					$scope.currentChat.user = data;
 					UserService.setCurrentUser(data);
-					$scope.isLogin = true;//ChatService.connect(UserService.getCurrentUser().userName, null);
+					$scope.isLogin = true;
+					localStorage.setItem('currentUser', JSON.stringify(data));
 					clearLoginError();
 					$scope.closeLogin();
 
@@ -295,6 +296,68 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			})
 	};
 
+	$scope.autoLogin = function(){
+		var currentUser = localStorage.getItem('currentUser');
+		if(currentUser == null || currentUser == undefined){
+			return;
+		}
+		currentUser = JSON.parse(currentUser);
+		realtime.createIMClient(currentUser.id).then(function(me) {
+			$scope.IMClient = me;
+			me.on('message', function(message, conversation) {
+				$timeout(function(){
+					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+				},50);
+				//switch (message.type) {
+				//	case AV.TextMessage.TYPE:
+				console.log('receive message', message);
+				console.log('receive message conversation', conversation);
+				if ($rootScope.currentChat.conversation.id == conversation.id) {
+					$rootScope.currentChat.messages.push(message);
+					$rootScope.currentChat.conversation = conversation;
+					$rootScope.currentChat.conversation.read();
+				}
+				else if ($rootScope.currentChat.conversationList != null) {
+					for (var i = 0; i < $rootScope.currentChat.conversationList.length; i++) {
+						if ($rootScope.currentChat.conversationList[i].id == conversation.id) {
+							$rootScope.currentChat.conversationList[i] = conversation;
+							$rootScope.$apply();
+							return;
+						}
+					}
+					$rootScope.currentChat.conversationList.push(conversation);
+				}
+				$rootScope.$apply();
+				//	break;
+				//case AV.ImageMessage.TYPE:
+				//	console.log('收到图片消息，url: ' + message.getFile().url() + ', width: ' + message.getFile().metaData('width'));
+				//	break;
+				//default:
+				//	console.warn('收到未知类型消息');
+				//}
+			});
+			me.getQuery().limit(1000).containsMembers([data.id]).withLastMessagesRefreshed(true).find()
+				.then(function(conversations){
+					$scope.currentChat.conversationList = conversations;
+					console.log('conbersationList', conversations);
+				})
+				.catch(console.error.bind(console));
+			me.on('unreadmessagescountupdate', function(conversations) {
+				console.log('unread', conversations);
+				//for(var i = 0; i < conversation.length(); i++) {
+				//	//console.log(conv.id, conv.name, conv.unreadMessagesCount);
+				//}
+			});
+		});
+		$scope.loginData = {};
+		$scope.currentChat.user = currentUser;
+		UserService.setCurrentUser(currentUser);
+		$scope.isLogin = true;
+
+	};
+
+	$scope.autoLogin();
+
 	$scope.logout = function(){
 		UserService.setCurrentUser({});
 		$scope.isLogin = false;
@@ -310,6 +373,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				console.log('退出聊天登录');
 			}).catch(console.error.bind(console));
 		}
+		localStorage.removeItem('currentUser');
 		$state.go('tab.search')
 	}
 
@@ -796,7 +860,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		'flag1': false
 	};
 
-	$scope.profileModalSource = "profile";
+	$scope.profileModalSource = "profile"; //新建服务时如果个人信息不完整,跳转到完善个人信息界面
+
+	$scope.newServiceButtonState = true; //新建服务时的按钮状态,true可用,false不可用,防止用户多次点击
 
 	var getPublishServices = function(){
 		if(UserService.getCurrentUser().id == undefined){
@@ -998,7 +1064,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	}
 
 	$scope.modifyUserProfile = function(profile){
-		if(profile.name == undefined || profile.name == ""
+		if(profile.realName == undefined || profile.realName == ""
 			|| profile.userName == undefined || profile.userName == ""){
 			$cordovaToast.showShortBottom("请完整填写用户信息");
 			return;
@@ -1070,7 +1136,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	$scope.showServiceModal = function(){
 		var user = UserService.getCurrentUser();
-		if(user.name == undefined || user.name == ""
+		if(user.realName == undefined || user.realName == ""
 			|| user.userName == undefined || user.userName == ""
 			|| user.gender == undefined){
 			$cordovaToast.showShortBottom("请先完善个人信息");
@@ -1104,6 +1170,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$cordovaToast.showShortBottom('请正确填写广告语');
 			return;
 		}
+		$scope.newServiceButtonState = false;
 		console.log('publishService', $scope.newService);
 		var temp = {};
 		temp.datetime = $filter('date')(new Date(), 'yyyyMMdd');
@@ -1126,12 +1193,15 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 						ToastService.showBottomToast("发布服务成功");
 						getPublishServices();
 						$scope.serviceModal.remove();
+						$scope.newServiceButtonState = true;
 					})
 					.error(function(error){
 						ToastService.showBottomToast("发布服务失败");
+						$scope.newServiceButtonState = true;
 					})
 			}else{
 				ToastService.showBottomToast("解析地址出错");
+				$scope.newServiceButtonState = true;
 			}
 		});
 

@@ -10,11 +10,11 @@
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
   'starter.services', 'starter.directives', 'baiduMap', 'ngCordova', 'ngAnimate'])
 
-.constant('baseUrl', 'http://202.120.40.108:')
+.constant('baseUrl', 'http://106.14.16.218:')
 
-.constant('port', '22201')
+.constant('port', '8101')
 
-.constant('managePort', '22202')
+.constant('managePort', '8102')
 
 .config(function($ionicConfigProvider){
   //$ionicConfigProvider.views.maxCache(0);

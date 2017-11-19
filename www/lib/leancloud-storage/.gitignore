@@ -7,5 +7,4 @@ coverage
 dist/js-sdk-api-docs
 npm-debug.log
 .nyc_output
-dist
 docs
