@@ -25,8 +25,9 @@
 			<span style="display: inline-block">广告视频: </span>
 			<label style="display: inline-flex">还未上传</label>
 		</div>
+		<p>{{userServiceInfo.address}}</p>
 		<!--<p>经度{{userServiceInfo.longitude.toFixed(3)}} 纬度{{userServiceInfo.latitude.toFixed(3)}}</p>-->
-		<p get-position longitude="{{userServiceInfo.longitude}}" latitude="{{userServiceInfo.latitude}}"></p>
+		<!--<p get-position longitude="{{userServiceInfo.longitude}}" latitude="{{userServiceInfo.latitude}}"></p>-->
 	</div>
 	<ion-content on-tap="showMenu.flag1 = false" id="userServiceChat" delegate-handle="messageDetailsScroll">
 		<div ng-include="'templates/messageList.html'" style="overflow-y: scroll"></div>

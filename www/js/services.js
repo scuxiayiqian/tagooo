@@ -285,7 +285,7 @@ angular.module('starter.services', ['ngCordova'])
 	ServiceService.publishService = function(serviceInfo){
 		return $http({
 			method: 'POST',
-			url: baseUrl + port + '/service/publish',
+			url: baseUrl + port + '/service/newpublish',
 			data: JSON.stringify(serviceInfo),
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}

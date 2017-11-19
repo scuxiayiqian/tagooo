@@ -48,7 +48,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 	$rootScope.sendMessage = function(content){
 		if($rootScope.currentChat.conversation == null){
-			$cordovaToast.showShortBottom("请先登录");
+			$cordovaToast.showShortBottom("未获取当前会话");
 			return;
 		}
 		else{
@@ -223,6 +223,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					$cordovaToast.showShortBottom('手机号验证码不匹配');
 				}
 				else if(data.status == 200){
+					console.log('login', data);
 					realtime.createIMClient(data.id).then(function(me) {
 						$scope.IMClient = me;
 						me.on('message', function(message, conversation) {
@@ -336,7 +337,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				//	console.warn('收到未知类型消息');
 				//}
 			});
-			me.getQuery().limit(1000).containsMembers([data.id]).withLastMessagesRefreshed(true).find()
+			me.getQuery().limit(1000).containsMembers([currentUser.id]).withLastMessagesRefreshed(true).find()
 				.then(function(conversations){
 					$scope.currentChat.conversationList = conversations;
 					console.log('conbersationList', conversations);
@@ -1064,7 +1065,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 	}
 
 	$scope.modifyUserProfile = function(profile){
-		if(profile.realName == undefined || profile.realName == ""
+		if(profile.name == undefined || profile.name == ""
 			|| profile.userName == undefined || profile.userName == ""){
 			$cordovaToast.showShortBottom("请完整填写用户信息");
 			return;
@@ -1134,9 +1135,46 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		});
 	};
 
+	$scope.selectNewSvcPic = function(){
+		var actionSheetOptions = {
+			title: '上传产品图片',
+			buttonLabels: ['相机', '从图库选择'],
+			addCancelButtonWithLabel: '取消',
+			androidEnableCancelButton: true
+		};
+		$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
+			var imageSource;
+			if(btnIndex == 1){
+				imageSource = Camera.PictureSourceType.CAMERA;
+			}
+			else if(btnIndex == 2){
+				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+			}
+			else{
+				return;
+			}
+			var cameraOptions = {
+				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+				quality: 70,                                                                                        //相片质量0-100
+				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+				sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+				allowEdit: false,                                                                                //在选择之前允许修改截图
+				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+			};
+			$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
+				$scope.newService.pictureImageValue = imageURI;
+			}, function(err) {
+				// error
+
+			});
+		});
+	}
+
 	$scope.showServiceModal = function(){
 		var user = UserService.getCurrentUser();
-		if(user.realName == undefined || user.realName == ""
+		if(user.name == undefined || user.name == ""
 			|| user.userName == undefined || user.userName == ""
 			|| user.gender == undefined){
 			$cordovaToast.showShortBottom("请先完善个人信息");
@@ -1153,6 +1191,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		});
 
 	};
+
 	$scope.newService = {};
 
 	SearchService.getAllLabels()
@@ -1177,7 +1216,8 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		temp.publishUserId = UserService.getCurrentUser().id;
 		temp.slogan = $scope.newService.slogan;
 		temp.thirdLabelId = $scope.newService.thirdLabel.id;
-
+		temp.address = $scope.newService.address;
+		temp.pictureImageValue = $scope.newService.pictureImageValue;
 		var geocoder = new AMap.Geocoder({
 			radius: 500 //范围，默认：500
 		});
@@ -1194,14 +1234,17 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 						getPublishServices();
 						$scope.serviceModal.remove();
 						$scope.newServiceButtonState = true;
+						$scope.$apply();
 					})
 					.error(function(error){
 						ToastService.showBottomToast("发布服务失败");
 						$scope.newServiceButtonState = true;
+						$scope.$apply();
 					})
 			}else{
 				ToastService.showBottomToast("解析地址出错");
 				$scope.newServiceButtonState = true;
+				$scope.$apply();
 			}
 		});
 
