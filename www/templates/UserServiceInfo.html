@@ -1,17 +1,7 @@
 <ion-modal-view>
 	<ion-header-bar>
 		<h1 class="title">服务详情</h1>
-		<div class="buttons">
-			<button class="button button-clear button-small" ng-click="showMenu.flag1 = !showMenu.flag1" style="color: #387ef5"><i class="icon ion-wrench"></i></button>
-			<button class="button button-positive" ng-click="userServiceInfoModal.remove()">关闭</button>
-		</div>
 	</ion-header-bar>
-	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag1">
-		<div ng-click="register()" class="lty-menu-item">注册</div>
-		<div class="lty-menu-item">当前页分享</div>
-		<div class="lty-menu-item">联系客服</div>
-		<div class="lty-menu-item">举报</div>
-	</div>
 	<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px; position: absolute; width: 100%; top: 43px; left: 1px" id="userServiceInfo">
 		<div style="padding-left: 53px">
 			<img get-svc-pic pic-id="{{userServiceInfo.id}}" id="userServiceInfoImage">

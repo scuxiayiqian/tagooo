@@ -1,6 +1,6 @@
 angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
-.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter, $ionicScrollDelegate) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter, $ionicScrollDelegate, $cordovaSocialSharing) {
 
 	AV.init({
 		appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
@@ -440,6 +440,19 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				console.log(data);
 			})
 	};
+
+
+	$scope.myShare = function(){
+		$cordovaSocialSharing
+			.share("生活助手", null, null, " http://106.14.16.218:8100/") // Share via native share sheet
+			.then(function(result) {
+				//$cordovaToast.showShortBottom("分享成功");
+			}, function(err) {
+				//$cordovaToast.showShortBottom("分享失败");
+			});
+	};
+
+
 	//上传营业执照和身份证
 	$scope.uploadMock = function(){
 		var cameraOptions = {
