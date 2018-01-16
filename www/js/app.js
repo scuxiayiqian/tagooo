@@ -8,11 +8,13 @@
 // angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
 
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes', 
-  'starter.services', 'starter.directives', 'baiduMap', 'ngCordova'])
+  'starter.services', 'starter.directives', 'baiduMap', 'ngCordova', 'ngAnimate'])
 
-.constant('baseUrl', 'http://202.120.40.175:')
+.constant('baseUrl', 'http://106.14.16.218:')
 
-.constant('port', '21181')
+.constant('port', '8101')
+
+.constant('managePort', '8102')
 
 .config(function($ionicConfigProvider){
   //$ionicConfigProvider.views.maxCache(0);
@@ -22,10 +24,11 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
   $ionicConfigProvider.navBar.alignTitle('center'); // 标题位置
   $ionicConfigProvider.navBar.positionPrimaryButtons('left'); // 主要操作按钮位置
   $ionicConfigProvider.navBar.positionSecondaryButtons('right'); //次要操作按钮位置
+	//$rootScope.isFirst = true;
 
 })
 
-.run(function($ionicPlatform, $ionicHistory) {
+.run(function($ionicPlatform, $ionicHistory, $rootScope, ToastService) {
   $ionicPlatform.ready(function() {
 
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -42,14 +45,30 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
   });
 
   $ionicPlatform.registerBackButtonAction(function(e) {
-    e.preventDefault();
-    //console.log("registerBackButtonAction");
-    //console.log($ionicHistory.backView());
-    if($ionicHistory.backView()) {
+    // e.preventDefault();
+    // //console.log("registerBackButtonAction");
+    // //console.log($ionicHistory.backView());
+    // if($ionicHistory.backView()) {
+    //   $ionicHistory.goBack();
+    // }
+    // return false;
+    if ($rootScope.backButtonPressedOnceToExit) {
+      ionic.Platform.exitApp();
+    }
+
+    else if ($ionicHistory.backView()) {
       $ionicHistory.goBack();
     }
+    else {
+      $rootScope.backButtonPressedOnceToExit = true;
+      setTimeout(function(){
+        $rootScope.backButtonPressedOnceToExit = false;
+      },2000);
+    }
+    e.preventDefault();
     return false;
-  }, 999);
+
+  }, 101);
 })
 
 

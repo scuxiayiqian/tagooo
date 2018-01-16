@@ -1,0 +1,143 @@
+<ion-modal-view>
+	<div ng-if="mode == 'new'">
+		<ion-header-bar>
+			<h1 class="title">新建服务</h1>
+			<div class="buttons">
+				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
+			</div>
+		</ion-header-bar>
+		<ion-content>
+			<form>
+				<div class="list">
+					<label class="item item-input item-select">
+						<span class="input-label">一级服务标签</span>
+						<select ng-init="newService.basicLabel = labels[0]" ng-model="newService.basicLabel" ng-options="label.type for label in labels track by label.id" ng-change="newService.serviceLabel = newService.basicLabel.serviceLabel[0]">
+						</select>
+					</label>
+					<label class="item item-input item-select">
+						<span class="input-label">二级服务标签</span>
+						<select ng-init="newService.serviceLabel = newService.basicLabel.serviceLabel[0]" ng-model="newService.serviceLabel" ng-options="service.type for service in newService.basicLabel.serviceLabel" ng-change="newService.thirdLabel = newService.serviceLabel.thirdLabel[0]">
+						</select>
+					</label>
+					<label class="item item-input item-select">
+						<span class="input-label">三级服务标签</span>
+						<select ng-init="newService.thirdLabel = newService.serviceLabel.thirdLabel[0]" ng-model="newService.thirdLabel" ng-options="third.type for third in newService.serviceLabel.thirdLabel">
+						</select>
+					</label>
+					<!--<label class="item item-input">-->
+						<!--<span class="input-label">经度</span>-->
+						<!--<input type="number" ng-model="newService.longitude" ng-value="position.longitude">-->
+					<!--</label>-->
+					<!--<label class="item item-input">-->
+						<!--<span class="input-label">纬度</span>-->
+						<!--<input type="number" ng-model="newService.latitude" ng-value="position.latitude">-->
+					<!--</label>-->
+					<label class="item item-input">
+						<span class="input-label">地址</span>
+						<input type="text" ng-model="newService.address" ng-init="newService.address = currentPosition.address">
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告图片</span>
+						<img style="max-width: 80px">
+						<button class="button button-positive" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px" ng-click="selectNewSvcPic()">上传图片</button>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告语</span>
+						<input type="text" ng-model="newService.slogan">
+					</label>
+				</div>
+			</form>
+
+			<div class="register-login-btn">
+				<button class="button button-block button-positive" ng-click="publishService()" ng-disabled="!newServiceButtonState">发布服务</button>
+			</div>
+		</ion-content>
+	</div>
+
+
+	<div ng-if="mode == 'modify'">
+		<ion-header-bar>
+			<h1 class="title">服务详情</h1>
+			<div class="buttons">
+				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
+			</div>
+		</ion-header-bar>
+		<ion-content>
+			<form>
+				<div class="list">
+					<label class="item item-input">
+						<span class="input-label">服务类型</span>
+						<input type="text" ng-model="modifyService.serviceLabelName" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">经度</span>
+						<input type="number" ng-model="modifyService.longitude">
+					</label>
+					<label class="item item-input">
+						<span class="input-label">纬度</span>
+						<input type="number" ng-model="modifyService.latitude">
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告语</span>
+						<input type="text" ng-model="modifyService.slogan">
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告图片</span>
+						<img get-svc-pic pic-id="{{modifyService.id}}" style="max-width: 80px">
+						<button class="button button-positive" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px" ng-click="selectServicePicture(modifyService)">上传图片</button>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告视频</span>
+						<p style="display: inline" ng-if="modifyService.video=='' || modifyService.video==null">还未上传</p>
+						<button class="button button-positive" ng-if="!(modifyService.video=='' || modifyService.video==null)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">查看视频</button>
+						<button class="button button-positive" ng-click="selectServiceVideo(modifyService)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">上传视频</button>
+					</label>
+				</div>
+				<button class="button button-block button-positive" style="width: 80%; margin: 0 auto" ng-click="commitModifyService(modifyService)">保存修改</button>
+			</form>
+		</ion-content>
+	</div>
+
+	<div ng-if="mode == 'read'">
+		<ion-header-bar>
+			<h1 class="title">服务详情</h1>
+			<div class="buttons">
+				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
+			</div>
+		</ion-header-bar>
+		<ion-content>
+			<form>
+				<div class="list">
+					<label class="item item-input">
+						<span class="input-label">服务类型</span>
+						<input type="text" ng-model="modifyService.serviceLabelName" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">经度</span>
+						<input type="number" ng-value="modifyService.longitude.toFixed(4)" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">纬度</span>
+						<input type="number" ng-value="modifyService.latitude.toFixed(4)"  disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告语</span>
+						<input type="text" ng-model="modifyService.slogan" disabled>
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告图片</span>
+						<img get-svc-pic pic-id="{{modifyService.id}}" style="max-width: 80px">
+						<!--<button class="button button-positive" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px" ng-click="selectServicePicture(modifyService)">上传图片</button>-->
+					</label>
+					<label class="item item-input">
+						<span class="input-label">广告视频</span>
+						<p style="display: inline" ng-if="modifyService.video=='' || modifyService.video==null">还未上传</p>
+						<button class="button button-positive" ng-if="!(modifyService.video=='' || modifyService.video==null)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">查看视频</button>
+						<!--<button class="button button-positive" ng-click="selectServiceVideo(modifyService)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">上传视频</button>-->
+					</label>
+				</div>
+			</form>
+		</ion-content>
+	</div>
+
+</ion-modal-view>

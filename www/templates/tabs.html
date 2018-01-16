@@ -5,22 +5,39 @@ navigation history that also transitions its views in and out.
 -->
 <ion-tabs class="tabs-icon-top tabs-color-active-positive {{$root.hideTabs}}">
 
-  <!-- Dashboard Tab -->
-  <ion-tab title="搜索" icon-off="ion-ios-search" icon-on="ion-ios-search-strong" ui-sref="tab.dash"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
-    <ion-nav-view name="tab-dash"></ion-nav-view>
-  </ion-tab>
+  <!-- search Tab -->
+	<ion-tab title="搜索" icon-off="ion-ios-search" icon-on="ion-ios-search-strong" ui-sref="tab.search"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
+		<ion-nav-view name="tab-search"></ion-nav-view>
+	</ion-tab>
 
-  <!-- Chats Tab -->
-  <ion-tab title="我的关注" icon-off="ion-ios-star-outline" icon-on="ion-ios-star" ui-sref="tab.chats"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
-    <ion-nav-view name="tab-chats"></ion-nav-view>
-  </ion-tab>
+	<ion-tab title="搜索结果" icon-off="ion-ios-list-outline" icon-on="ion-ios-list" ui-sref="tab.searchresult"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
+		<ion-nav-view name="tab-search-result"></ion-nav-view>
+	</ion-tab>
+
+  <!-- follow Tab -->
+	<ion-tab title="我的关注" icon-off="ion-android-favorite-outline positive" icon-on="ion-android-favorite" ui-sref="tab.follow"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
+		<ion-nav-view name="tab-follow"></ion-nav-view>
+	</ion-tab>
 
   <!-- Account Tab -->
-  <ion-tab title="我的发布" icon-off="ion-ios-cloud-upload-outline" icon-on="ion-ios-cloud-upload" ui-sref="tab.publish" on-select="onTabSelected()" on-deselect="onTabDeselected()">
-    <ion-nav-view name="tab-publish"></ion-nav-view>
-  </ion-tab>
+	<ion-tab title="我的发布" icon-off="ion-ios-cloud-upload-outline" icon-on="ion-ios-cloud-upload" ui-sref="tab.publish" on-select="onTabSelected()" on-deselect="onTabDeselected()">
+		<ion-nav-view name="tab-publish"></ion-nav-view>
+	</ion-tab>
 </ion-tabs>
 
+<script id="templates/imageModal.html" type="text/ng-template">
+	<ion-modal-view>
+		<ion-header-bar>
+			<h1 class="title">聊天图片</h1>
+			<div class="buttons">
+				<button class="button button-positive" ng-click="imageOfMessageModal.hide()">关闭</button>
+			</div>
+		</ion-header-bar>
+		<ion-content>
+			<img ng-src="{{displayImageOfMessage}}" style="width: 100%; height: 100%">
+		</ion-content>
+	</ion-modal-view>
+</script>
 
 <!-- <ion-tabs class="tabs-icon-top tabs-color-active-balanced">
     <ion-tab title="微信" icon-on="ion-ios-chatbubble" icon-off="ion-ios-chatbubble-outline" ui-sref="tab.message">

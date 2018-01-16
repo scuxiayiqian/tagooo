@@ -1,4 +1,4 @@
-angular.module('starter.services', [])
+angular.module('starter.services', ['ngCordova'])
 
 .factory('ToastService', function($cordovaToast){
     var ToastService = {};
@@ -18,57 +18,84 @@ angular.module('starter.services', [])
     return ToastService;
 })
 
-.factory('UserService', function($http, baseUrl, port){
+.factory('UserService', function($http, baseUrl, port, managePort){
     var UserService = {};
-   
     UserService.currentUser = {};
     UserService.followedCoach = [];
     UserService.isLogin = false;
+	UserService.profileUpdated = false;
+    // UserService.usersProfile = "img/noprofile.png";
 
     UserService.setCurrentUser = function(currentUser){
         UserService.currentUser = currentUser;
-    }
+    };
 
     UserService.getCurrentUser = function(){
         return angular.copy(UserService.currentUser);
-    }
+    };
 
     UserService.setFollowedCoach = function(followedCoach){
         UserService.followedCoach = followedCoach;
-    }
+    };
 
     UserService.getFollowedCoach = function(){
         return angular.copy(UserService.followedCoach);
-    }
+    };
 
     UserService.register = function(registerInfo){
         return $http({
             method: 'POST',
-            url: baseUrl + port + '/student/register',
+            url: baseUrl + port + '/user/register',
             data: JSON.stringify(registerInfo),
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         });
-    }
+    };
 
     UserService.login = function(loginInfo){
         console.log(JSON.stringify(loginInfo));
         return $http({
             method: 'POST',
-            url: baseUrl + port + '/student/login',
+            url: baseUrl + port + '/user/login',
             data: JSON.stringify(loginInfo),
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         });
-    }
+    };
 
+	UserService.sendValidateCode = function(phone, code){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/sendmessage?phone=' + phone + "&code=" + code,
+			crossDomain: true
+		})
+	};
+
+	UserService.smsLogin = function(phone, validateCode){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/user/smslogin?phone=' + phone + "&validateCode=" + validateCode,
+			crossDomain: true
+		});
+	};
+
+
+	UserService.smsRegister = function(phone, validateCode, regDate){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/user/smsregister?phone=' + phone + "&validateCode=" + validateCode + "&regDate=" + regDate,
+			crossDomain: true
+		});
+	};
+
+	//以下函数废弃,先别删
     UserService.searchAllFollows = function() {
         return $http({
             method: 'GET',
             url: baseUrl + port + '/interact/findByStudentId?studentId=' + UserService.currentUser.id,
             crossDomain: true
         })
-    }
+    };
 
     UserService.follow = function(followPair) {
         return $http({
@@ -78,7 +105,7 @@ angular.module('starter.services', [])
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         })
-    }
+    };
 
     UserService.unFollow = function(unFollowPair) {
         return $http({
@@ -88,15 +115,30 @@ angular.module('starter.services', [])
             crossDomain: true,
             headers: {'Content-Type': 'application/json;charset=UTF-8'}
         })
-    }
+    };
 
-    // UserService.uploadLicense = function(userId, imageURI){
-    //     var options = new FileUploadOptions();
-    //     options.fileKey = "picture";
-    //     options.httpMethod = "POST";
-    //     var url = baseUrl + port + '/api/image/licence/upload?teaSalerId=' + userId;
-    //     return $cordovaFileTransfer.upload(url, imageURI, options);
-    // }
+	UserService.uploadPhoto = function(picture, phone){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/user/uploadphoto',
+			data: {
+				'phone': phone + "",
+				'photoImageValue': picture
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	};
+
+	UserService.modifyUserProfile = function(profile){
+		return $http({
+			method: 'POST',
+			url: baseUrl + managePort + '/user/modify',
+			data: JSON.stringify(profile),
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	}
 
     return UserService;
 })
@@ -114,6 +156,15 @@ angular.module('starter.services', [])
         });
     }
 
+    ImageService.getProfile = function(phone) {
+        return $http({
+            method: 'GET',
+            url: baseUrl + port + '/student/getphoto?phone=' + phone,
+            crossDomain:true
+            // headers: {'Content-Type': 'image/jpeg;charset=UTF-8'}
+        });
+    }
+
     return ImageService;
 })
 
@@ -122,12 +173,88 @@ angular.module('starter.services', [])
     var SearchService = {};
 
     SearchService.searchResult = [];
+
     SearchService.setCurrentSearchResult = function(result) {
         SearchService.searchResult = result;
     }
+
     SearchService.getCurrentSearchResult = function() {
         return angular.copy(SearchService.searchResult);
-    }
+    };
+
+	SearchService.getAllLabels = function(){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/getAlllabels',
+			crossDomain: true
+		});
+	};
+
+	//begin 以下三个函数废弃,但是先别删
+	SearchService.getBasicLabels = function(){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/getBasiclabel',
+			crossDomain: true
+		});
+	};
+
+	SearchService.getServiceLabels = function(){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/getservicelabel',
+			crossDomain: true
+		});
+	};
+
+	SearchService.mergeLabels = function(basicLabels, serviceLabels){
+		var temp = {};
+		var result = [];
+		for(item in basicLabels){
+			basicLabels[item].services = [];
+			temp[basicLabels[item].id] = basicLabels[item];
+		}
+		for(item in serviceLabels){
+			temp[serviceLabels[item].basicTypeId].services.push(serviceLabels[item]);
+		}
+		for(item in temp){
+			result.push(temp[item]);
+		}
+		return result;
+	};
+	// end
+
+	SearchService.searchByLabel = function(serviceLabelId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbylabel?labelid=' + serviceLabelId,
+			crossDomain: true
+		})
+	}
+
+	SearchService.searchByWord = function(word){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbyword?word=' + word,
+			crossDomain: true
+		})
+	}
+
+	SearchService.searchByPosition = function(longitude, latitude){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbylocation?longitude=' + longitude + '&latitude=' + latitude,
+			crossDomain: true
+		})
+	}
+
+	SearchService.searchByLabelAndPosition = function(labelId, longitude, latitude){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/service/findbylabelandlocation?longitude=' + longitude + '&latitude=' + latitude + '&labelid=' + labelId,
+			crossDomain: true
+		})
+	}
 
     SearchService.searchByType = function(searchInfo) {
         return $http({
@@ -152,36 +279,209 @@ angular.module('starter.services', [])
     return MyFollowsService;
 })
 
+.factory('ServiceService', function($http, baseUrl, port, managePort, $cordovaFileTransfer){
+	var ServiceService = {};
+
+	ServiceService.publishService = function(serviceInfo){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/service/newpublish',
+			data: JSON.stringify(serviceInfo),
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		});
+	};
+
+	ServiceService.followService = function(serviceId, userId, distance, address){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/interact/follow',
+			data: {
+				'serviceId': serviceId,
+				'userId': userId,
+				'distance': distance,
+				'address': address
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		});
+	};
+
+	ServiceService.unfollowService = function(serviceId, userId){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/interact/follow/remove',
+			data: {
+				'serviceId': serviceId,
+				'userId': userId
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		});
+	};
+
+	ServiceService.getFollowServices = function(userId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/interact/findByUserId?userId=' + userId,
+			crossDomain: true
+		})
+	};
+
+	ServiceService.parseFollowService = function(data){
+		var followList = data.serviceinfoDTOList;
+		var addressList = data.addressList;
+		var distanceList = data.distanceList;
+		var temp = {};
+		for(var i in addressList){
+			if(!temp.hasOwnProperty(addressList[i])){
+				temp[addressList[i]] = [];
+			}
+			followList[i].distance = distanceList[i];
+			temp[addressList[i]].push(followList[i]);
+		}
+		var result = [];
+		for(var i in temp){
+			result.push({
+				'address': i,
+				'services': temp[i]
+			});
+		}
+		return result;
+	};
+
+	ServiceService.getPublishServices = function(userId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/interact/findByPublishUserId?userId=' + userId,
+			crossDomain: true
+		})
+	};
+
+	ServiceService.uploadPicture = function(serviceId, image){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/service/uploadpicture',
+			data: {
+				'id': serviceId,
+				'pictureImageValue': image
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	};
+
+	ServiceService.uploadVideo = function(serviceId, videoURI){
+		var server = baseUrl + port + '/service/uploadvideo';
+		var filePath = videoURI;
+		var options = new FileUploadOptions();
+		options.id = serviceId;
+		options.httpMethod = "POST";
+		return $cordovaFileTransfer.upload(server, filePath, options)
+	};
+
+	ServiceService.modifyService = function(service){
+		return $http({
+			method: 'POST',
+			url: baseUrl + managePort + '/service/modify',
+			data: service,
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+
+	};
+
+	ServiceService.deleteService = function(serviceId){
+		return $http({
+			method: 'GET',
+			url: baseUrl + managePort + '/service/remove?serviceid=' + serviceId,
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	};
+
+	return ServiceService;
+})
+
+.factory('ChatService', function($http, baseUrl,  port) {
+	var chatService = {};
+	var stompClient = null;
+
+	chatService.connect = function (username, callback) {
+		var socket = new SockJS(baseUrl + port + '/gs-guide-websocket/');
+		console.log('socket', socket);
+		stompClient = Stomp.over(socket);
+		stompClient.connect({"user": username}, function (frame) {
+
+			console.log('Connected: ' + frame);
+			if(callback != null && callback != undefined){
+				callback();
+			}
+
+			stompClient.subscribe('/user/topic/chat', function (greeting) {
+				console.log('---------', greeting)
+			});
+			//订阅这个是为了收到报错信息，如发送的用户不存在
+			stompClient.subscribe('/user/topic/console', function (greeting) {
+				console.log('---------', greeting)
+			});
+			stompClient.subscribe('/user/topic/unreceived', function (greeting) {
+
+				//showGreeting(JSON.parse(greeting.body).chatMessageDTOs);
+				console.log('---------', greeting)
+			});
+		})
+	};
+
+	chatService.disconnect = function(){
+		if (stompClient !== null) {
+			stompClient.disconnect();
+			console('disconnect', stompClient);
+		}
+	};
+
+	chatService.sendMessage = function(sender, receiver, content){
+		console.log('client', stompClient);
+		//发消息的接口，需要sender和receiver的用户都connect了
+		stompClient.send("/app/msg/sendMes", {}, JSON.stringify({
+			'sender': sender,
+			'receiver': receiver,
+			'message': content
+		}));
+	};
+
+	chatService.getAllRecord = function(user1, user2){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/chat/allrecord?user1=' + user1 + '&user2=' + user2,
+			crossDomain: true
+		})
+	};
+
+	chatService.getSingleUnreceived = function(receiver){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/chat/unreceived/single/record?receiver=' + receiver,
+			crossDomain: true
+		})
+	};
+
+	chatService.getPairUnreceived = function(user1, user2){
+		return $http({
+			method: 'GET',
+			url: baseUrl + port + '/chat/unreceived/pair/record?user1=' + user1 + '&user2=' + user2,
+			crossDomain: true
+		})
+	};
+
+	return chatService;
+})
+
 .factory('Chats', function() {
   // Might use a resource here that returns a JSON array
 
   // Some fake testing data
-  var chats = [{
-    id: 0,
-    name: 'Ben Sparrow',
-    lastText: 'You on your way?',
-    face: 'img/ben.png'
-  }, {
-    id: 1,
-    name: 'Max Lynx',
-    lastText: 'Hey, it\'s me',
-    face: 'img/max.png'
-  }, {
-    id: 2,
-    name: 'Adam Bradleyson',
-    lastText: 'I should buy a boat',
-    face: 'img/adam.jpg'
-  }, {
-    id: 3,
-    name: 'Perry Governor',
-    lastText: 'Look at my mukluks!',
-    face: 'img/perry.png'
-  }, {
-    id: 4,
-    name: 'Mike Harrington',
-    lastText: 'This is wicked good ice cream.',
-    face: 'img/mike.png'
-  }];
+  var chats = [{"id":8,"name":"李明","pic":"img/adam.jpg","lastMessage":{"originalTime":"2015-11-27 06:34:55","time":"2015","timeFrome1970":1451169295000,"content":"你在干什么?","isFromeMe":false},"noReadMessages":0,"showHints":false,"isTop":0,"message":[{"isFromeMe":false,"content":"你好!","time":"2015-11-22 08:50:22"},{"isFromeMe":true,"content":"你好, 你是谁?","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"你在干什么?","time":"2015-11-27 06:34:55"},{"isFromeMe":true,"content":"知道怎么搞的吗?","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"这是一道可以测出一个人有没有商业头脑的数学题","time":"2015-11-27 06:34:55"},{"isFromeMe":false,"content":"喝咖啡对身体好吗?","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"在澳洲申请新西兰签证","time":"2015-11-27 06:34:55"},{"isFromeMe":true,"content":"说走就走的旅行","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"ok","time":"2015-11-27 06:34:55"},{"isFromeMe":true,"content":"拉玛西亚","time":"2015-11-22 08:51:02"},{"isFromeMe":true,"content":"拉玛西亚影视学院招生简章","time":"2015-11-27 06:34:55"},{"isFromeMe":true,"content":"去黑头产品排行榜","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"美国大使馆 北京","time":"2015-11-27 06:34:55"},{"isFromeMe":false,"content":"被开水烫伤怎么办?","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"谁说菜鸟不会数据分析?","time":"2015-11-27 06:34:55"},{"isFromeMe":true,"content":"谁念西风独自凉","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"被酒莫惊春睡重，赌书消得泼茶香，当时只道是寻常","time":"2015-11-27 06:34:55"}]},{"id":1,"name":"王峰","pic":"img/ben.png","lastMessage":{"originalTime":"2015-11-26 5:22:55","time":"2015","timeFrome1970":1451078575000,"content":"明天什么时候去吃饭?","isFromeMe":false},"noReadMessages":0,"showHints":false,"isTop":0,"message":[{"isFromeMe":false,"content":"你好!","time":"2015-11-22 08:50:22"},{"isFromeMe":true,"content":"你好, 你是谁?","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"明天什么时候去吃饭?","time":"2015-11-26 5:22:55"}]},{"id":7,"name":"潘敏","pic":"img/max.png","lastMessage":{"originalTime":"2015-11-22 15:34:55","time":"2015","timeFrome1970":1450769695000,"content":"我就在软件园?","isFromeMe":false},"noReadMessages":0,"showHints":false,"isTop":0,"message":[{"isFromeMe":false,"content":"你好!","time":"2015-11-22 08:50:22"},{"isFromeMe":true,"content":"你好, 你是谁?","time":"2015-11-22 08:51:02"},{"isFromeMe":false,"content":"我就在软件园?","time":"2015-11-22 15:34:55"}]},{"id":2,"name":"王振启","pic":"img/mike.png","lastMessage":{"originalTime":"2015-11-21 15:34:55","time":"2015","timeFrome1970":1450683295000,"content":"周末有什么安排?","isFromeMe":false},"noReadMessages":0,"showHints":false,"isTop":0},{"id":6,"name":"许仁杰","pic":"img/perry.png","lastMessage":{"originalTime":"2014-10-12 15:34:55","time":"2014","timeFrome1970":1415777695000,"content":"好","isFromeMe":false},"noReadMessages":0,"showHints":false,"isTop":0}];
 
   return {
     all: function() {
@@ -225,7 +525,6 @@ angular.module('starter.services', [])
     }
   };
 }])
-
 
 .factory('messageService', ['localStorageService', 'dateService',
     function(localStorageService, dateService) {

@@ -1,0 +1,46 @@
+<ion-modal-view>
+	<ion-header-bar>
+		<h1 class="title">服务详情</h1>
+	</ion-header-bar>
+	<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px; position: absolute; width: 100%; top: 43px; left: 1px" id="userServiceInfo">
+		<div style="padding-left: 53px">
+			<img get-svc-pic pic-id="{{userServiceInfo.id}}" id="userServiceInfoImage">
+			<h2>{{userServiceInfo.serviceLabelName}}</h2>
+			<p>{{userServiceInfo.slogan}}</p>
+		</div>
+		<div style="margin-top: 6px">
+			<img get-svc-pic pic-id="{{userServiceInfo.id}}" style="max-height: 150px; max-width:150px; width: 100%; height: 100%">
+		</div>
+		<div>
+			<span style="display: inline-block">广告视频: </span>
+			<label style="display: inline-flex">还未上传</label>
+		</div>
+		<p>{{userServiceInfo.address}}</p>
+		<!--<p>经度{{userServiceInfo.longitude.toFixed(3)}} 纬度{{userServiceInfo.latitude.toFixed(3)}}</p>-->
+		<!--<p get-position longitude="{{userServiceInfo.longitude}}" latitude="{{userServiceInfo.latitude}}"></p>-->
+	</div>
+	<ion-content on-tap="showMenu.flag1 = false" id="userServiceChat" delegate-handle="messageDetailsScroll">
+		<div ng-include="'templates/messageList.html'" style="overflow-y: scroll"></div>
+	</ion-content>
+	<ion-footer-bar align-title="left" class="" resize-foot-bar>
+		<div class="rj-footer-btn-wrap">
+			<button class="button button-icon icon ion-ios-mic-outline rj-footer-btn-left">
+			</button>
+		</div>
+		<label class="item item-input rj-footer-input">
+			<textarea msd-elastic ng-model="send_content.message" ng-focus="needLogin()"></textarea>
+			<div class="buttons">
+				<button class="rj-footer-btn button button-icon icon ion-happy-outline"></button>
+			</div>
+		</label>
+		<div class="rj-footer-btn-wrap">
+			<div class="buttons" ng-show="!send_content.message || send_content.message === ''" ng-click="sendImageMessage()">
+				<button class="button button-icon icon ion-ios-plus-outline rj-footer-btn-left">
+				</button>
+			</div>
+			<div class="rj-send-button" ng-hide="!send_content.message || send_content.message === ''" ng-click="sendMessage(send_content.message)">
+				<p>发送</p>
+			</div>
+		</div>
+	</ion-footer-bar>
+</ion-modal-view>

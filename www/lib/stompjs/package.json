@@ -1,0 +1,91 @@
+{
+  "_args": [
+    [
+      "stompjs",
+      "/Users/kubenetes/WebstormProjects/tagooo"
+    ]
+  ],
+  "_from": "stompjs@latest",
+  "_id": "stompjs@2.3.3",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/stompjs",
+  "_npmUser": {
+    "email": "jmesnil@gmail.com",
+    "name": "jmesnil"
+  },
+  "_npmVersion": "1.4.3",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "stompjs",
+    "raw": "stompjs",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/stompjs/-/stompjs-2.3.3.tgz",
+  "_shasum": "34178ac7bb8ee294cc5d554ad8b50f7f5459fd8e",
+  "_shrinkwrap": null,
+  "_spec": "stompjs",
+  "_where": "/Users/kubenetes/WebstormProjects/tagooo",
+  "author": {
+    "email": "jmesnil@gmail.com",
+    "name": "Jeff Mesnil"
+  },
+  "bugs": {
+    "url": "https://github.com/jmesnil/stomp-websocket/issues"
+  },
+  "dependencies": {
+    "websocket": "latest"
+  },
+  "description": "STOMP for JavaScript apps (Web browser & node.js)",
+  "devDependencies": {
+    "coffee-script": "latest",
+    "coffeelint": "latest",
+    "connect": "latest",
+    "docco": "latest",
+    "jasmine-node": "latest",
+    "uglify-js": "latest"
+  },
+  "directories": {
+    "doc": "doc",
+    "example": "example",
+    "test": "test"
+  },
+  "dist": {
+    "shasum": "34178ac7bb8ee294cc5d554ad8b50f7f5459fd8e",
+    "tarball": "https://registry.npmjs.org/stompjs/-/stompjs-2.3.3.tgz"
+  },
+  "homepage": "https://github.com/jmesnil/stomp-websocket",
+  "keywords": [
+    "STOMP",
+    "Web sockets",
+    "messaging",
+    "queue"
+  ],
+  "license": "Apache-2.0",
+  "maintainers": [
+    {
+      "email": "jmesnil@gmail.com",
+      "name": "jmesnil"
+    }
+  ],
+  "name": "stompjs",
+  "optionalDependencies": {
+    "websocket": "latest"
+  },
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jmesnil/stomp-websocket.git"
+  },
+  "scripts": {
+    "build": "cake build",
+    "test": "coffeelint -f coffeelint.json -r src && cake test"
+  },
+  "version": "2.3.3"
+}

@@ -1,0 +1,96 @@
+<ion-view view-title="找服务">
+
+    <ion-nav-buttons side="right">
+        <!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
+        <!--</button>-->
+	    <button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i>
+	    </button>
+    </ion-nav-buttons>
+
+<!--     <ion-nav-bar class="bar-positive">
+        <ion-nav-back-button>
+        </ion-nav-back-button>
+    </ion-nav-bar>
+ -->
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag">
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">注销</div>
+		<div ng-if="!isLogin" class="lty-menu-item" ng-click="login()">登录</div>
+		<div class="lty-menu-item" ng-click="myShare()">当前页分享</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div class="lty-menu-item">举报</div>
+	</div>
+	<div class="list" style="margin-top: 44px; margin-bottom: 0px">
+		<div class="item item-input-inset">
+			<label class="item-input-wrapper">
+				<input type="text" placeholder="定位中..." ng-model="searchPosition.address" style="width: 100%">
+			</label>
+			<label style="padding-left: 5px">
+				附近
+			</label>
+		</div>
+	</div>
+    <ion-content on-tap="showMenu.flag = false" style="top: 87px;" id="content">
+        <div class="list">
+	        <div class="item">
+		        <form name="typeSearchForm" id="typeSearchForm" style="position: relative">
+			        <div class="list" style="margin-bottom: 0px">
+				        <div class="item item-input" ng-repeat="label in labels">
+					        <span class="input-label" style="width: 25%; white-space: normal">{{label.type}}</span>
+					        <div style="white-space: normal; width: 75%">
+						        <div ng-repeat="serviceLabel in label.serviceLabel" class="type-label" ng-click="getElementPosition($event,serviceLabel)" ng-class="{true: 'select-label'}[selectSvcId == serviceLabel.id]">
+							        {{serviceLabel.type}}
+						        </div>
+					        </div>
+				        </div>
+			        </div>
+			        <div class="float-window" id="float-window" style="display: none">
+				        <div id="float-triangle">
+					        <div class="triangle"></div>
+					        <div class="triangle" style="border-bottom-color: white; margin-top: -11px"></div>
+				        </div>
+				        <div style="margin-left: 5px; margin-bottom: 2px; white-space: normal">
+					        <div class="type-label" ng-repeat="item in thirdLabel" ng-click="searchByLabelAndPosition(item)">
+						        {{item.type}}
+					        </div>
+				        </div>
+			        </div>
+		        </form>
+	        </div>
+
+            <div class="item item-input-inset">
+	            <label style="padding-right: 5px">
+		            关键字搜索
+	            </label>
+                <label class="item-input-wrapper">
+                    <input type="text" placeholder="输入关键字" ng-model="searchWord">
+                </label>
+				<div style="width: 35px; text-align: center">
+	                <i class="icon ion-search" ng-click="searchByWord()" style="font-size: 25px;"></i>
+				</div>
+                <!-- <button class="button button-small button-positive button-outline" ng-click="login()">
+                    login
+                </button> -->
+                <!-- <a class="button button-icon icon ion-search"></a> -->
+            </div>
+
+	        <div class="item item-divider" ng-if="false">
+                区域搜索
+	        </div>
+	        <div id="mapContainer" style="height: 240px" ng-if="false">
+		        <input placeholder="请输入地址" type="text" id="search-place" style="position: absolute; right: 8px; top: 8px;
+                    padding-left: 8px; z-index: 100; padding-right: 8px; background: #eee; opacity: 0.88; border-radius: 4px; border:1px white solid" ng-keyup="processEnter($event)">
+	        </div>
+	        <div class="item item-input-inset" ng-if="false">
+				<label class="item-input-wrapper">
+			        <p style="height: 29px; line-height: 29px; font-size: 13px">选择的位置: 经度{{searchPosition.longitude.toFixed(4)}} 纬度{{searchPosition.latitude.toFixed(4)}}</p>
+		        </label>
+		        <button class="button button-small button-positive button-outline" ng-click="searchByPosition()">
+			        搜索
+		        </button>
+	        </div>
+        </div>
+
+    </ion-content>
+
+</ion-view>

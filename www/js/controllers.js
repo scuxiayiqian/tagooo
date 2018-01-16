@@ -1,698 +1,1507 @@
-angular.module('starter.controllers', [])
+angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
-.controller('AppCtrl', function($scope, $ionicModal, $timeout, 
-  $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService,
-  UserService, $http, baseUrl, port, $state) {
+.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter, $ionicScrollDelegate, $cordovaSocialSharing) {
 
-  // 解决tab切换时nav返回按钮消失的问题
-  $scope.onTabSelected = function(){
-    $ionicHistory.clearHistory();
-  };
+	AV.init({
+		appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
+		appKey:'tw1q4AEWHIvpPBnQhKmfH8rO',
+	});
 
-  $scope.onTabDeselected = function(){
-    $ionicHistory.clearHistory();
-  };  
+	var Realtime = AV.Realtime;
+	var realtime = new Realtime({
+		appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
+		region: 'cn', //美国节点为 "us"
+		pushOfflineMessages: true,
+		plugins: [AV.TypedMessagesPlugin]
+	});
 
-  var clearLoginError = function(){
-    $scope.loginError.flag = false;
-    $scope.loginError.info = "";
-  };
+	if($rootScope.isFirst == undefined){
+		$rootScope.isFirst = true;
+		$state.go('tab.searchresult');
+	}
 
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
+	$rootScope.currentChat = {
+		'user': null,
+		'conversation': null, //当前活动的对话
+		'messages': null,   //当前活动对话对应的消息记录
+		'conversationList': null //用户的所有对话列表
+	};
 
-  $scope.loginData = {};
-  $scope.loginError = {};
-  $scope.loginError.flag = false;
+	$rootScope.currentPosition = {};
 
-  // Create the login modal that we will use later
-  $ionicModal.fromTemplateUrl('templates/login.html', {
-    scope: $scope
-  }).then(function(modal) {
-    $scope.modal = modal;
-  });
+	$rootScope.searchResultPosition = {};
 
-  // Triggered in the login modal to close it
-  $scope.closeLogin = function() {
-    $scope.modal.hide();
-  };
+	$scope.isLogin = false;
+	//$scope.$apply();
 
-  $scope.login = function() {
-    $scope.modal.show();
-  };
+	$scope.messageService = {};
 
-  // Perform the login action when the user submits the login form
-  $scope.doLogin = function() {
+	$rootScope.send_content = {
+		'message': null
+	};
 
-    console.log('Doing login', $scope.loginData);  
+	$rootScope.$watch('currentChat.messages', function(newValue,oldValue){
+		$timeout(function(){
+			$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+		},500);
+	});
 
-    if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
-      || $scope.loginData.password == '' || $scope.loginData.password == undefined){
-      $scope.loginError.flag = true;
-      $scope.loginError.info = "用户名或密码未填写";
+	$rootScope.sendMessage = function(content){
+		if($rootScope.currentChat.conversation == null){
+			$cordovaToast.showShortBottom("未获取当前会话");
+			return;
+		}
+		else{
+			$rootScope.currentChat.conversation.send(new AV.TextMessage(content))
+				.then(function(message) {
+					console.log("消息发送成功", message);
 
-      ToastService.showCenterToast($scope.loginError.info)
-      .then(function(success) {
-        clearLoginError();
-      }, function (error) {
-        console.log("show toast error");
-      });
+					$rootScope.currentChat.messages.push(message);
+					$rootScope.$apply();
+					console.log("消息记录为", $rootScope.currentChat.messages);
+					$rootScope.currentChat.conversation.lastMessage = message;
+					for(var i in $rootScope.currentChat.conversationList){
+						if($rootScope.currentChat.conversationList[i].id == $rootScope.currentChat.conversation.id){
+							$rootScope.currentChat.conversationList[i] = $rootScope.currentChat.conversation;
+							break;
+						}
+					}
+					$rootScope.send_content.message = null;
+					$rootScope.$apply();
+					$timeout(function(){
+						$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+					},50);
+				})
+				.catch(console.error);
 
-      return;
-    }
+		}
+	};
 
-    UserService.login($scope.loginData)
-      .success(function(data){
-        if(data.status == 500){
-          $scope.loginError.flag = true;
-          $scope.loginError.info = "用户名密码不匹配";
-          // $timeout(clearLoginError,1200);
-          ToastService.showCenterToast($scope.loginError.info)
-          .then(function(success) {
-            clearLoginError();
-          }, function (error) {
-            console.log("show toast error");
-          });
-        }
-        else if(data.status == 200){
-          // for真机
-          // ToastService.showCenterToast("登录成功")
-          // .then(function(success) {
-          //   UserService.setCurrentUser(data);
-          //   UserService.isLogin = true;
-          //   clearLoginError();
-          //   $scope.closeLogin();
-          // }, function (error) {
-          //   // error
-          // });
+	$rootScope.sendImageMessage = function(){
+		var cameraOptions = {
+			//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			quality: 80,                                                                                        //相片质量0-100
+			destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			sourceType: Camera.PictureSourceType.PHOTOLIBRARY,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			allowEdit: true,                                                                                //在选择之前允许修改截图
+			encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+			targetWidth: 200,                                                                                //照片宽度
+			targetHeight: 200,                                                                             //照片高度
+			mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+		};
 
-          // for console
-          UserService.setCurrentUser(data);
-          UserService.isLogin = true;
-          // $scope.getAllFollowedCoach();
+		$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
 
-          clearLoginError();
-          $scope.closeLogin();
-          $state.go("tab.dash");
-        }
-        else {
-          console.log(data);
-        }
-      })
-      .error(function(data){
-        // $scope.loginError.flag = true;
-        // $scope.loginError.info = "网络错误";
-        // $timeout(clearLoginError, 1200);
-        clearLoginError();
-        console.log(data);
-      })
-  };
+			var file = new AV.File(new Date().getTime() + '.jpeg', {
+				base64: imageData
+			});
+			file.save().then(function() {
+				var message = new AV.ImageMessage(file);
+				return $rootScope.currentChat.conversation.send(message);
+			}).then(function(imageMessage) {
+				$rootScope.currentChat.messages.push(imageMessage);
+				$rootScope.$apply();
+				console.log('发送成功');
+				$rootScope.currentChat.conversation.lastMessage = message;
+				for(var i in $rootScope.currentChat.conversationList){
+					if($rootScope.currentChat.conversationList[i].id == $rootScope.currentChat.conversation.id){
+						$rootScope.currentChat.conversationList[i] = $rootScope.currentChat.conversation;
+						break;
+					}
+				}
+				$timeout(function(){
+					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+				},50);
+			}).catch(console.error.bind(console));
 
-  $scope.reservation = {};
-  $scope.reservation.photo = "img/noprofile.png";
+		}, function(err) {
+			// error
+			console.log("get pic err");
+		});
 
-  // Create the reserve modal that we will use later
-  $ionicModal.fromTemplateUrl('templates/reserve.html', {
-    scope: $scope
-  }).then(function(modal) {
-    $scope.reserveform = modal;
-  });
+	};
 
-  // Triggered in the reserve modal to close it
-  $scope.closeReserve = function() {
-    $scope.reserveform.hide();
-  };
+	$rootScope.showImageOfMessage = function(imageUrl){
+		$scope.displayImageOfMessage = imageUrl;
+		$ionicModal.fromTemplateUrl('templates/imageModal.html', {
+			scope: $scope,
+		}).then(function(modal) {
+			$scope.imageOfMessageModal = modal;
+			$scope.imageOfMessageModal.show();
+		});
+	};
 
-  // Open the reserve modal
-  $scope.reserve = function() {
-    $scope.reserveform.show();
-  };
 
-  // Perform the reserve action when the user submits the reserve form
-  $scope.doReserve = function() {
-    console.log('Doing reservation', $scope.reservation);
+	// 解决tab切换时nav返回按钮消失的问题
+	$scope.onTabSelected = function(){
+		$ionicHistory.clearHistory();
+	};
 
-    UserService.register($scope.reservation)
-      .success(function(data){
-        if(data.status == 2){
-          console.log("错误");
-          ToastService.showCenterToast("错误")
-          .then(function(success) {
+	$scope.onTabDeselected = function(){
+		$ionicHistory.clearHistory();
+	};
 
-          }, function (error) {
-            console.log("show toast error");
-          });
-        }
-        else if(data.status == 0){
-          console.log("注册成功");
-          // // for真机
-          // ToastService.showCenterToast("注册成功")
-          // .then(function(success) {
-          //   UserService.setCurrentUser(data);
-          //   UserService.isLogin = true;
-          //   $scope.closeReserve();
-          // }, function (error) {
-          //   // error
-          // });
+	var clearLoginError = function(){
+		$scope.loginError.flag = false;
+		$scope.loginError.info = "";
+	};
 
-          // for console
-          UserService.setCurrentUser(data);
-          UserService.isLogin = true;
-          // $scope.getAllFollowedCoach();
+	// With the new view caching in Ionic, Controllers are only called
+	// when they are recreated or on app start, instead of every page change.
+	// To listen for when this page is active (for example, to refresh data),
+	// listen for the $ionicView.enter event:
+	//$scope.$on('$ionicView.enter', function(e) {
+	//});
 
-          clearLoginError();
-          $scope.closeReserve();
-        }
-        else {
-          console.log(data);
-        }
-      })
-      .error(function(data){
-        // $scope.loginError.flag = true;
-        // $scope.loginError.info = "网络错误";
-        // $timeout(clearLoginError, 1200);
-        clearLoginError();
-        console.log(data);
-      })
+	$scope.loginData = {
+		'gender': true
+	};
+	$scope.loginError = {};
+	$scope.loginError.flag = false;
 
-    // $timeout(function() {
-    //   $scope.closeReserve();
-    // }, 1000);
-  };
+	// Create the login modal that we will use later
+	$ionicModal.fromTemplateUrl('templates/login.html', {
+		scope: $scope
+	}).then(function(modal) {
+		$scope.modal = modal;
+	});
 
-  // 上传头像
-  $scope.pickPhoto = function() {
-    var actionSheetOptions = {
-      title: '上传头像',
-      buttonLabels: ['相机', '从图库选择'],
-      addCancelButtonWithLabel: '取消',
-      androidEnableCancelButton: true
-    };
-    $cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
-      var imageSource;
-      if(btnIndex == 1){
-        imageSource = Camera.PictureSourceType.CAMERA;
-      }
-      else if(btnIndex == 2){
-        imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
-      }
-      else{
-        return;
-      }
-      var cameraOptions = {
-        //这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
-        quality: 80,                                            //相片质量0-100
-        destinationType: Camera.DestinationType.DATA_URL,        //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
-        sourceType: imageSource,             //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
-        allowEdit: true,                                        //在选择之前允许修改截图
-        encodingType:Camera.EncodingType.JPEG,                   //保存的图片格式： JPEG = 0, PNG = 1
-        targetWidth: 200,                                        //照片宽度
-        targetHeight: 200,                                       //照片高度
-        mediaType:0,                                             //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
-        cameraDirection:0                                      //枪后摄像头类型：Back= 0,Front-facing = 1
-      };
+	// Triggered in the login modal to close it
+	$scope.closeLogin = function() {
+		$scope.modal.hide();
+	};
 
-      $cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
-        
-        $scope.reservation.photo = 'data:image/jpeg;base64,' + imageData;
+	$scope.getValidateCode = function(phone, code){
+		if(phone == undefined ||phone == ""){
+			$cordovaToast.showShortBottom("请填写手机号");
+			return;
+		}
+		UserService.sendValidateCode(phone, code)
+			.success(function(data){
+				$cordovaToast.showShortBottom("验证码已发送");
+			})
+			.error(function(err){
+				$cordovaToast.showShortBottom("验证码发送失败");
+			})
+	};
 
-      }, function(err) {
-        // error
-        console.log("get pic err");
-      });
-    });
-  };
+	$scope.login = function() {
+		$scope.modal.show();
+	};
 
-  $scope.getAllFollowedCoach = function() {
-    UserService.searchAllFollows()
-      .success(function(data){
-        UserService.setFollowedCoach(data);
-        console.log(data);
-      })
-      .error(function(data){
-        console.log("get all follows error");
-      })
-  }
+	//$scope.isLogin = function() {
+	//	return !UserService.isLogin;
+	//};
+
+
+
+	// Perform the login action when the user submits the login form
+	$scope.doLogin = function() {
+		if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
+			|| $scope.loginData.validateCode == '' || $scope.loginData.validateCode == undefined){
+			$scope.loginError.flag = true;
+			$scope.loginError.info = "手机号或验证码未填写";
+
+			ToastService.showCenterToast($scope.loginError.info)
+				.then(function(success) {
+					clearLoginError();
+				}, function (error) {
+					console.log("show toast error");
+				});
+
+			return;
+		}
+
+		UserService.smsLogin($scope.loginData.phone, $scope.loginData.validateCode)
+			.success(function(data){
+				console.log('login', data);
+				if(data.status == 404){
+					$scope.loginError.flag = true;
+					$scope.loginError.info = "手机号验证码不匹配";
+					// $timeout(clearLoginError,1200);
+					$cordovaToast.showShortBottom('手机号验证码不匹配');
+				}
+				else if(data.status == 200){
+					console.log('login', data);
+					realtime.createIMClient(data.id).then(function(me) {
+						$scope.IMClient = me;
+						me.on('message', function(message, conversation) {
+							$timeout(function(){
+								$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+							},50);
+							//switch (message.type) {
+							//	case AV.TextMessage.TYPE:
+							console.log('receive message', message);
+							console.log('receive message conversation', conversation);
+							if ($rootScope.currentChat.conversation.id == conversation.id) {
+								$rootScope.currentChat.messages.push(message);
+								$rootScope.currentChat.conversation = conversation;
+								$rootScope.currentChat.conversation.read();
+							}
+							else if ($rootScope.currentChat.conversationList != null) {
+								for (var i = 0; i < $rootScope.currentChat.conversationList.length; i++) {
+									if ($rootScope.currentChat.conversationList[i].id == conversation.id) {
+										$rootScope.currentChat.conversationList[i] = conversation;
+										$rootScope.$apply();
+										return;
+									}
+								}
+								$rootScope.currentChat.conversationList.push(conversation);
+							}
+							$rootScope.$apply();
+								//	break;
+								//case AV.ImageMessage.TYPE:
+								//	console.log('收到图片消息，url: ' + message.getFile().url() + ', width: ' + message.getFile().metaData('width'));
+								//	break;
+								//default:
+								//	console.warn('收到未知类型消息');
+							//}
+						});
+						me.getQuery().limit(1000).containsMembers([data.id]).withLastMessagesRefreshed(true).find()
+							.then(function(conversations){
+								$scope.currentChat.conversationList = conversations;
+								console.log('conbersationList', conversations);
+							})
+							.catch(console.error.bind(console));
+						me.on('unreadmessagescountupdate', function(conversations) {
+							console.log('unread', conversations);
+							//for(var i = 0; i < conversation.length(); i++) {
+							//	//console.log(conv.id, conv.name, conv.unreadMessagesCount);
+							//}
+						});
+					});
+					$scope.loginData = {};
+					$scope.currentChat.user = data;
+					UserService.setCurrentUser(data);
+					$scope.isLogin = true;
+					localStorage.setItem('currentUser', JSON.stringify(data));
+					clearLoginError();
+					$scope.closeLogin();
+
+					if (data.photo != null) {
+						UserService.usersProfile = baseUrl + port + '/student/getphoto?phone=' + data.phone;
+					}
+					//$state.go("tab.search");
+				}
+				else {
+					console.log(data);
+				}
+			})
+			.error(function(data){
+				// $scope.loginError.flag = true;
+				// $scope.loginError.info = "网络错误";
+				// $timeout(clearLoginError, 1200);
+				clearLoginError();
+				console.log(data);
+			})
+	};
+
+	$scope.autoLogin = function(){
+		var currentUser = localStorage.getItem('currentUser');
+		if(currentUser == null || currentUser == undefined){
+			return;
+		}
+		currentUser = JSON.parse(currentUser);
+		realtime.createIMClient(currentUser.id).then(function(me) {
+			$scope.IMClient = me;
+			me.on('message', function(message, conversation) {
+				$timeout(function(){
+					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+				},50);
+				//switch (message.type) {
+				//	case AV.TextMessage.TYPE:
+				console.log('receive message', message);
+				console.log('receive message conversation', conversation);
+				if ($rootScope.currentChat.conversation.id == conversation.id) {
+					$rootScope.currentChat.messages.push(message);
+					$rootScope.currentChat.conversation = conversation;
+					$rootScope.currentChat.conversation.read();
+				}
+				else if ($rootScope.currentChat.conversationList != null) {
+					for (var i = 0; i < $rootScope.currentChat.conversationList.length; i++) {
+						if ($rootScope.currentChat.conversationList[i].id == conversation.id) {
+							$rootScope.currentChat.conversationList[i] = conversation;
+							$rootScope.$apply();
+							return;
+						}
+					}
+					$rootScope.currentChat.conversationList.push(conversation);
+				}
+				$rootScope.$apply();
+				//	break;
+				//case AV.ImageMessage.TYPE:
+				//	console.log('收到图片消息，url: ' + message.getFile().url() + ', width: ' + message.getFile().metaData('width'));
+				//	break;
+				//default:
+				//	console.warn('收到未知类型消息');
+				//}
+			});
+			me.getQuery().limit(1000).containsMembers([currentUser.id]).withLastMessagesRefreshed(true).find()
+				.then(function(conversations){
+					$scope.currentChat.conversationList = conversations;
+					console.log('conbersationList', conversations);
+				})
+				.catch(console.error.bind(console));
+			me.on('unreadmessagescountupdate', function(conversations) {
+				console.log('unread', conversations);
+				//for(var i = 0; i < conversation.length(); i++) {
+				//	//console.log(conv.id, conv.name, conv.unreadMessagesCount);
+				//}
+			});
+		});
+		$scope.loginData = {};
+		$scope.currentChat.user = currentUser;
+		UserService.setCurrentUser(currentUser);
+		$scope.isLogin = true;
+
+	};
+
+	$scope.autoLogin();
+
+	$scope.logout = function(){
+		UserService.setCurrentUser({});
+		$scope.isLogin = false;
+		//$scope.profile = {};
+		//$scope.profileModal.remove();
+		$rootScope.currentChat = {
+			'conversation': null, //当前活动的对话
+			'messages': null,   //当前活动对话对应的消息记录
+			'conversationList': null //用户的所有对话列表
+		};
+		if($scope.IMClient) {
+			$scope.IMClient.close().then(function () {
+				console.log('退出聊天登录');
+			}).catch(console.error.bind(console));
+		}
+		localStorage.removeItem('currentUser');
+		$state.go('tab.search')
+	}
+
+	$scope.reservation = {};
+	$scope.reservation.photo = "img/noprofile.png";
+
+	// Create the reserve modal that we will use later
+	$ionicModal.fromTemplateUrl('templates/register.html', {
+		scope: $scope
+	}).then(function(modal) {
+		$scope.registerModal = modal;
+	});
+
+	// Triggered in the reserve modal to close it
+	$scope.closeReserve = function() {
+		$scope.registerModal.hide();
+	};
+
+	// Open the reserve modal
+	$scope.register = function() {
+		$scope.registerModal.show();
+	};
+
+	// Perform the reserve action when the user submits the reserve form
+	$scope.doReserve = function() {
+		if($scope.reservation.phone == '' || $scope.reservation.phone == undefined){
+			$cordovaToast.showShortBottom("请填写手机号");
+			return;
+		}
+		if($scope.reservation.validateCode == '' || $scope.reservation.validateCode == undefined){
+			$cordovaToast.showShortBottom("请填写验证码");
+			return;
+		}
+		console.log('Doing reservation', $scope.reservation);
+		$scope.reservation.regDate = $filter('date')(new Date(), 'yyyyMMdd');
+
+		UserService.smsRegister($scope.reservation.phone, $scope.reservation.validateCode, $scope.reservation.regDate)
+			.success(function(data){
+				if(data.status == 2){
+					$cordovaToast.showShortBottom("该手机号已被注册");
+				}
+				else if(data.status == 0){
+					console.log("注册成功");
+					$scope.reservation = {};
+					$cordovaToast.showShortBottom("注册成功");
+					UserService.setCurrentUser(data);
+					UserService.isLogin = true;
+					clearLoginError();
+					$scope.closeReserve();
+				}
+				else if(data.status == 5){
+					$cordovaToast.showShortBottom("验证码错误");
+				}
+				else {
+					console.log(data);
+				}
+			})
+			.error(function(data){
+				// $scope.loginError.flag = true;
+				// $scope.loginError.info = "网络错误";
+				// $timeout(clearLoginError, 1200);
+				clearLoginError();
+				console.log(data);
+			})
+	};
+
+
+	$scope.myShare = function(){
+		$cordovaSocialSharing
+			.share("生活助手", null, null, " http://106.14.16.218:8100/") // Share via native share sheet
+			.then(function(result) {
+				//$cordovaToast.showShortBottom("分享成功");
+			}, function(err) {
+				//$cordovaToast.showShortBottom("分享失败");
+			});
+	};
+
+
+	//上传营业执照和身份证
+	$scope.uploadMock = function(){
+		var cameraOptions = {
+			//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			quality: 80,                                                                                        //相片质量0-100
+			destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			sourceType: 0,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			allowEdit: true,                                                                                //在选择之前允许修改截图
+			encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+			mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+		};
+		$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
+
+			$cordovaToast.showShortBottom("读取文件成功");
+
+		}, function(err) {
+			// error
+			console.log("get pic err");
+		});
+	}
+	// 上传头像
+	$scope.pickPhoto = function() {
+		var actionSheetOptions = {
+			title: '上传头像',
+			buttonLabels: ['相机', '从图库选择'],
+			addCancelButtonWithLabel: '取消',
+			androidEnableCancelButton: true
+		};
+		$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
+			var imageSource;
+			if(btnIndex == 1){
+				imageSource = Camera.PictureSourceType.CAMERA;
+			}
+			else if(btnIndex == 2){
+				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+			}
+			else{
+				return;
+			}
+			var cameraOptions = {
+				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+				quality: 80,                                                                                        //相片质量0-100
+				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+				sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+				allowEdit: true,                                                                                //在选择之前允许修改截图
+				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+				targetWidth: 200,                                                                                //照片宽度
+				targetHeight: 200,                                                                             //照片高度
+				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+			};
+
+			$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
+
+				$scope.reservation.photo = 'data:image/jpeg;base64,' + imageData;
+
+			}, function(err) {
+				// error
+				console.log("get pic err");
+			});
+		});
+	};
+
 })
 
-.controller('DashCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', 
-    function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService) {
+.controller('SearchCtrl', ['$scope', '$timeout', '$state', '$rootScope', 'UserService', '$cordovaInAppBrowser', 'SearchService', '$cordovaToast', '$cordovaGeolocation',
+	function($scope, $timeout, $state, $rootScope, UserService, $cordovaInAppBrowser, SearchService, $cordovaToast, $cordovaGeolocation) {
 
-    $scope.typeSearch = {};
-   
-    // $scope.type = ['小车', '卡车', '摩托车'];
-    // $scope.quality = ['认证教练', '非认证教练', '陪练'];
-    // $scope.language = ['国语', '英语', '粤语', '印度语', '菲语', '韩语', '日语'];
-    // $scope.gender = ['男', '女'];
-    $scope.typeSearch.type = "C1";
-    $scope.typeSearch.quality = "haolihai";
-    $scope.typeSearch.language = "zhongwen";
-    $scope.typeSearch.gender = "1";
+		$scope.labels = savedLabels;
 
-    $scope.searchByType = function() {
-      console.log($scope.typeSearch);
+		$scope.showMenu = {
+			'flag': false
+		};
 
-      SearchService.searchByType($scope.typeSearch)
-      .success(function(data){
-        // console.log(data);
-        SearchService.setCurrentSearchResult(data);
-        $state.go('tab.searchresult');
-      })
-      .error(function(data){
+		$scope.showSearchLabel = {
+			'flag': true
+		}
 
-      })
-    };
+		$rootScope.position = new AMap.LngLat(116.397428, 39.90923);
 
-    // start - baidu map
-    $scope.offlineOpts = {retryInterval: 5000};
+		SearchService.getAllLabels()
+			.success(function(data){
+				$scope.labels = data;
+			});
 
-    var longitude = 121.506191;
-    var latitude = 31.245554;
+		//Deprecated
+		$scope.searchByLabel = function(serviceId){
+			SearchService.searchByLabel(serviceId)
+				.success(function(data){
+					$rootScope.isSearchAddress = false;
+					var geolocation = new AMap.Geolocation({
+						enableHighAccuracy: true,//是否使用高精度定位，默认:true
+						timeout: 10000                //超过10秒后停止定位，默认：无穷大
+					});
+					geolocation.getCurrentPosition();
+					AMap.event.addListener(geolocation, 'complete', function (data) {
+						$rootScope.position = data.position
+					})
+					var temp = {};
+					for(i in data){
+						if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+							temp[data[i].serviceLabelId] = [];
+						}
+						data[i].distance = $rootScope.position.distance([data[i].longitude, data[i].latitude]);
+						temp[data[i].serviceLabelId].push(data[i]);
+					}
+					$rootScope.searchResults = [];
+					for(i in temp){
+						$rootScope.searchResults.push({
+							'label': temp[i][0].serviceLabelName,
+							'results': temp[i]
+						})
+					}
+					$state.go('tab.searchresult');
+				})
+				.error(function(error){
+					$cordovaToast.showShortBottom("网络错误,搜索失败");
+				})
+		}
 
-    $scope.mapOptions = {
-        center: {
-            longitude: longitude,
-            latitude: latitude
-        },
-        zoom: 17,
-        city: 'ShangHai',
-        markers: [{
-            longitude: longitude,
-            latitude: latitude,
-            icon: 'img/mappiont.png',
-            width: 49,
-            height: 60,
-            title: 'Where',
-            content: 'Put description here'
-        }]
-    };
+		$scope.searchWord = "";
+		$scope.searchByWord = function(){
+			return SearchService.searchByWord($scope.searchWord)
+				.success(function(data){
+					$rootScope.isSearchAddress = false;
+					if($rootScope.position == undefined) {
+						var geolocation = new AMap.Geolocation({
+							enableHighAccuracy: true,//是否使用高精度定位，默认:true
+							timeout: 10000                //超过10秒后停止定位，默认：无穷大
+						});
+						geolocation.getCurrentPosition();
+						AMap.event.addListener(geolocation, 'complete', function (data) {
+							$rootScope.position = data.position
+							console.log('$rootScope.position', $rootScope.position)
+						})
+					}
+					console.log('word-search', data);
+					var temp = {};
+					for(i in data){
+						if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+							temp[data[i].serviceLabelId] = [];
+						}
+						data[i].distance = $rootScope.position.distance([data[i].longitude, data[i].latitude]);
+						temp[data[i].serviceLabelId].push(data[i]);
+					}
+					$rootScope.searchResults = [];
+					for(i in temp){
+						$rootScope.searchResults.push({
+							'label': temp[i][0].serviceLabelName,
+							'results': temp[i]
+						})
+					}
+					$state.go('tab.searchresult');
+				})
+				.error(function(error){
+					$cordovaToast.showShortBottom("网络错误,搜索失败");
+				})
+		}
 
-    $scope.mapLoaded = function(map) {
-        console.log(map);
-    };
 
-    $timeout(function() {
-      $scope.mapOptions.center.longitude = 121.500885;
-      $scope.mapOptions.center.latitude = 31.190032;
-      $scope.mapOptions.markers[0].longitude = 121.500885;
-      $scope.mapOptions.markers[0].latitude = 31.190032;
-    }, 5000);
+		//Deprecated
+		$scope.searchByPosition = function(){
+			var geocoder = new AMap.Geocoder({
+				radius: 500 //范围，默认：500
+			});
+			$rootScope.searchAddress = $scope.searchAddress;
+			$rootScope.isSearchAddress = true;
+			//地理编码,返回地理编码结果
+			geocoder.getLocation($scope.searchAddress, function(status, result) {
+				if (status === 'complete' && result.info === 'OK') {
+					var geocode = result.geocodes;
+					$scope.searchPosition = {
+						'longitude': geocode[0].location.getLng(),
+						'latitude': geocode[0].location.getLat()
+					};
+					console.log('searchPosition', $scope.searchPosition);
+					SearchService.searchByPosition($scope.searchPosition.longitude, $scope.searchPosition.latitude)
+						.success(function(data){
 
-    // end - baidu map
+							var geolocation = new AMap.Geolocation({
+								enableHighAccuracy: true,//是否使用高精度定位，默认:true
+								timeout: 10000                //超过10秒后停止定位，默认：无穷大
+							});
+							geolocation.getCurrentPosition();
+							AMap.event.addListener(geolocation, 'complete', function (data) {
+								$rootScope.position = data.position
+							});
+							var temp = {};
+							for(i in data){
+								if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+									temp[data[i].serviceLabelId] = [];
+								}
+								data[i].distance = $rootScope.position.distance([data[i].longitude, data[i].latitude]);
+								temp[data[i].serviceLabelId].push(data[i]);
+							}
+							$rootScope.searchResults = [];
+							for(i in temp){
+								$rootScope.searchResults.push({
+									'label': temp[i][0].serviceLabelName,
+									'results': temp[i]
+								})
+							}
+							$state.go('tab.searchresult');
+						})
+				}
+			});
+		};
 
-    $scope.searchBtnClicked = function() {
+		$scope.searchPosition = {
+			'address': ""
+		};
+		$scope.searchByLabelAndPosition = function(thirdLabel){
+			if($scope.searchPosition.address == "" || $scope.searchPosition.address == undefined){
+				$cordovaToast.showShortBottom("搜索地址不能为空");
+				return;
+			}
+			var geocoder = new AMap.Geocoder({
+				radius: 500 //范围，默认：500
+			});
+			//地理编码,返回地理编码结果
+			console.log($scope.searchPosition.address);
+			geocoder.getLocation($scope.searchPosition.address, function(status, result) {
+				if (status === 'complete' && result.info === 'OK') {
+					var geocode = result.geocodes;
+					var longitude = geocode[0].location.getLng();
+					var latitude = geocode[0].location.getLat();
+					SearchService.searchByLabelAndPosition(thirdLabel.id,longitude,latitude)
+						.success(function(data){
+							$rootScope.searchResultPosition.address = angular.copy($scope.searchPosition.address);
+							$rootScope.searchResultPosition.coordinate = angular.copy(geocode[0].location);
+							var temp = {};
+							for(i in data){
+								if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+									temp[data[i].serviceLabelId] = [];
+								}
+								data[i].distance = $rootScope.searchResultPosition.coordinate.distance([data[i].longitude, data[i].latitude]);
+								temp[data[i].serviceLabelId].push(data[i]);
+							}
+							$rootScope.searchResults = [];
+							for(i in temp){
+								$rootScope.searchResults.push({
+									'label': temp[i][0].serviceLabelName,
+									'results': temp[i]
+								})
+							}
+							$state.go('tab.searchresult');
+						})
+				}
+			})
+		};
 
-      $state.go('tab.searchresult');
+		var geolocation = new AMap.Geolocation({
+			enableHighAccuracy: false,//是否使用高精度定位，默认:true
+			timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+		});
+		geolocation.getCurrentPosition();
+		AMap.event.addListener(geolocation, 'complete', function (data) {
+			$rootScope.position = data.position;
+			$rootScope.currentPosition.coordinate = data.position;
+			$rootScope.currentPosition.address = data.formattedAddress;
+			$scope.searchPosition.address = data.formattedAddress;
+			$scope.$digest();
+		});
 
-    };
+		AMap.event.addListener(geolocation, 'error', function(err){
+			console.log(err);
+		});
 
-    $scope.isLogin = function() {
-      return !UserService.isLogin;
-    }
-  }
+
+		//三级服务弹出框
+		$scope.showPopupLabels = false;
+		$scope.getElementPosition = function($event, serviceLabel){
+			var window = $("#float-window");
+			var form = $("#typeSearchForm");
+			if(serviceLabel.id == $scope.selectSvcId){
+				$scope.selectSvcId = undefined;
+				$scope.showPopupLabels = false;
+				window.hide();
+				form.css('height', 'auto');
+				return;
+			}
+			$scope.thirdLabel = serviceLabel.thirdLabel;
+			window.show();
+			$scope.selectSvcId = serviceLabel.id;
+			var rect = $event.target.getBoundingClientRect();
+
+			console.log('rect', rect);
+
+			window.ready(function(){
+				form.css('height', 'auto');
+				var formRect = form[0].getBoundingClientRect();
+				console.log('formRect', formRect);
+
+				var positionY = rect.top + rect.height + 15 - formRect.top;
+				console.log('positon',positionY);
+				window.css('top', positionY);
+				var windowRect = window[0].getBoundingClientRect();
+				console.log('windowRect', windowRect);
+
+				if(windowRect.bottom > formRect.bottom){
+					console.log(formRect.height + windowRect.bottom - formRect.bottom + 3);
+					form.css('height', formRect.height + windowRect.bottom - formRect.bottom);
+				}
+				else{
+					form.css('height', 'auto');
+				}
+
+				var marginLeft = rect.left - windowRect.left + rect.width / 2 - 15;
+				$("div.triangle").css('margin-left', marginLeft);
+
+			})
+
+		};
+
+
+	}
 ])
 
-.controller('ChatsCtrl', function($scope, UserService, $state, $ionicListDelegate) {
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-  $scope.myFollowedCoasts = [];
+.controller('FollowCtrl', function($scope, $rootScope, UserService, $state, $ionicListDelegate, $ionicScrollDelegate, ServiceService, $cordovaToast, $ionicModal, $timeout) {
+	// With the new view caching in Ionic, Controllers are only called
+	// when they are recreated or on app start, instead of every page change.
+	// To listen for when this page is active (for example, to refresh data),
+	// listen for the $ionicView.enter event:
+	//
+	//$scope.$on('$ionicView.enter', function(e) {
+	//});
+	$scope.showMenu = {
+		'flag': false
+	};
+	var getFollowServices = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			return;
+		}
+		ServiceService.getFollowServices(UserService.getCurrentUser().id)
+			.success(function(data){
+				$scope.myFollowServices = ServiceService.parseFollowService(data);
+			})
+	};
+	getFollowServices();
+	$scope.unfollowService = function(service, $event){
+		$event.stopPropagation();
+		ServiceService.unfollowService(service.id, UserService.getCurrentUser().id)
+			.success(function(data){
+				if(data.status == 0){
+					getFollowServices();
+					$cordovaToast.showShortBottom('取消关注成功');
+				}
+				else{
+					$cordovaToast.showShortBottom("取消关注失败");
+				}
+			})
+	};
 
-  $scope.$on('$ionicView.beforeEnter', function(){
-    UserService.searchAllFollows()
-      .success(function(data){
-        $scope.myFollowedCoasts = data.coachinfoDTOList;
-      })
-      .error(function(data){
-        console.log("get my follow error");
-      })
-  });
+	$scope.showUserServiceInfoModal = function(service){
+		$rootScope.currentChat.conversation = null;
+		$rootScope.currentChat.messages = null;
+		$scope.userServiceInfo = service;
+		$scope.messageService = service;
+		//$rootScope.$apply();
+		//获得聊天记录、创建对话
+		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
+			$scope.IMClient.createConversation({
+				members: [service.publishUserId, service.id],
+				serviceId: service.id,
+				unique: true,
+			}).then(function (conversation) {
+				$rootScope.currentChat.conversation = conversation;
+				$rootScope.$apply();
+				//console.log('user service conversation', conversation);
+				conversation.queryMessages({
+					limit: 1000, // limit 取值范围 1~1000，默认 20
+				}).then(function (messages) {
+					$rootScope.currentChat.messages = messages;
+					//console.log('user service messages', messages);
+					$rootScope.$apply();
 
-  $scope.unfollow = function(coast) {
-    var pair = {};
-    pair.coachId = coast.id;
-    pair.studentId = UserService.getCurrentUser().id;
+				}).catch(console.error.bind(console))
+			});
+		};
 
-    console.log(pair);
+		$ionicModal.fromTemplateUrl('templates/UserServiceInfo.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.userServiceInfoModal = modal;
+			$scope.userServiceInfoModal.show();
 
-    UserService.unFollow(pair)
-      .success(function(data){
-        if (data.status == 0) {
-          console.log("取关成功");
-          $scope.removeCoast(coast);
-          $ionicListDelegate.closeOptionButtons();
-        }
-        else {
-          console.log("取关失败");
-          $ionicListDelegate.closeOptionButtons();
-        }
-      })
-      .error(function(data){
-        console.log(data);
-        $ionicListDelegate.closeOptionButtons();
-      });
-    
-  };
+			$timeout(function(){
+				$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			},50);
+			$('#userServiceInfoImage')[0].onload = function(){
+				$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
+			};
 
-  $scope.removeCoast = function(coast) {
-    // for (var i = 0; i < $scope.myFollowedCoasts.length; i++) {
-    //   if ($scope.myFollowedCoasts[i].coachId == coast.coachId) {
-    //     console.log("aha");
-    //     $scope.myFollowedCoasts.splice(i, 1);
-    //     return;
-    //   }
-    // }
-    $scope.myFollowedCoasts.splice($scope.myFollowedCoasts.indexOf(coast), 1);
-    console.log($scope.myFollowedCoasts.length);
-  }
+		});
+	};
+
+	$scope.showModifyServiceModal = function(service){
+		$ionicModal.fromTemplateUrl('templates/service.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.modifyService = service;
+			$scope.serviceModal = modal;
+			$scope.mode = 'read';
+			$scope.serviceModal.show();
+		});
+	};
 })
 
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats, $state) {
-  
-  // 强制显示nav back btn
-  // $scope.$on('$ionicView.beforeEnter', function (event, viewData) {
-  //   viewData.enableBack = true;
-  // }); 
-
-  $scope.chat = Chats.get($stateParams.chatId);
+.controller('ChatDetailCtrl', function($scope, $stateParams, messageService, $ionicScrollDelegate, $timeout, UserService) {
+	$scope.myProfile = UserService.usersProfile;
 })
 
-.controller('PublishCtrl', function($scope, $state, $ionicPopup, 
-  localStorageService, messageService, UserService, ImageService,
-  ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast) {
-  
-  $scope.loginUser = {};
+.controller('PublishCtrl', function($scope, $state, $ionicPopup, $ionicModal, $filter, localStorageService, messageService, UserService, ImageService, SearchService, ServiceService,
+                                    ToastService, $cordovaActionSheet, $cordovaCamera, $cordovaToast, Chats, baseUrl, port, $cordovaFileTransfer, $http, $rootScope, $ionicScrollDelegate, $timeout) {
 
-  if (UserService.isLogin) {
-    $scope.loginUser = UserService.getCurrentUser();
-  }
+	$scope.showMenu = {
+		'flag': false,
+		'flag1': false
+	};
 
-  // console.log($scope.loginUser);
+	$scope.profileModalSource = "profile"; //新建服务时如果个人信息不完整,跳转到完善个人信息界面
 
-  $scope.userProfile = "img/noprofile.png";
-  $scope.profileInfo = {};
+	$scope.newServiceButtonState = true; //新建服务时的按钮状态,true可用,false不可用,防止用户多次点击
 
-  if ($scope.loginUser.description == null) {
-    // console.log("null description");
-    $scope.loginUser.description = "暂无介绍";
-  }
+	var getPublishServices = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			return;
+		}
+		ServiceService.getPublishServices(UserService.getCurrentUser().id)
+			.success(function(data){
+				$scope.myPublishServices = data.serviceinfoDTOList;
 
-  $scope.editProfile = function() {
+			})
+	}
 
-    console.log("edit profile");
+	getPublishServices();
 
-    if (!UserService.isLogin) {
-      return;
-    }
+	$scope.showModifyServiceModal = function(service){
+		$ionicModal.fromTemplateUrl('templates/service.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.modifyService = service;
+			$scope.serviceModal = modal;
+			$scope.mode = 'modify';
+			$scope.serviceModal.show();
+		});
+	};
 
-    $scope.profileInfo.phone = UserService.getCurrentUser().phone;
+	$scope.commitModifyService = function(service){
+		var temp = {};
+		temp.id = service.id;
+		temp.longitude = service.longitude;
+		temp.latitude = service.latitude;
+		temp.serviceLabelId = service.serviceLabelId;
+		temp.slogan = service.slogan;
+		temp.status = service.status;
+		ServiceService.modifyService(temp)
+			.success(function(data){
+				getPublishServices();
+				$cordovaToast.showShortBottom('修改服务信息成功');
+				$scope.serviceModal.remove();
+			})
+			.error(function(err){
+				$cordovaToast.showShortBottom('修改服务信息失败,请检查网络');
+			})
+	};
 
-    var option = {
-      title: '编辑头像',
-      buttonLabels: ['相机', '从图库选择'],
-      addCancelButtonWithLabel: '取消',
-      androidEnableCancelButton: true
-    };
-    $cordovaActionSheet.show(option).then(function (btnIndex) {
-      var imageSource;
-      if(btnIndex == 1){
-        imageSource = Camera.PictureSourceType.CAMERA;
-      }
-      else if(btnIndex == 2){
-        imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
-      }
-      else{
-        return;
-      }
-      var cameraOptionss = {
-        //这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
-        quality: 80,                                            //相片质量0-100
-        destinationType: Camera.DestinationType.DATA_URL,        //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
-        sourceType: imageSource,             //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
-        allowEdit: true,                                        //在选择之前允许修改截图
-        encodingType:Camera.EncodingType.JPEG,                   //保存的图片格式： JPEG = 0, PNG = 1
-        targetWidth: 200,                                        //照片宽度
-        targetHeight: 200,                                       //照片高度
-        mediaType:0,                                             //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
-        cameraDirection:0                                      //枪后摄像头类型：Back= 0,Front-facing = 1
-      };
+	$scope.showDeleteServiceConfirm = function(publishServiceInfo){
+		if(confirm('删除后无法恢复,确认删除该服务?')){
+			ServiceService.deleteService(publishServiceInfo.id)
+				.success(function(data){
+					$cordovaToast.showShortBottom('删除服务成功');
+					$scope.serviceModal.remove();
+					getPublishServices();
+				})
+				.error(function(err){
+					$cordovaToast.showShortBottom('删除服务失败,请检查网络');
+				})
+		};
+	};
 
-      $cordovaCamera.getPicture(cameraOptionss).then(function(imageData) {
-        
-        $scope.profileInfo.photoImageValue = imageData;
+	$scope.showPublishServiceInfoModal = function(service){
+		$scope.publishServiceInfo = angular.copy(service);
+		$scope.messageService = service;
+		$ionicModal.fromTemplateUrl('templates/publishServiceInfo.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.publishServiceInfoModal = modal;
+			$scope.publishServiceInfoModal.show();
+		});
+	};
 
-        ImageService.uploadProfile($scope.profileInfo)
-          .success(function(data){
-            ToastService.showTopToast("上传成功")
-              .then(function(success) {
-                
-              }, function (error) {
-                console.log("show toast error");
-              });
-          })
-          .error(function(data){
-            ToastService.showTopToast(data)
-              .then(function(success) {
-                
-              }, function (error) {
-                console.log("show toast error");
-              });
-          })
+	$scope.showMessageDetails = function(conversation){
+		$rootScope.currentChat.conversation = conversation;
+		$rootScope.currentChat.messages = null;
+		conversation.queryMessages({
+			limit: 1000, // limit 取值范围 1~1000，默认 20
+		}).then(function (messages) {
+			$rootScope.currentChat.messages = messages;
+			console.log('user service messages', messages);
+			conversation.read();
+			$rootScope.$apply();
+		}).catch(console.error.bind(console))
+		$ionicModal.fromTemplateUrl('templates/messageDetails.html', {
+			scope: $scope
+		}).then(function(modal) {
+			var viewScroll = $ionicScrollDelegate.$getByHandle('messageDetailsScroll');
+			viewScroll.scrollBottom();
+			$scope.messageDetailsModal = modal;
+			$scope.messageDetailsModal.show();
+			$timeout(function(){
+				$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			},50);
+		});
+	};
 
-      }, function(err) {
-        // error
-        console.log("get pic err");
-      });
-    });
-  }
+	$scope.selectServicePicture = function(service){
+		var actionSheetOptions = {
+			title: '上传产品图片',
+			buttonLabels: ['相机', '从图库选择'],
+			addCancelButtonWithLabel: '取消',
+			androidEnableCancelButton: true
+		};
+		$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
+			var imageSource;
+			if(btnIndex == 1){
+				imageSource = Camera.PictureSourceType.CAMERA;
+			}
+			else if(btnIndex == 2){
+				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+			}
+			else{
+				return;
+			}
+			var cameraOptions = {
+				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+				quality: 70,                                                                                        //相片质量0-100
+				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+				sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+				allowEdit: false,                                                                                //在选择之前允许修改截图
+				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+			};
+			$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
+				ServiceService.uploadPicture(service.id, imageURI)
+					.success(function(data){
+						console.log(data);
+					})
+			}, function(err) {
+				// error
 
-  // copied from ionic wechat - start
-  $scope.messages = messageService.getAllMessages();
-  $scope.onSwipeLeft = function() {
-      $state.go("tab.friends");
-  };
-  $scope.popupMessageOpthins = function(message) {
-      $scope.popup.index = $scope.messages.indexOf(message);
-      $scope.popup.optionsPopup = $ionicPopup.show({
-          templateUrl: "templates/popup.html",
-          scope: $scope,
-      });
-      $scope.popup.isPopup = true;
-  };
-  $scope.markMessage = function() {
-      var index = $scope.popup.index;
-      var message = $scope.messages[index];
-      if (message.showHints) {
-          message.showHints = false;
-          message.noReadMessages = 0;
-      } else {
-          message.showHints = true;
-          message.noReadMessages = 1;
-      }
-      $scope.popup.optionsPopup.close();
-      $scope.popup.isPopup = false;
-      messageService.updateMessage(message);
-  };
-  $scope.deleteMessage = function() {
-      var index = $scope.popup.index;
-      var message = $scope.messages[index];
-      $scope.messages.splice(index, 1);
-      $scope.popup.optionsPopup.close();
-      $scope.popup.isPopup = false;
-      messageService.deleteMessageId(message.id);
-      messageService.clearMessage(message);
-  };
-  $scope.topMessage = function() {
-      var index = $scope.popup.index;
-      var message = $scope.messages[index];
-      if (message.isTop) {
-          message.isTop = 0;
-      } else {
-          message.isTop = new Date().getTime();
-      }
-      $scope.popup.optionsPopup.close();
-      $scope.popup.isPopup = false;
-      messageService.updateMessage(message);
-  };
-  $scope.messageDetils = function(message) {
-      $state.go("tab.messageDetail", {
-          "messageId": message.id
-      });
-  };
-  $scope.$on("$ionicView.beforeEnter", function(){
-      // console.log($scope.messages);
-      $scope.messages = messageService.getAllMessages();
-      $scope.popup = {
-          isPopup: false,
-          index: 0
-      };
-  });
-  // copied from ionic wechat - end
+			});
+		});
+	}
+
+	$scope.selectServiceVideo = function(service){
+		var cameraOptions = {
+			//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			quality: 70,                                                                                        //相片质量0-100
+			destinationType: Camera.DestinationType.FILE_URI,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			sourceType: Camera.PictureSourceType.PHOTOLIBRARY,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			allowEdit: false,                                                                                //在选择之前允许修改截图
+			mediaType:1,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+		};
+		$cordovaCamera.getPicture(cameraOptions).then(function(videoURI) {
+			console.log(videoURI);
+
+			//ServiceService.uploadVideo(service.id, videoURI)
+			//	.then(function (result) {
+			//		// Success!
+			//		console.log('uploadVideo',result);
+			//	}, function (err) {
+			//		// Error
+			//	}, function (progress) {
+			//		// constant progress updates
+			//	});
+			var server = baseUrl + port + '/service/uploadvideo';
+			var filePath = videoURI;
+			var options = new FileUploadOptions();
+			options.fileKey = "file";
+			options.params = {'id': service.id};
+			options.httpMethod = "POST";
+			options.mimeType="multipart/form-data";
+			options.headers= {
+				'Connection': 'keep-alive'
+			}
+			options.timeout = 100000000;
+
+			$cordovaFileTransfer.upload(server, filePath ,options, true)
+				.then(function (result) {
+					// Success!
+					console.log('uploadVideo',result);
+					$cordovaToast.showShortBottom("上传视频成功");
+				}, function (err) {
+					// Error
+					console.log('uploadVideoError',err);
+				}, function (progress) {
+					// constant progress updates
+				});
+
+
+		}, function(err) {
+			// error
+
+		});
+	}
+
+	$scope.showProfileModal = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			return;
+		}
+		$ionicModal.fromTemplateUrl('templates/profile.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.profile = UserService.getCurrentUser();
+			$scope.profile.gender = String($scope.profile.gender);
+			$scope.profileModal = modal;
+			$scope.profileModal.show();
+		});
+	}
+
+	$scope.modifyUserProfile = function(profile){
+		if(profile.name == undefined || profile.name == ""
+			|| profile.userName == undefined || profile.userName == ""){
+			$cordovaToast.showShortBottom("请完整填写用户信息");
+			return;
+		}
+		UserService.modifyUserProfile(profile)
+			.success(function(data){
+				if(data.status == 0) {
+					$scope.profileModal.remove();
+					$cordovaToast.showShortBottom("更新用户信息成功");
+					UserService.setCurrentUser(profile);
+					if($scope.profileModalSource == "newService"){
+						$scope.showServiceModal()
+					}
+				}
+				else{
+					$cordovaToast.showShortBottom("更新用户信息失败");
+				}
+				$scope.profileModalSource = "profile";
+			})
+			.error(function(err){
+				$cordovaToast.showShortBottom("网络错误,更新用户信息失败");
+				$scope.profileModalSource = "profile";
+			})
+	}
+
+	$scope.selectPhoto = function(){
+		var actionSheetOptions = {
+			title: '上传头像',
+			buttonLabels: ['相机', '从图库选择'],
+			addCancelButtonWithLabel: '取消',
+			androidEnableCancelButton: true
+		};
+		$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
+			var imageSource;
+			if(btnIndex == 1){
+				imageSource = Camera.PictureSourceType.CAMERA;
+			}
+			else if(btnIndex == 2){
+				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+			}
+			else{
+				return;
+			}
+			var cameraOptions = {
+				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+				quality: 70,                                                                                        //相片质量0-100
+				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+				sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+				allowEdit: false,                                                                                //在选择之前允许修改截图
+				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+			};
+			$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
+				UserService.uploadPhoto(imageURI, UserService.getCurrentUser().phone)
+					.success(function(data){
+						var currentUser = UserService.getCurrentUser();
+						currentUser.photo = 'data:image/jpeg;base64,' + imageURI;
+						$scope.profile.photo = 'data:image/jpeg;base64,' + imageURI;
+						UserService.setCurrentUser(currentUser);
+						$cordovaToast.showShortBottom("上传头像成功");
+					})
+			}, function(err) {
+				// error
+
+			});
+		});
+	};
+
+	$scope.selectNewSvcPic = function(){
+		var actionSheetOptions = {
+			title: '上传产品图片',
+			buttonLabels: ['相机', '从图库选择'],
+			addCancelButtonWithLabel: '取消',
+			androidEnableCancelButton: true
+		};
+		$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
+			var imageSource;
+			if(btnIndex == 1){
+				imageSource = Camera.PictureSourceType.CAMERA;
+			}
+			else if(btnIndex == 2){
+				imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
+			}
+			else{
+				return;
+			}
+			var cameraOptions = {
+				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+				quality: 70,                                                                                        //相片质量0-100
+				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+				sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+				allowEdit: false,                                                                                //在选择之前允许修改截图
+				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+			};
+			$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
+				$scope.newService.pictureImageValue = imageURI;
+			}, function(err) {
+				// error
+
+			});
+		});
+	}
+
+	$scope.showServiceModal = function(){
+		var user = UserService.getCurrentUser();
+		if(user.name == undefined || user.name == ""
+			|| user.userName == undefined || user.userName == ""
+			|| user.gender == undefined){
+			$cordovaToast.showShortBottom("请先完善个人信息");
+			$scope.showProfileModal();
+			$scope.profileModalSource = "newService";
+			return;
+		}
+		$ionicModal.fromTemplateUrl('templates/service.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.serviceModal = modal;
+			$scope.mode = 'new';
+			$scope.serviceModal.show();
+		});
+
+	};
+
+	$scope.newService = {};
+
+	SearchService.getAllLabels()
+		.success(function(data){
+			$scope.labels = data;
+		});
+
+	$scope.publishService = function(){
+		console.log('publishService', $scope.newService);
+		if($scope.newService.address == undefined || $scope.newService.address == ""){
+			$cordovaToast.showShortBottom('请正确填写地址');
+			return;
+		}
+		if($scope.newService.slogan == undefined || $scope.newService.slogan == ""){
+			$cordovaToast.showShortBottom('请正确填写广告语');
+			return;
+		}
+		$scope.newServiceButtonState = false;
+		console.log('publishService', $scope.newService);
+		var temp = {};
+		temp.datetime = $filter('date')(new Date(), 'yyyyMMdd');
+		temp.publishUserId = UserService.getCurrentUser().id;
+		temp.slogan = $scope.newService.slogan;
+		temp.thirdLabelId = $scope.newService.thirdLabel.id;
+		temp.address = $scope.newService.address;
+		temp.pictureImageValue = $scope.newService.pictureImageValue;
+		var geocoder = new AMap.Geocoder({
+			radius: 500 //范围，默认：500
+		});
+		//地理编码,返回地理编码结果
+		geocoder.getLocation($scope.newService.address, function(status, result) {
+			if (status === 'complete' && result.info === 'OK') {
+				var geocode = result.geocodes;
+				temp.longitude = geocode[0].location.getLng();
+				temp.latitude = geocode[0].location.getLat();
+				ServiceService.publishService(temp)
+					.success(function(data){
+						$scope.newService = {};
+						ToastService.showBottomToast("发布服务成功");
+						getPublishServices();
+						$scope.serviceModal.remove();
+						$scope.newServiceButtonState = true;
+						$scope.$apply();
+					})
+					.error(function(error){
+						ToastService.showBottomToast("发布服务失败");
+						$scope.newServiceButtonState = true;
+						$scope.$apply();
+					})
+			}else{
+				ToastService.showBottomToast("解析地址出错");
+				$scope.newServiceButtonState = true;
+				$scope.$apply();
+			}
+		});
+
+
+
+	};
+	$scope.loginUser = UserService.getCurrentUser();
 })
 
 .controller('messageDetailCtrl', ['$scope', '$stateParams',
-  'messageService', '$ionicScrollDelegate', '$timeout',
-  function($scope, $stateParams, messageService, $ionicScrollDelegate, $timeout) {
-    var viewScroll = $ionicScrollDelegate.$getByHandle('messageDetailsScroll');
-    // console.log("enter");
-    $scope.doRefresh = function() {
-        // console.log("ok");
-      $scope.messageNum += 5;
-      $timeout(function() {
-          $scope.messageDetils = messageService.getAmountMessageById($scope.messageNum,
-              $stateParams.messageId);
-          $scope.$broadcast('scroll.refreshComplete');
-      }, 200);
-    };
+	'messageService', '$ionicScrollDelegate', '$timeout', 'UserService',
+	function($scope, $stateParams, messageService, $ionicScrollDelegate, $timeout, UserService) {
 
-    $scope.$on("$ionicView.beforeEnter", function() {
-      $scope.message = messageService.getMessageById($stateParams.messageId);
-      $scope.message.noReadMessages = 0;
-      $scope.message.showHints = false;
-      messageService.updateMessage($scope.message);
-      $scope.messageNum = 10;
-      $scope.messageDetils = messageService.getAmountMessageById($scope.messageNum,
-          $stateParams.messageId);
-      $timeout(function() {
-          viewScroll.scrollBottom();
-      }, 0);
-    });
+		$scope.myProfile = UserService.usersProfile;
 
-    window.addEventListener("native.keyboardshow", function(e){
-      viewScroll.scrollBottom();
-    });
-  }
+		var viewScroll = $ionicScrollDelegate.$getByHandle('messageDetailsScroll');
+		// console.log("enter");
+		$scope.doRefresh = function() {
+			// console.log("ok");
+			$scope.messageNum += 5;
+			$timeout(function() {
+				$scope.messageDetilss = messageService.getAmountMessageById($scope.messageNum,
+					$stateParams.messageId);
+				$scope.$broadcast('scroll.refreshComplete');
+			}, 200);
+		};
+
+		$scope.$on("$ionicView.beforeEnter", function() {
+			$scope.message = messageService.getMessageById($stateParams.messageId);
+			$scope.message.noReadMessages = 0;
+			$scope.message.showHints = false;
+			messageService.updateMessage($scope.message);
+			$scope.messageNum = 10;
+			$scope.messageDetilss = messageService.getAmountMessageById($scope.messageNum,
+				$stateParams.messageId);
+			$timeout(function() {
+				viewScroll.scrollBottom();
+			}, 0);
+		});
+
+		window.addEventListener("native.keyboardshow", function(e){
+			viewScroll.scrollBottom();
+		});
+	}
 ])
 
-.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, SearchService, UserService) {
-  // $ionicTabsDelegate.showBar(false);
+.controller('SearchResultCtrl', function($scope, $state, $cordovaToast, $rootScope, SearchService, UserService, ServiceService, $stateParams, $ionicModal, $ionicScrollDelegate, $timeout) {
+	// $ionicTabsDelegate.showBar(false);
+	if($rootScope.isFirst){
+		//TODO: 定位
+		//$cordovaToast.showShortBottom('定位中...');
+		$rootScope.isFirst = false;
+		var geolocation = new AMap.Geolocation({
+			enableHighAccuracy: false,//是否使用高精度定位，默认:true
+			timeout: 10000,          //超过10秒后停止定位，默认：无穷大
+		});
+		geolocation.getCurrentPosition();
+		AMap.event.addListener(geolocation, 'complete', function (data) {
+			$rootScope.currentPosition.coordinate = data.position;
+			$rootScope.currentPosition.address = data.formattedAddress;
+			$rootScope.searchResultPosition.address = data.formattedAddress;
+			$rootScope.searchResultPosition.coordinate = data.position;
+			SearchService.searchByPosition($rootScope.currentPosition.coordinate.getLng(), $rootScope.currentPosition.coordinate.getLat())
+				.success(function(data){
+					console.log("首次进入搜索", data);
+					var temp = {};
+					for(i in data){
+						if(!temp.hasOwnProperty(data[i].serviceLabelId)){
+							temp[data[i].serviceLabelId] = [];
+						}
+						data[i].distance = $rootScope.searchResultPosition.coordinate.distance([data[i].longitude, data[i].latitude]);
+						temp[data[i].serviceLabelId].push(data[i]);
+					}
+					$rootScope.searchResults = [];
+					for(i in temp){
+						$rootScope.searchResults.push({
+							'label': temp[i][0].serviceLabelName,
+							'results': temp[i]
+						})
+					}
+				})
 
-  $scope.$on("$ionicView.beforeEnter", function(){
-    
-    $scope.coaches = SearchService.getCurrentSearchResult();
-    // console.log($scope.coaches);
+		});
+		AMap.event.addListener(geolocation, 'error', function(err){
+			//$cordovaToast.showShortBottom('定位失败');
+		});
 
-    UserService.searchAllFollows()
-      .success(function(data){
-        // UserService.setFollowedCoach(data);
+	}
 
-        $scope.filtedCoaches = $scope.filtMyFollow($scope.coaches, data.coachinfoDTOList);
-      })
-      .error(function(data){
-        console.log("get all follows error");
-      })
+	$scope.showMenu = {
+		'flag': false,
+		'flag1': false
+	};
 
-  });
+	$scope.followList = [];
 
-  $scope.filtMyFollow = function(allCoachs, followedCoachs) {
-    var out = [];
-    $scope.coachStudentPair = {};
-    $scope.coachStudentPair.studentId = UserService.getCurrentUser().id;
-    // console.log("------");
-    // console.log(allCoachs);
-    // console.log(followedCoachs);
+	$scope.$on('$ionicView.beforeEnter', function(){
+		if(UserService.getCurrentUser().id == undefined){
+			return;
+		}
+		ServiceService.getFollowServices(UserService.getCurrentUser().id)
+			.success(function(data){
+				console.log("关注的服务", ServiceService.parseFollowService(data));
+				for(i in data.serviceinfoDTOList){
+					$scope.followList.push(data.serviceinfoDTOList[i].id);
+				}
+			})
+	});
 
-    for(var i = 0; i < allCoachs.length; i++) {
-      for(var j = 0; j < followedCoachs.length; j++) {
-        if (followedCoachs[j].id == allCoachs[i].id) {
-          allCoachs[i].isFollowd = true;
-        }
-      }
-      if(allCoachs[i].isFollowd) {
-        out.push(allCoachs[i]);
-      }
-      else {
-        allCoachs[i].isFollowd = false;
-        out.push(allCoachs[i]);
-      }
-    }
+	$scope.followService = function(service, $event){
+		$event.stopPropagation();
+		if(UserService.getCurrentUser().id == undefined){
+			$cordovaToast.showShortBottom("登录后才能关注哦!");
+			return;
+		}
+		if(UserService.getCurrentUser().id == service.publishUserId){
+			$cordovaToast.showShortBottom("不能关注自己发布的服务哦!");
+			return;
+		}
+		var distance = $rootScope.searchResultPosition.coordinate.distance([service.longitude, service.latitude]);
+		ServiceService.followService(service.id, UserService.getCurrentUser().id, distance, $rootScope.searchResultPosition.address)
+			.success(function(data){
+				if(data.status == 0){
+					$scope.followList.push(service.id);
+					$cordovaToast.showShortBottom('关注成功');
+					console.log("关注成功", data);
+				}
+				else{
+					$cordovaToast.showShortBottom("不能重复关注哦");
+				}
+			})
+	};
 
-    return out;
-  }
+	$scope.unfollowService = function(service, $event){
+		$event.stopPropagation();
+		ServiceService.unfollowService(service.id, UserService.getCurrentUser().id)
+			.success(function(data){
+				if(data.status == 0){
+					var index = $scope.followList.indexOf(service.id);
+					$scope.followList.splice(index, 1);
+					$cordovaToast.showShortBottom('取消关注成功');
+				}
+				else{
+					$cordovaToast.showShortBottom("取消关注失败");
+				}
+			})
+	};
 
-  $scope.follow = function(coach) {
-    if ($scope.coachStudentPair.studentId == null) {
-      // console.log("unavailable");
-      $scope.modal.show();
+	$scope.showUserServiceInfoModal = function(service){
+		$rootScope.currentChat.conversation = null;
+		$rootScope.currentChat.messages = null;
+		$scope.userServiceInfo = service;
+		$scope.messageService = service;
+		//$rootScope.$apply();
+		//获得聊天记录、创建对话
+		if(UserService.currentUser.id != undefined && UserService.currentUser.id != service.publishUserId) { //未登录时不能创建会话, 不能和自己创建会话
+			$scope.IMClient.createConversation({
+				members: [service.publishUserId, service.id],
+				serviceId: service.id,
+				unique: true,
+			}).then(function (conversation) {
+				$rootScope.currentChat.conversation = conversation;
+				$rootScope.$apply();
+				//console.log('user service conversation', conversation);
+				conversation.queryMessages({
+					limit: 1000, // limit 取值范围 1~1000，默认 20
+				}).then(function (messages) {
+					$rootScope.currentChat.messages = messages;
+					//console.log('user service messages', messages);
+					$rootScope.$apply();
 
-      // // for 真机
-      // $cordovaToast.showShortBottom('请先登录').then(function(success) {
-      //   // success
-      //   $scope.modal.show();
-      // }, function (error) {
-      //   // error
-      // });
+				}).catch(console.error.bind(console))
+			});
+		};
 
-      return;
-    }
+		$ionicModal.fromTemplateUrl('templates/UserServiceInfo.html', {
+			scope: $scope
+		}).then(function(modal) {
+			$scope.userServiceInfoModal = modal;
+			$scope.userServiceInfoModal.show();
 
-    $scope.coachStudentPair.coachId = coach.id;
+			$timeout(function(){
+				$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			},50);
+			$('#userServiceInfoImage')[0].onload = function(){
+				$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
+			};
 
-    // console.log($scope.coachStudentPair);
+			//$('#messageList')[0].onload = function(){
+			//	console.log($('#messageList')[0]);
+			//	$timeout(function(){
+			//		$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+			//	},500);
+			//}
 
-    UserService.follow($scope.coachStudentPair)
-      .success(function(data){
-        console.log("followed");
-        coach.isFollowd = true;
-      })
-      .error(function(data){
-        console.log(data);
-      })
+		});
+	};
 
-    // coach.isFollowd = true;
+	$scope.messageDetils = [
+		{"isFromeMe":false,"content":"你好!","time":"2015-11-22 08:50:22"},
+		{"isFromeMe":true,"content":"你好, 你是谁?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"你在干什么?","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"知道怎么搞的吗?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"这是一道可以测出一个人有没有商业头脑的数学题","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":false,"content":"喝咖啡对身体好吗?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"在澳洲申请新西兰签证","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"说走就走的旅行","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"ok","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"拉玛西亚","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":true,"content":"拉玛西亚影视学院招生简章","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"去黑头产品排行榜","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"美国大使馆 北京","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":false,"content":"被开水烫伤怎么办?","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"谁说菜鸟不会数据分析?","time":"2015-11-27 06:34:55"},
+		{"isFromeMe":true,"content":"谁念西风独自凉","time":"2015-11-22 08:51:02"},
+		{"isFromeMe":false,"content":"被酒莫惊春睡重，赌书消得泼茶香，当时只道是寻常","time":"2015-11-27 06:34:55"}
+	]
 
-    // $cordovaToast.showShortBottom('关注成功').then(function(success) {
-    //   // success
-    // }, function (error) {
-    //   // error
-    // });
-  };
+	$scope.message = {
+		"id": 8,
+		"name": "李明",
+		"pic": "img/adam.jpg",
+		"lastMessage": {
+			"originalTime": "2015-11-27 06:34:55",
+			"time": "",
+			"timeFrome1970": 1451169295000,
+			"content": "你在干什么?",
+			"isFromeMe": false
+		},
+		"noReadMessages": 0,
+		"showHints": false,
+		"isTop": 0,
+		"message": $scope.messageDetils
+	};
 
-  $scope.unfollow = function(coach) {
+	$scope.needLogin = function(){
+		if(UserService.getCurrentUser().id == undefined){
+			$scope.modal.show();
+			$cordovaToast.showShortBottom("请先登录");
+			if($scope.userServiceInfoModal != null){
+				$scope.userServiceInfoModal.remove();
+			}
+		}
+	};
 
-    if ($scope.coachStudentPair.studentId == null) {
-      console.log("unavailable");
-      $scope.modal.show();
-
-      // // for 真机
-      // $cordovaToast.showShortBottom('请先登录').then(function(success) {
-      //   // success
-      //   $scope.modal.show();
-      // }, function (error) {
-      //   // error
-      // });
-
-      return;
-    }
-
-    $scope.coachStudentPair.coachId = coach.id;
-
-    // console.log($scope.coachStudentPair);
-
-    UserService.unFollow($scope.coachStudentPair)
-      .success(function(data){
-        console.log("unfollowed");
-        coach.isFollowd = false;
-      })
-      .error(function(data){
-        console.log(data);
-      })
-
-    // coach.isFollowd = false;
-
-    // $cordovaToast.showShortBottom('取消关注').then(function(success) {
-    //   // success
-    // }, function (error) {
-    //   // error
-    // });  
-  }
 
 });

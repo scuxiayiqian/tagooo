@@ -1,0 +1,48 @@
+<ion-modal-view>
+	<ion-header-bar>
+		<h1 class="title">我的发布-服务详情</h1>
+		<div class="buttons">
+			<button class="button button-positive" ng-click="publishServiceInfoModal.remove()">关闭</button>
+		</div>
+	</ion-header-bar>
+	<ion-content>
+		<div class="list">
+			<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px" on-hold="showModifyServiceModal(publishServiceInfo)">
+				<div style="padding-left: 53px">
+					<img get-svc-pic pic-id="{{publishServiceInfo.id}}">
+					<h2>{{publishServiceInfo.serviceLabelName}}</h2>
+					<p>{{publishServiceInfo.slogan}}</p>
+				</div>
+				<div style="margin-top: 6px">
+					<img get-svc-pic pic-id="{{publishServiceInfo.id}}" style="max-height: 150px; max-width:150px; width: 100%; height: 100%">
+				</div>
+				<div>
+					<span style="display: inline-block">广告视频: </span>
+					<label style="display: inline-flex">还未上传</label>
+				</div>
+				<p>{{publishServiceInfo.address}}</p>
+				<!--<p>经度{{publishServiceInfo.longitude.toFixed(3)}} 纬度{{publishServiceInfo.latitude.toFixed(3)}}</p>-->
+				<!--<p get-position longitude="{{publishServiceInfo.longitude}}" latitude="{{publishServiceInfo.latitude}}"></p>-->
+				<div class='edit-svc-btn' ng-click="showModifyServiceModal(publishServiceInfo)">修改服务</div>
+				<div class='del-svc-btn' ng-click="showDeleteServiceConfirm(publishServiceInfo)">删除服务</div>
+			</div>
+			<div class="item">
+				被关注
+				<i class="icon ion-android-favorite positive " style="font-size: 25px; vertical-align: middle"></i>
+				123
+			</div>
+
+			<ion-list rj-close-back-drop>
+				<ion-item class="item-avatar" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="conversation in currentChat.conversationList | getServiceConversations : publishServiceInfo.id" ng-click="showMessageDetails(conversation)">
+					<img ng-src="img/ben.png">
+					<span class="rj-sm-red-icon" ng-if="conversation.unreadMessagesCount > 0"><p ng-bind="conversation.unreadMessagesCount"></p></span>
+					<h2 ng-bind="conversation | getConversationName:currentChat.user.id"></h2>
+					<p class="rj-list-p" ng-bind="conversation.lastMessage._lctext" ng-if="conversation.lastMessage.type == -1"></p>
+					<p class="rj-list-p" ng-if="conversation.lastMessage.type == -2">图片</p>
+					<span class="rj-push-right" ng-bind="conversation.lastMessage.timestamp | getMessageTime"></span>
+				</ion-item>
+			</ion-list>
+
+		</div>
+	</ion-content>
+</ion-modal-view>

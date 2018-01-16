@@ -1,0 +1,89 @@
+{
+  "_args": [
+    [
+      "leancloud-realtime-plugin-typed-messages",
+      "/Users/kubenetes/WebstormProjects/tagooo"
+    ]
+  ],
+  "_from": "leancloud-realtime-plugin-typed-messages@latest",
+  "_id": "leancloud-realtime-plugin-typed-messages@2.0.0",
+  "_inCache": true,
+  "_installable": true,
+  "_location": "/leancloud-realtime-plugin-typed-messages",
+  "_nodeVersion": "7.10.0",
+  "_npmOperationalInternal": {
+    "host": "s3://npm-registry-packages",
+    "tmp": "tmp/leancloud-realtime-plugin-typed-messages-2.0.0.tgz_1497531320612_0.08207167917862535"
+  },
+  "_npmUser": {
+    "email": "lee55962698@gmail.com",
+    "name": "leeyeh"
+  },
+  "_npmVersion": "4.2.0",
+  "_phantomChildren": {},
+  "_requested": {
+    "name": "leancloud-realtime-plugin-typed-messages",
+    "raw": "leancloud-realtime-plugin-typed-messages",
+    "rawSpec": "",
+    "scope": null,
+    "spec": "latest",
+    "type": "tag"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/leancloud-realtime-plugin-typed-messages/-/leancloud-realtime-plugin-typed-messages-2.0.0.tgz",
+  "_shasum": "d15010a0165eabbb4eb5eca2ab01e26c6b970643",
+  "_shrinkwrap": null,
+  "_spec": "leancloud-realtime-plugin-typed-messages",
+  "_where": "/Users/kubenetes/WebstormProjects/tagooo",
+  "bugs": {
+    "url": "https://github.com/leancloud/js-realtime-sdk/issues"
+  },
+  "dependencies": {},
+  "description": "TypedMessages for LeanCloud Realtime",
+  "devDependencies": {},
+  "directories": {
+    "test": "test"
+  },
+  "dist": {
+    "shasum": "d15010a0165eabbb4eb5eca2ab01e26c6b970643",
+    "tarball": "https://registry.npmjs.org/leancloud-realtime-plugin-typed-messages/-/leancloud-realtime-plugin-typed-messages-2.0.0.tgz"
+  },
+  "homepage": "https://github.com/leancloud/js-realtime-sdk#readme",
+  "keywords": [
+    "leancloud",
+    "realtime"
+  ],
+  "license": "MIT",
+  "main": "./dist/typed-messages.js",
+  "maintainers": [
+    {
+      "email": "j@1byte.io",
+      "name": "hjiang"
+    },
+    {
+      "email": "jysperm@gmail.com",
+      "name": "jysperm"
+    },
+    {
+      "email": "lee55962698@gmail.com",
+      "name": "leeyeh"
+    }
+  ],
+  "name": "leancloud-realtime-plugin-typed-messages",
+  "optionalDependencies": {},
+  "peerDependencies": {
+    "leancloud-realtime": "^3.1.0",
+    "leancloud-storage": "^2.0.0 || ^3.0.0"
+  },
+  "readme": "ERROR: No README data found!",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leancloud/js-realtime-sdk.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: tests included in package leancloud-realtime\" && exit 1"
+  },
+  "version": "2.0.0"
+}
