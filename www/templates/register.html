@@ -75,7 +75,7 @@
 	    </form>
 
         <div class="register-login-btn" align="center">
-            <button class="button button-block button-positive" ng-click="doReserve()">
+            <button class="button button-block button-positive" ng-click="doReserve()" >
                 立即注册
             </button>
         </div>
@@ -83,6 +83,8 @@
         <label class="app-use-agreement">
                 <input name="remember" type="checkbox" value="Remember Me">  我同意<a href="#">"服务条款"</a>和<a href="#">"Tagooo用户隐私权保护和个人信息利用政策"</a>
         </label>
-
+	    <div id="phonePic" style="background-color: #0a9dc7; width: 80px; height: 80px; font-size: 31px; line-height: 35px; padding: 5px; font-weight:900">
+		    {{reservation.phone.substring(0,3)+'*'+reservation.phone.substring(7,11)}}
+	    </div>
     </ion-content>
 </ion-modal-view>

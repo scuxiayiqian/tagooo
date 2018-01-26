@@ -1,42 +1,88 @@
 <ion-modal-view>
-	<ion-header-bar>
-		<h1 class="title">我的发布-服务详情</h1>
+	<ion-header-bar align-title="left" class="bar-positive bar-lty">
+
+		<button class="button button-clear button-small" ng-click="publishServiceInfoModal.remove()"><i class="icon ion-arrow-left-c"></i></button>
+		<h1 class="title" style="left: 40px">我提供服务_用户来信</h1>
 		<div class="buttons">
-			<button class="button button-positive" ng-click="publishServiceInfoModal.remove()">关闭</button>
+			<!--<button class="button button-positive" >关闭</button>-->
+			<button class="button button-clear button-small button-menu" ng-if="!isLogin" style="margin-right: 10px">登录</button>
+			<button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
+				<img ng-src="{{currentChat.user.photoValue}}">
+			</button>
+			<button class="button button-clear button-small button-menu" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
 		</div>
 	</ion-header-bar>
-	<ion-content>
-		<div class="list">
-			<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px" on-hold="showModifyServiceModal(publishServiceInfo)">
-				<div style="padding-left: 53px">
-					<img get-svc-pic pic-id="{{publishServiceInfo.id}}">
-					<h2>{{publishServiceInfo.serviceLabelName}}</h2>
-					<p>{{publishServiceInfo.slogan}}</p>
-				</div>
-				<div style="margin-top: 6px">
-					<img get-svc-pic pic-id="{{publishServiceInfo.id}}" style="max-height: 150px; max-width:150px; width: 100%; height: 100%">
-				</div>
-				<div>
-					<span style="display: inline-block">广告视频: </span>
-					<label style="display: inline-flex">还未上传</label>
-				</div>
-				<p>{{publishServiceInfo.address}}</p>
-				<!--<p>经度{{publishServiceInfo.longitude.toFixed(3)}} 纬度{{publishServiceInfo.latitude.toFixed(3)}}</p>-->
-				<!--<p get-position longitude="{{publishServiceInfo.longitude}}" latitude="{{publishServiceInfo.latitude}}"></p>-->
-				<div class='edit-svc-btn' ng-click="showModifyServiceModal(publishServiceInfo)">修改服务</div>
-				<div class='del-svc-btn' ng-click="showDeleteServiceConfirm(publishServiceInfo)">删除服务</div>
+	<div show-more morestyle="position: fixed; bottom: 0px"><ion-content class="scroll-area">
+		<div class="item item-thumbnail-left lty-list-item" style="background-color: #fff !important;">
+			<img ng-src="{{currentChat.user.photoValue}}">
+			<div class="intro">
+				<p class="name">{{loginUser.name | hideEmpty:'未发布'}}</p>
+				<p class="description">电话: {{loginUser.phone}}</p>
+				<p class="description">地址: 江苏省徐州市睢宁县</p>
+				<!--<p>{{result | distance:position}}</p>-->
 			</div>
-			<div class="item">
-				被关注
-				<i class="icon ion-android-favorite positive " style="font-size: 25px; vertical-align: middle"></i>
-				123
-			</div>
+			<!--<i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>-->
+			<!--<i ng-if="followList.includes(result.id)" class="icon ion-android-favorite positive second" ng-click="unfollowService(result, $event)"></i>-->
 
+			<div class="operations">
+				<div class="lty-distance">
+					发布广告数共&nbsp
+					<span style="color: #cc0404; font-weight: 900">{{myPublishServices.length}}</span>&nbsp条
+				</div>
+				<div class="lty-distance">
+					未读来信共&nbsp
+					<span style="color: #cc0404; font-weight: 900" >
+						{{currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myPublishServices}}
+					</span>&nbsp条
+				</div>
+				<div class="lty-publish-button" ng-click="showServiceModal()">
+					发布新广告
+				</div>
+			</div>
+		</div>
+		<div style="margin: 8px 0;">
+			<div class="lty-item-divider">
+				{{publishServiceInfo.serviceLabelName + "_" + publishServiceInfo.thirdLabelName}}
+				<div style="float: right">{{publishServiceInfo.follownum}}人关注</div>
+			</div>
+			<div style="position: relative; border-top: solid 2px #c3c3c3" show-more morestyle="width: 20px; right: 0px; bottom: 0px">
+				<div class="text-area scroll-area">
+					<p ng-bind-html="publishServiceInfo.title"></p>
+					<p ng-bind-html="publishServiceInfo.slogan"></p>
+				</div>
+			</div>
+			<div style="position: relative; border-bottom: solid 2px #c3c3c3" class="img-list" >
+				<div get-svc-pic-list service="publishServiceInfo">
+					<img ng-repeat="item in publishServiceInfo.pictureImageValue track by $index" ng-src="{{item.picture}}">
+				</div>
+				<div style="margin-top: 10px; display: flex; text-align: right; line-height: 15px; color: #6a6a6a; font-size: 13px">
+					<div style="display: table-cell; text-align: left; width: 100%; ">已发布: {{publishServiceInfo.datetime|daysToNow}}天</div>
+					<div style="display: table-cell; text-align: right; white-space: nowrap">平均答复用户时间: 33天</div>
+				</div>
+				<div style="margin-top: 20px">
+					<div style="display: inline-block">
+						<div class="lty-publish-button">
+							用户来信
+						</div>
+						<div class="round-tag" style="width: 20px; height: 20px; display: inline-block" ng-bind="currentChat.conversationList|getUnreadNum:currentChat.user.id:null:publishServiceInfo.id"></div>
+					</div>
+					<div style="display: inline-block;float:right">
+						<div class="lty-publish-button" ng-click="showModifyServiceModal(publishServiceInfo, $event)">
+							修改广告
+						</div>
+						<div class="lty-publish-button" ng-click="showDeleteServiceConfirm(publishServiceInfo, $event)">
+							删除广告
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="list">
 			<ion-list rj-close-back-drop>
-				<ion-item class="item-avatar" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="conversation in currentChat.conversationList | getServiceConversations : publishServiceInfo.id" ng-click="showMessageDetails(conversation)">
-					<img ng-src="img/ben.png">
+				<ion-item class="item-avatar" on-hold="popupMessageOpthins(message)" rj-hold-active ng-repeat="conversation in currentChat.conversationList | getServiceConversations : publishServiceInfo.id" ng-click="showMessageDetails(conversation)" >
+					<img ng-src="{{conversation.conversationPhoto}}" style="border-radius: 5px" get-name-photo="{{conversation | getConversationName:currentChat.user.id}}" dest="conversation">
 					<span class="rj-sm-red-icon" ng-if="conversation.unreadMessagesCount > 0"><p ng-bind="conversation.unreadMessagesCount"></p></span>
-					<h2 ng-bind="conversation | getConversationName:currentChat.user.id"></h2>
+					<h2 ng-bind="conversation.conversationName"></h2>
 					<p class="rj-list-p" ng-bind="conversation.lastMessage._lctext" ng-if="conversation.lastMessage.type == -1"></p>
 					<p class="rj-list-p" ng-if="conversation.lastMessage.type == -2">图片</p>
 					<span class="rj-push-right" ng-bind="conversation.lastMessage.timestamp | getMessageTime"></span>
@@ -44,5 +90,5 @@
 			</ion-list>
 
 		</div>
-	</ion-content>
+	</ion-content></div>
 </ion-modal-view>

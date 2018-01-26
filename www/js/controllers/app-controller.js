@@ -2,7 +2,7 @@
  * Created by kubenetes on 2018/1/16.
  */
 angular.module('starter.controllers', ['ngCordova', 'starter.services'])
-	.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ChatService, $http, baseUrl, port, $state, $filter, $ionicScrollDelegate, $cordovaSocialSharing) {
+	.controller('AppCtrl', function($scope, $rootScope, $ionicModal, $timeout, $cordovaCamera, $cordovaActionSheet, $ionicHistory, $cordovaToast, ToastService, UserService, ServiceService, $http, baseUrl, port, $state, $filter, $ionicScrollDelegate, $cordovaSocialSharing) {
 
 		AV.init({
 			appId: 'M78GfGrK80feOyYFqxJB5sHQ-gzGzoHsz',
@@ -23,7 +23,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		}
 
 		$rootScope.currentChat = {
-			'user': null,
+			'user': null,   //当前登录的用户
 			'conversation': null, //当前活动的对话
 			'messages': null,   //当前活动对话对应的消息记录
 			'conversationList': null //用户的所有对话列表
@@ -40,6 +40,27 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 		$rootScope.send_content = {
 			'message': null
+		};
+
+		$scope.getFollowServices = function(){
+			if(UserService.getCurrentUser().id == undefined){
+				return;
+			}
+			ServiceService.getFollowServices(UserService.getCurrentUser().id)
+				.success(function(data){
+					$scope.myFollowServices = ServiceService.parseFollowService(data);
+				})
+		};
+
+		$scope.getPublishServices = function(){
+			if(UserService.getCurrentUser().id == undefined){
+				return;
+			}
+			ServiceService.getPublishServices(UserService.getCurrentUser().id)
+				.success(function(data){
+					$scope.myPublishServices = data.serviceinfoDTOList;
+
+				})
 		};
 
 		$rootScope.$watch('currentChat.messages', function(newValue,oldValue){
@@ -172,9 +193,10 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		// Triggered in the login modal to close it
 		$scope.closeLogin = function() {
 			$scope.modal.hide();
+			$("div.login-popup").hide();
 		};
 
-		$scope.getValidateCode = function(phone, code){
+		$scope.getValidateCode = function(phone, code){ //code:0 for login; 1 for register
 			if(phone == undefined ||phone == ""){
 				$cordovaToast.showShortBottom("请填写手机号");
 				return;
@@ -199,7 +221,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 
 
 		// Perform the login action when the user submits the login form
-		$scope.doLogin = function() {
+		$scope.doLogin = function(callback) {
 			if($scope.loginData.phone == '' || $scope.loginData.phone == undefined
 				|| $scope.loginData.validateCode == '' || $scope.loginData.validateCode == undefined){
 				$scope.loginError.flag = true;
@@ -226,6 +248,9 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					}
 					else if(data.status == 200){
 						console.log('login', data);
+						if(typeof(callback) == "function"){
+							callback();
+						}
 						realtime.createIMClient(data.id).then(function(me) {
 							$scope.IMClient = me;
 							me.on('message', function(message, conversation) {
@@ -276,14 +301,17 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 						$scope.loginData = {};
 						$scope.currentChat.user = data;
 						UserService.setCurrentUser(data);
+						UserService.getPhoto(data.phone)
+							.success(function(image){
+								data.photoValue = image;
+							});
 						$scope.isLogin = true;
 						localStorage.setItem('currentUser', JSON.stringify(data));
 						clearLoginError();
 						$scope.closeLogin();
-
-						if (data.photo != null) {
-							UserService.usersProfile = baseUrl + port + '/student/getphoto?phone=' + data.phone;
-						}
+						$('div.login-popup').hide();
+						$scope.getFollowServices();
+						$scope.getPublishServices();
 						//$state.go("tab.search");
 					}
 					else {
@@ -342,7 +370,7 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				me.getQuery().limit(1000).containsMembers([currentUser.id]).withLastMessagesRefreshed(true).find()
 					.then(function(conversations){
 						$scope.currentChat.conversationList = conversations;
-						console.log('conbersationList', conversations);
+						console.log('conversationList', conversations);
 					})
 					.catch(console.error.bind(console));
 				me.on('unreadmessagescountupdate', function(conversations) {
@@ -355,7 +383,13 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			$scope.loginData = {};
 			$scope.currentChat.user = currentUser;
 			UserService.setCurrentUser(currentUser);
+			UserService.getPhoto(currentUser.phone)
+				.success(function(image){
+					currentUser.photoValue = image;
+				});
 			$scope.isLogin = true;
+			$scope.getFollowServices();
+			$scope.getPublishServices();
 
 		};
 
@@ -364,9 +398,12 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		$scope.logout = function(){
 			UserService.setCurrentUser({});
 			$scope.isLogin = false;
+			$scope.myFollowServices = [];
+			$scope.myPublishServices = [];
 			//$scope.profile = {};
 			//$scope.profileModal.remove();
 			$rootScope.currentChat = {
+				'user': null,   //当前登录的用户
 				'conversation': null, //当前活动的对话
 				'messages': null,   //当前活动对话对应的消息记录
 				'conversationList': null //用户的所有对话列表
@@ -378,10 +415,10 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 			}
 			localStorage.removeItem('currentUser');
 			$state.go('tab.search')
-		}
+		};
 
 		$scope.reservation = {};
-		$scope.reservation.photo = "img/noprofile.png";
+		$scope.reservation.photo = "img/addPhoto.png";
 
 		// Create the reserve modal that we will use later
 		$ionicModal.fromTemplateUrl('templates/register.html', {
@@ -398,10 +435,22 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		// Open the reserve modal
 		$scope.register = function() {
 			$scope.registerModal.show();
+
 		};
 
 		// Perform the reserve action when the user submits the reserve form
 		$scope.doReserve = function() {
+			var color = getRandomColor();
+			$("#phonePic").css('background-color', color[0]).css('color', color[1]).ready(function(){
+				html2canvas($("#phonePic"),{
+					onrendered: function(canvas) {
+						var imageData = canvas.toDataURL("image/png");
+						console.log(imageData)
+						var image = document.querySelector('#imgsss');
+						image.src = imageData;
+					}
+				});
+			});
 			if($scope.reservation.phone == '' || $scope.reservation.phone == undefined){
 				$cordovaToast.showShortBottom("请填写手机号");
 				return;
@@ -420,12 +469,23 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 					}
 					else if(data.status == 0){
 						console.log("注册成功");
-						$scope.reservation = {};
 						$cordovaToast.showShortBottom("注册成功");
 						UserService.setCurrentUser(data);
 						UserService.isLogin = true;
 						clearLoginError();
 						$scope.closeReserve();
+
+						//upload system photo
+						var color = getRandomColor();
+						$("#phonePic").css('background-color', color[0]).css('color', color[1]).ready(function(){
+							html2canvas($("#phonePic"),{
+								onrendered: function(canvas) {
+									var imageData = canvas.toDataURL("image/png");
+									UserService.uploadPhoto(imageData.substring(22), data.phone);
+									$scope.reservation = {};
+								}
+							});
+						});
 					}
 					else if(data.status == 5){
 						$cordovaToast.showShortBottom("验证码错误");
@@ -454,69 +514,32 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				});
 		};
 
-
-		//上传营业执照和身份证
-		$scope.uploadMock = function(){
-			var cameraOptions = {
-				//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
-				quality: 80,                                                                                        //相片质量0-100
-				destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
-				sourceType: 0,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
-				allowEdit: true,                                                                                //在选择之前允许修改截图
-				encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
-				mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
-				cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
-			};
-			$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
-
-				$cordovaToast.showShortBottom("读取文件成功");
-
-			}, function(err) {
-				// error
-				console.log("get pic err");
-			});
+		function getRandomColor(){
+			var r = Math.floor(Math.random()*256);
+			var g = Math.floor(Math.random()*256);
+			var b = Math.floor(Math.random()*256);
+			var grey_level =  r*.299+g*.587+b*.114;
+			var color = grey_level <= 128?"#E8E8E8":"#333";
+			return ["rgb("+r+','+g+','+b+")", color];
 		}
-		// 上传头像
-		$scope.pickPhoto = function() {
-			var actionSheetOptions = {
-				title: '上传头像',
-				buttonLabels: ['相机', '从图库选择'],
-				addCancelButtonWithLabel: '取消',
-				androidEnableCancelButton: true
-			};
-			$cordovaActionSheet.show(actionSheetOptions).then(function (btnIndex) {
-				var imageSource;
-				if(btnIndex == 1){
-					imageSource = Camera.PictureSourceType.CAMERA;
-				}
-				else if(btnIndex == 2){
-					imageSource = Camera.PictureSourceType.PHOTOLIBRARY;
-				}
-				else{
-					return;
-				}
-				var cameraOptions = {
-					//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
-					quality: 80,                                                                                        //相片质量0-100
-					destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
-					sourceType: imageSource,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
-					allowEdit: true,                                                                                //在选择之前允许修改截图
-					encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
-					targetWidth: 200,                                                                                //照片宽度
-					targetHeight: 200,                                                                             //照片高度
-					mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
-					cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
-				};
 
-				$cordovaCamera.getPicture(cameraOptions).then(function(imageData) {
+		$scope.showMenuLogin = function(path, $event){
+			var brect = $($event.target)[0].getBoundingClientRect();
+			var loginPopup = $(path);
+			loginPopup.toggle()
+			var lrect = loginPopup[0].getBoundingClientRect();
+			console.log(loginPopup, lrect);
+			loginPopup.css('left', brect.left-lrect.width);
+		}
 
-					$scope.reservation.photo = 'data:image/jpeg;base64,' + imageData;
-
-				}, function(err) {
-					// error
-					console.log("get pic err");
-				});
-			});
-		};
+		$scope.showMessageLogin = function(path, $event){
+			if($scope.isLogin) return;
+			var brect = $($event.target)[0].getBoundingClientRect();
+			var loginPopup = $(path);
+			loginPopup.toggle();
+			var lrect = loginPopup[0].getBoundingClientRect();
+			console.log(loginPopup, lrect);
+			loginPopup.css('left', brect.left + 30);
+		}
 
 	})

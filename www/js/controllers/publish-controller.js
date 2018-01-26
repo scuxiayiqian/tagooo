@@ -14,24 +14,49 @@ angular.module('starter.controllers')
 
 		$scope.newServiceButtonState = true; //新建服务时的按钮状态,true可用,false不可用,防止用户多次点击
 
-		var getPublishServices = function(){
-			if(UserService.getCurrentUser().id == undefined){
-				return;
-			}
-			ServiceService.getPublishServices(UserService.getCurrentUser().id)
-				.success(function(data){
-					$scope.myPublishServices = data.serviceinfoDTOList;
+		//var getPublishServices = function(){
+		//	if(UserService.getCurrentUser().id == undefined){
+		//		return;
+		//	}
+		//	ServiceService.getPublishServices(UserService.getCurrentUser().id)
+		//		.success(function(data){
+		//			$scope.myPublishServices = data.serviceinfoDTOList;
+		//
+		//		})
+		//}
 
-				})
-		}
+		$scope.getPublishServices();
 
-		getPublishServices();
-
-		$scope.showModifyServiceModal = function(service){
+		$scope.showModifyServiceModal = function(service, $event){
+			$event.stopPropagation();
 			$ionicModal.fromTemplateUrl('templates/service.html', {
 				scope: $scope
 			}).then(function(modal) {
-				$scope.modifyService = service;
+				$scope.modifyService = angular.copy(service);
+				$scope.modifyService.title = $scope.modifyService.title.replace(/<br \/>/g, '\r\n');
+				$scope.modifyService.slogan = $scope.modifyService.slogan.replace(/<br \/>/g, '\r\n');
+				$scope.modifyService.forDelete = [];
+				$scope.modifyService.forUpload = [];
+				for(var i in $scope.labels){
+					if($scope.labels[i].id == $scope.modifyService.basicLabelId){
+						$scope.modifyService.basicLabel = $scope.labels[i];
+						break;
+					}
+				}
+				var temp = $scope.modifyService.basicLabel.serviceLabel;
+				for(var i in temp){
+					if(temp[i].id == $scope.modifyService.serviceLabelId){
+						$scope.modifyService.serviceLabel = temp[i];
+						break;
+					}
+				}
+				temp = $scope.modifyService.serviceLabel.thirdLabel;
+				for(var i in temp){
+					if(temp[i].id == $scope.modifyService.thirdLabelId){
+						$scope.modifyService.thirdLabel = temp[i];
+						break;
+					}
+				}
 				$scope.serviceModal = modal;
 				$scope.mode = 'modify';
 				$scope.serviceModal.show();
@@ -41,29 +66,50 @@ angular.module('starter.controllers')
 		$scope.commitModifyService = function(service){
 			var temp = {};
 			temp.id = service.id;
+			temp.address = service.address;
 			temp.longitude = service.longitude;
 			temp.latitude = service.latitude;
-			temp.serviceLabelId = service.serviceLabelId;
-			temp.slogan = service.slogan;
+			temp.thirdLabelId = service.thirdLabel.id;
+			temp.slogan = service.slogan.replace(/\r?\n/g, '<br />');
+			temp.title = service.title.replace(/\r?\n/g, '<br />');
 			temp.status = service.status;
+			temp.phonenum = service.phonenum;
 			ServiceService.modifyService(temp)
 				.success(function(data){
-					getPublishServices();
+					$scope.getPublishServices();
 					$cordovaToast.showShortBottom('修改服务信息成功');
 					$scope.serviceModal.remove();
+
 				})
 				.error(function(err){
 					$cordovaToast.showShortBottom('修改服务信息失败,请检查网络');
 				})
+			if(service.forUpload > 0){
+				ServiceService.uploadPicture(temp.id, service.forUpload);
+			}
+			if(service.forDelete.length > 0){
+				var delList = [];
+				for(var i in service.forDelete){
+					delList.push(service.forDelete[i].picId);
+				}
+				ServiceService.deletePicture(delList);
+			}
 		};
 
-		$scope.showDeleteServiceConfirm = function(publishServiceInfo){
+		$scope.addDelList = function(source, $index, target, $event){
+			$event.stopPropagation();
+			target.push(source[$index]);
+			source.splice($index, 1);
+		};
+
+		$scope.showDeleteServiceConfirm = function(publishServiceInfo, $event){
+			$event.stopPropagation();
 			if(confirm('删除后无法恢复,确认删除该服务?')){
 				ServiceService.deleteService(publishServiceInfo.id)
 					.success(function(data){
 						$cordovaToast.showShortBottom('删除服务成功');
 						$scope.serviceModal.remove();
-						getPublishServices();
+						$scope.getPublishServices();
 					})
 					.error(function(err){
 						$cordovaToast.showShortBottom('删除服务失败,请检查网络');
@@ -284,7 +330,50 @@ angular.module('starter.controllers')
 			});
 		};
 
-		$scope.selectNewSvcPic = function(){
+		//*****************以下为新建服务
+		$scope.showServiceModal = function(){
+			//var user = UserService.getCurrentUser();
+			//if(user.name == undefined || user.name == ""
+			//	|| user.userName == undefined || user.userName == ""
+			//	|| user.gender == undefined){
+			//	$cordovaToast.showShortBottom("请先完善个人信息");
+			//	$scope.showProfileModal();
+			//	$scope.profileModalSource = "newService";
+			//	return;
+			//}
+			$ionicModal.fromTemplateUrl('templates/service.html', {
+				scope: $scope
+			}).then(function(modal) {
+				$scope.serviceModal = modal;
+				$scope.mode = 'new';
+				$scope.serviceModal.show();
+			});
+
+		};
+
+		$scope.newService = {pictureImageValue:[]};
+
+		SearchService.getAllLabels()
+			.success(function(data){
+				$scope.labels = data;
+			});
+		$scope.selectNewSvcPic = function(result){
+			//var cameraOptions = {
+			//	//这些参数可能要配合着使用，比如选择了sourcetype是0，destinationtype要相应的设置
+			//	quality: 70,                                                                                        //相片质量0-100
+			//	destinationType: Camera.DestinationType.DATA_URL,                //返回类型：DATA_URL= 0，返回作为 base64 編碼字串。 FILE_URI=1，返回影像档的 URI。NATIVE_URI=2，返回图像本机URI (例如，資產庫)
+			//	sourceType: 0,                         //从哪里选择图片：PHOTOLIBRARY=0，相机拍照=1，SAVEDPHOTOALBUM=2。0和1其实都是本地图库
+			//	allowEdit: false,                                                                                //在选择之前允许修改截图
+			//	encodingType:Camera.EncodingType.JPEG,                                     //保存的图片格式： JPEG = 0, PNG = 1
+			//	mediaType:0,                                                                                         //可选媒体类型：圖片=0，只允许选择图片將返回指定DestinationType的参数。 視頻格式=1，允许选择视频，最终返回 FILE_URI。ALLMEDIA= 2，允许所有媒体类型的选择。
+			//	cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
+			//};
+			//$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
+			//	result.push(imageURI);
+			//}, function(err) {
+			//	// error
+			//
+			//});
 			var actionSheetOptions = {
 				title: '上传产品图片',
 				buttonLabels: ['相机', '从图库选择'],
@@ -313,40 +402,14 @@ angular.module('starter.controllers')
 					cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
 				};
 				$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
-					$scope.newService.pictureImageValue = imageURI;
+					result.push(imageURI);
+					console.log(imageURI);
 				}, function(err) {
 					// error
 
 				});
 			});
-		}
-
-		$scope.showServiceModal = function(){
-			var user = UserService.getCurrentUser();
-			if(user.name == undefined || user.name == ""
-				|| user.userName == undefined || user.userName == ""
-				|| user.gender == undefined){
-				$cordovaToast.showShortBottom("请先完善个人信息");
-				$scope.showProfileModal();
-				$scope.profileModalSource = "newService";
-				return;
-			}
-			$ionicModal.fromTemplateUrl('templates/service.html', {
-				scope: $scope
-			}).then(function(modal) {
-				$scope.serviceModal = modal;
-				$scope.mode = 'new';
-				$scope.serviceModal.show();
-			});
-
 		};
-
-		$scope.newService = {};
-
-		SearchService.getAllLabels()
-			.success(function(data){
-				$scope.labels = data;
-			});
 
 		$scope.publishService = function(){
 			console.log('publishService', $scope.newService);
@@ -359,14 +422,15 @@ angular.module('starter.controllers')
 				return;
 			}
 			$scope.newServiceButtonState = false;
-			console.log('publishService', $scope.newService);
 			var temp = {};
 			temp.datetime = $filter('date')(new Date(), 'yyyyMMdd');
 			temp.publishUserId = UserService.getCurrentUser().id;
-			temp.slogan = $scope.newService.slogan;
+			temp.slogan = $scope.newService.slogan.replace(/\r?\n/g, '<br />');
 			temp.thirdLabelId = $scope.newService.thirdLabel.id;
 			temp.address = $scope.newService.address;
+			temp.title = $scope.newService.title.replace(/\r?\n/g, '<br />');;
 			temp.pictureImageValue = $scope.newService.pictureImageValue;
+			temp.phonenum = $scope.newService.phonenum;
 			var geocoder = new AMap.Geocoder({
 				radius: 500 //范围，默认：500
 			});
@@ -378,9 +442,9 @@ angular.module('starter.controllers')
 					temp.latitude = geocode[0].location.getLat();
 					ServiceService.publishService(temp)
 						.success(function(data){
-							$scope.newService = {};
+							$scope.newService = {pictureImageValue:[]};
 							ToastService.showBottomToast("发布服务成功");
-							getPublishServices();
+							$scope.getPublishServices();
 							$scope.serviceModal.remove();
 							$scope.newServiceButtonState = true;
 							$scope.$apply();
@@ -396,9 +460,38 @@ angular.module('starter.controllers')
 					$scope.$apply();
 				}
 			});
+		};
+
+		$scope.selectBasicLabel = function(service, basicLabel, $event){
+			service.basicLabel = basicLabel;
+			service.serviceLabel = basicLabel.serviceLabel[0];
+			service.thirdLabel = service.serviceLabel.thirdLabel[0];
+			$('#publish-triangle1').css('top', $($event.target).position().top);
+			$('#publish-triangle2').css('top', 2);
+			var label_column2 = $('#label-column-list2');
+			label_column2.css('height','auto').ready(function(){
+				if($($event.target).position().top > label_column2.height()){
+					label_column2.css('height', $($event.target).position().top + 25)
+				}
+			})
+		};
+
+		$scope.selectServiceLabel = function(service, serviceLabel, $event) {
+			service.serviceLabel = serviceLabel;
+			service.thirdLabel = service.serviceLabel.thirdLabel[0];
+			$('#publish-triangle2').css('top', $($event.target).position().top);
+			var label_column3 = $('#label-column-list3');
+			label_column3.css('height','auto').ready(function(){
+				if($($event.target).position().top > label_column3.height()){
+					label_column3.css('height', $($event.target).position().top + 25)
+				}
+			})
+		};
 
 
-
+		$scope.deletImgFromList = function(list, $index, $event){
+			$event.stopPropagation();
+			list.splice($index, 1);
 		};
 		$scope.loginUser = UserService.getCurrentUser();
 	})

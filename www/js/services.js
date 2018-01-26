@@ -88,6 +88,14 @@ angular.module('starter.services', ['ngCordova'])
 		});
 	};
 
+	UserService.getPhoto = function(phone){
+		return $http({
+			url: baseUrl + port + '/user/getphoto?phone=' + phone,
+			method: 'GET',
+			crossDomain: true
+		});
+	};
+
 	//以下函数废弃,先别删
     UserService.searchAllFollows = function() {
         return $http({
@@ -138,7 +146,15 @@ angular.module('starter.services', ['ngCordova'])
 			crossDomain: true,
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		})
-	}
+	};
+
+	UserService.getPhotoById = function(id){
+		return $http({
+			url: baseUrl + port + '/user/getphotobyid?id=' + id,
+			method: 'GET',
+			crossDomain: true
+		})
+	};
 
     return UserService;
 })
@@ -370,6 +386,19 @@ angular.module('starter.services', ['ngCordova'])
 			headers: {'Content-Type': 'application/json;charset=UTF-8'}
 		})
 	};
+
+	ServiceService.deletePicture = function(idList){
+		return $http({
+			method: 'POST',
+			url: baseUrl + port + '/service/deletepicture',
+			data: {
+
+				'picId': idList
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	}
 
 	ServiceService.uploadVideo = function(serviceId, videoURI){
 		var server = baseUrl + port + '/service/uploadvideo';

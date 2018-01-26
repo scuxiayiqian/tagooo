@@ -80,6 +80,65 @@ angular.module('starter.directives', [])
 		}
 	})
 
+	.filter('daysToNow', function(){
+		return(function(input){
+			var publish_date = new Date(input.substring(0,4) + '/' + input.substring(4,6) + '/' + input.substring(6,8));
+			var date = new Date();
+			var time_diff = date.getTime() - publish_date.getTime();
+			var days = time_diff / (24 * 3600 * 1000);
+			return Math.ceil(days);
+		})
+	})
+
+	.filter('getUnreadNum', function(){
+		return (function(conversationList, member1, member2, serviceList){
+			function filterUser(list,member){
+				if(member == undefined || member == null){
+					return list;
+				}
+				var result = [];
+				for(var i in list){
+					if(list[i].members.indexOf(member) >= 0){
+						result.push(list[i]);
+					}
+				}
+				return result;
+			};
+			function filterService(list, services){
+				if(services == undefined || services == null){
+					return list;
+				}
+				var servicesId = [];
+				var help = [].concat(services);
+				for(var i in help){
+					servicesId.push(help[i]);
+				}
+				var result = [];
+				for(var i in list){
+					if(servicesId.indexOf(list[i]._attributes.serviceId) >= 0){
+						result.push(list[i]);
+					}
+				}
+				return result;
+			}
+			var temp = conversationList;
+			temp = filterUser(temp, member1);
+			temp = filterUser(temp, member2);
+			temp = filterService(temp, serviceList);
+			var result = 0;
+			for(var i in temp){
+				result += temp[i].unreadMessagesCount;
+			}
+			return result;
+		})
+	})
+
+	.filter('hideEmpty', function(){
+		return function(input, text){
+			return (input==null || input==undefined || input=="") ? text:input;
+		}
+	})
+
   .directive('hideTabs', function($rootScope, $ionicTabsDelegate) {
     return {
       restrict: 'A',
@@ -192,7 +251,7 @@ angular.module('starter.directives', [])
           }
       }
   }])
-	.directive('getSvcPic', function($http, baseUrl, port){
+	.directive('getSvcPic', function($http, baseUrl, port){ //@Deprecated: only get one picture not pic list
 		return {
 			replace: false,
 			scope:{
@@ -276,4 +335,93 @@ angular.module('starter.directives', [])
 				}
 			}
 		}
-	});
+	})
+
+	.directive('showMore', function(){
+		return {
+			replace: false,
+			link: function (scope, ele, attr, controller) {
+				ele.append('<img src="img/more.png" class="more" style="' + attr.morestyle + '">');
+
+				var scroll_area = $(ele).children(".scroll-area");
+				var watch_scroll = function(){
+					var height = scroll_area[0].clientHeight;
+					var scrollHeight = scroll_area[0].scrollHeight;
+					var scrollPosition = scroll_area[0].scrollTop;
+					if(height >= scrollHeight || scrollHeight-scrollPosition <= height){
+						$(ele).children("img.more").hide();
+					}
+					else{
+						$(ele).children("img.more").show();
+					}
+				};
+				scroll_area.bind('scroll',watch_scroll);
+				ele.ready(function(){
+					$(ele).children("img.more").show();
+					watch_scroll();
+				});
+
+			}
+		}
+	})
+	.directive('getSvcPicList', function($http, baseUrl, port){
+		return {
+			replace: false,
+			scope:{
+				'service': '='
+			},
+			restrict : 'A',
+			link: function(scope, ele, attr, controller){
+				$http({
+					url: baseUrl + port + '/service/getpicture?id=' + scope.service.id,
+					method: 'GET',
+					crossDomain: true
+				}).success(function(data){
+					scope.service.pictureImageValue = data;
+					if(data.length == 0){
+						scope.service.pictureImageValue = [];
+					}
+				})
+			}
+		}
+
+	})
+
+	.directive('serviceMaxLength', function(){
+		return {
+			replace: false,
+			restrict : 'A',
+			link: function(scope, ele, attr, controller){
+				var maxLength = attr.serviceMaxength;
+				$(ele).keydown(function($event){
+					console.log('kk')
+					var value = $(ele).val();
+					if(value.length >= maxLength){
+						return false;
+					}
+				})
+			}
+		}
+	})
+
+	.directive('getNamePhoto',function($http, baseUrl, port){
+		return {
+			replace: false,
+			restrict : 'A',
+			scope:{
+				'getNamePhoto': '@',
+				'dest': '='
+			},
+			link: function(scope, ele, attr, controller){
+				$http({
+					url: baseUrl + port + '/user/getphotobyid?id=' + scope.getNamePhoto,
+					method: 'GET',
+					crossDomain: true
+				}).success(function(data){
+					scope.dest.conversationName = data[0];
+					scope.dest.conversationPhoto = data[1];
+				})
+			}
+		}
+	})
+;

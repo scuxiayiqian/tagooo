@@ -68,7 +68,15 @@ angular.module('starter.controllers')
 		$scope.followService = function(service, $event){
 			$event.stopPropagation();
 			if(UserService.getCurrentUser().id == undefined){
-				$cordovaToast.showShortBottom("登录后才能关注哦!");
+				var login_popup = $("ion-content div.login-popup").last();
+				console.log(login_popup);
+				login_popup.show();
+				var lrect = login_popup[0].getBoundingClientRect();
+				var crect = $($event.target)[0].getBoundingClientRect(); //点击元素相对窗口的位置
+				var prect = $("ion-content").last()[0].getBoundingClientRect(); //ion-content相对窗口位置
+				login_popup.css('top', crect.top-prect.top+crect.height/2+15); //15是考虑到斜三角形的影响
+				login_popup.css('left',crect.left-prect.left+crect.width/2-lrect.width-20);
+
 				return;
 			}
 			if(UserService.getCurrentUser().id == service.publishUserId){
@@ -104,10 +112,13 @@ angular.module('starter.controllers')
 				})
 		};
 
+		var test_service ={"id":"4028815e5dd036b7015dd05c100c0001","name":"高策","userName":"高策哥哥","phone":"18817818982","slogan":"高策哥哥上门服务，专业抢修，数据恢复","picture":"/root/data/tango/images/0ea4cedd-4b8b-4ac4-bc62-36f6d5d55c2e.jpg","video":null,"longitude":121.44,"latitude":31.02,"datetime":"20170811","status":"active","address":null,"thirdLabelName":"电脑","thirdLabelId":"8a8080a85f6b2c8d015f6c56cdd20006","publishUserId":"4028815e5dd036b7015dd037e3930000","basicLabelId":"4028815e5dd03716015dd05afa150000","basicLabelName":"维修服务","serviceLabelId":"4028815e5dd03716015dd05ba9ec0001","serviceLabelName":"家电维修","distance":456635.4504047358,"$$hashKey":"object:431"};
+
 		$scope.showUserServiceInfoModal = function(service){
 			$rootScope.currentChat.conversation = null;
 			$rootScope.currentChat.messages = null;
 			$scope.userServiceInfo = service;
+			console.log('userService',JSON.stringify(service));
 			$scope.messageService = service;
 			//$rootScope.$apply();
 			//获得聊天记录、创建对话
@@ -128,6 +139,12 @@ angular.module('starter.controllers')
 						$rootScope.$apply();
 
 					}).catch(console.error.bind(console))
+
+					UserService.getPhotoById(service.publishUserId)
+						.success(function(data){
+						conversation.conversationName = data[0];
+						conversation.conversationPhoto = data[1];
+					})
 				});
 			};
 
@@ -140,56 +157,21 @@ angular.module('starter.controllers')
 				$timeout(function(){
 					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
 				},50);
-				$('#userServiceInfoImage')[0].onload = function(){
-					$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
-				};
+				$('#userServiceInfoBlock').ready(function(){
+					$('#userServiceChat').css('margin-top', $('#userServiceInfoBlock').height() + 10);
+				});
 
-				//$('#messageList')[0].onload = function(){
-				//	console.log($('#messageList')[0]);
-				//	$timeout(function(){
-				//		$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
-				//	},500);
-				//}
+				$('#messageList')[0].onload = function(){
+					console.log($('#messageList')[0]);
+					$timeout(function(){
+						$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+					},500);
+				}
 
 			});
 		};
 
-		$scope.messageDetils = [
-			{"isFromeMe":false,"content":"你好!","time":"2015-11-22 08:50:22"},
-			{"isFromeMe":true,"content":"你好, 你是谁?","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"你在干什么?","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":true,"content":"知道怎么搞的吗?","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"这是一道可以测出一个人有没有商业头脑的数学题","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":false,"content":"喝咖啡对身体好吗?","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"在澳洲申请新西兰签证","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":true,"content":"说走就走的旅行","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"ok","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":true,"content":"拉玛西亚","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":true,"content":"拉玛西亚影视学院招生简章","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":true,"content":"去黑头产品排行榜","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"美国大使馆 北京","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":false,"content":"被开水烫伤怎么办?","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"谁说菜鸟不会数据分析?","time":"2015-11-27 06:34:55"},
-			{"isFromeMe":true,"content":"谁念西风独自凉","time":"2015-11-22 08:51:02"},
-			{"isFromeMe":false,"content":"被酒莫惊春睡重，赌书消得泼茶香，当时只道是寻常","time":"2015-11-27 06:34:55"}
-		]
-
-		$scope.message = {
-			"id": 8,
-			"name": "李明",
-			"pic": "img/adam.jpg",
-			"lastMessage": {
-				"originalTime": "2015-11-27 06:34:55",
-				"time": "",
-				"timeFrome1970": 1451169295000,
-				"content": "你在干什么?",
-				"isFromeMe": false
-			},
-			"noReadMessages": 0,
-			"showHints": false,
-			"isTop": 0,
-			"message": $scope.messageDetils
-		};
+		//$scope.showUserServiceInfoModal(test_service);
 
 		$scope.needLogin = function(){
 			if(UserService.getCurrentUser().id == undefined){

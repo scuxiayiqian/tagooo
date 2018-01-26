@@ -3,16 +3,22 @@
     <ion-nav-buttons side="right">
         <!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
         <!--</button>-->
-	    <button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i>
+	    <button class="button button-clear button-small button-menu" ng-if="!isLogin" style="margin-right: 10px" ng-click="showMenuLogin('ion-view>div[ng-include]>.login-popup',$event)">登录</button>
+	    <button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
+		    <img ng-src="{{currentChat.user.photoValue}}">
+	    </button>
+	    <button class="button button-clear button-small button-menu" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i>
 	    </button>
     </ion-nav-buttons>
+	<ion-nav-buttons side="left">
+		<!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
+		<!--</button>-->
+		<button class="button button-clear button-small"><i class="icon ion-ios-search-strong"></i>
+		</button>
+	</ion-nav-buttons>
 
-<!--     <ion-nav-bar class="bar-positive">
-        <ion-nav-back-button>
-        </ion-nav-back-button>
-    </ion-nav-bar>
- -->
-	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag">
+	<div ng-include="'templates/loginPopup.html'"></div>
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;" ng-show="showMenu.flag">
 		<div ng-click="register()" class="lty-menu-item">注册</div>
 		<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">注销</div>
 		<div ng-if="!isLogin" class="lty-menu-item" ng-click="login()">登录</div>
@@ -30,7 +36,7 @@
 			</label>
 		</div>
 	</div>
-    <ion-content on-tap="showMenu.flag = false" style="top: 87px;" id="content">
+	<div show-more morestyle="position: fixed"><ion-content on-tap="showMenu.flag = false" style="top: 87px;" id="content" delegate-handle="search-scroll" class="scroll-area">
         <div class="list">
 	        <div class="item">
 		        <form name="typeSearchForm" id="typeSearchForm" style="position: relative">
@@ -90,7 +96,5 @@
 		        </button>
 	        </div>
         </div>
-
-    </ion-content>
-
+    </ion-content></div>
 </ion-view>

@@ -47,7 +47,8 @@ $dark:                            #444 !default;
 	width: 18px;
 	height: 18px;
 	border-radius: 50%;
-	background-color: #FF0000;
+	/*background-color: #FF0000;*/
+	background-color: #cc0404;
 	line-height: 18px;
 	text-align: center;
 	top: 5px;

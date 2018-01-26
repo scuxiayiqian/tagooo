@@ -13,22 +13,22 @@ angular.module('starter.controllers')
 		$scope.showMenu = {
 			'flag': false
 		};
-		var getFollowServices = function(){
-			if(UserService.getCurrentUser().id == undefined){
-				return;
-			}
-			ServiceService.getFollowServices(UserService.getCurrentUser().id)
-				.success(function(data){
-					$scope.myFollowServices = ServiceService.parseFollowService(data);
-				})
-		};
-		getFollowServices();
+		//var getFollowServices = function(){
+		//	if(UserService.getCurrentUser().id == undefined){
+		//		return;
+		//	}
+		//	ServiceService.getFollowServices(UserService.getCurrentUser().id)
+		//		.success(function(data){
+		//			$scope.myFollowServices = ServiceService.parseFollowService(data);
+		//		})
+		//};
+		$scope.getFollowServices();
 		$scope.unfollowService = function(service, $event){
 			$event.stopPropagation();
 			ServiceService.unfollowService(service.id, UserService.getCurrentUser().id)
 				.success(function(data){
 					if(data.status == 0){
-						getFollowServices();
+						$scope.getFollowServices();
 						$cordovaToast.showShortBottom('取消关注成功');
 					}
 					else{
@@ -61,6 +61,11 @@ angular.module('starter.controllers')
 						$rootScope.$apply();
 
 					}).catch(console.error.bind(console))
+					UserService.getPhotoById(service.publishUserId)
+						.success(function(data){
+						conversation.conversationName = data[0];
+						conversation.conversationPhoto = data[1];
+					})
 				});
 			};
 
@@ -73,9 +78,9 @@ angular.module('starter.controllers')
 				$timeout(function(){
 					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
 				},50);
-				$('#userServiceInfoImage')[0].onload = function(){
-					$('#userServiceChat').css('margin-top', $('#userServiceInfo').height() + 18);
-				};
+				$('#userServiceInfoBlock').ready(function(){
+					$('#userServiceChat').css('margin-top', $('#userServiceInfoBlock').height() + 10);
+				});
 
 			});
 		};

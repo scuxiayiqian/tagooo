@@ -1,34 +1,102 @@
 <ion-modal-view>
-	<ion-header-bar>
-		<h1 class="title">服务详情</h1>
-	</ion-header-bar>
-	<div class="item item-thumbnail-left lty-service-info-list" style="padding-bottom: 8px !important; padding-top: 8px !important; line-height: 28px; position: absolute; width: 100%; top: 43px; left: 1px" id="userServiceInfo">
-		<div style="padding-left: 53px">
-			<img get-svc-pic pic-id="{{userServiceInfo.id}}" id="userServiceInfoImage">
-			<h2>{{userServiceInfo.serviceLabelName}}</h2>
-			<p>{{userServiceInfo.slogan}}</p>
+	<ion-header-bar align-title="left" class="bar-positive bar-lty">
+		<button class="button button-clear button-small" ng-click="userServiceInfoModal.remove()"><i class="icon ion-arrow-left-c"></i></button>
+		<h1 class="title" style="left: 40px">个人页面</h1>
+		<div class="buttons">
+			<!--<button class="button button-positive" >关闭</button>-->
+			<button class="button button-clear button-small button-menu" ng-if="!isLogin" style="margin-right: 10px" ng-click="showMenuLogin('ion-modal-view>div[ng-include]>.login-popup',$event)">登录</button>
+			<button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
+				<img ng-src="{{currentChat.user.photoValue}}">
+			</button>
+			<button class="button button-clear button-small button-menu" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
 		</div>
-		<div style="margin-top: 6px">
-			<img get-svc-pic pic-id="{{userServiceInfo.id}}" style="max-height: 150px; max-width:150px; width: 100%; height: 100%">
+	</ion-header-bar>
+	<div ng-include="'templates/loginPopup.html'"></div>
+	<div id="userServiceInfoBlock">
+		<div class="list" style="margin-top: 44px; margin-bottom: 0px">
+			<div class="item item-input-inset">
+				<label class="item-input-wrapper">
+					<input type="text" ng-model="searchResultPosition.address" disabled style="width:100%">
+				</label>
+				<label style="padding-left: 5px">
+					附近
+				</label>
+			</div>
 		</div>
 		<div>
-			<span style="display: inline-block">广告视频: </span>
-			<label style="display: inline-flex">还未上传</label>
+			<div class="lty-item-divider">
+				{{userServiceInfo.serviceLabelName + "_" + userServiceInfo.thirdLabelName}}
+			</div>
+			<div class="item item-thumbnail-left lty-list-item" style="border-top: solid 2px #c3c3c3 !important;">
+				<img get-user-photo phone="{{userServiceInfo.phone}}">
+				<div class="intro" style="height: 60px">
+					<p class="name">{{userServiceInfo.name| hideEmpty:'未发布'}}</p>
+					<p class="description">电话: {{userServiceInfo.phonenum?userServiceInfo.phone:"此用户未公开"}}</p>
+					<p class="description">地址: {{userServiceInfo.address}}</p>
+					<!--<p>{{result | distance:position}}</p>-->
+				</div>
+				<!--<i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>-->
+				<!--<i ng-if="followList.includes(result.id)" class="icon ion-android-favorite positive second" ng-click="unfollowService(result, $event)"></i>-->
+
+				<div class="operations">
+					<div class="lty-distance" style="height: 66%">距离: {{userServiceInfo | distance:searchResultPosition.coordinate}}</div>
+					<div class="lty-operation-button" ng-if="!(followList.includes(userServiceInfo.id))" ng-click="followService(userServiceInfo, $event)">
+						<div style="display: inline; z-index: 999">
+							<i class="icon ion-android-favorite-outline positive " style="font-size: 25px; vertical-align: middle"></i>
+						</div>
+					</div>
+					<div class="lty-operation-button" ng-if="(followList.includes(userServiceInfo.id))" ng-click="unfollowService(userServiceInfo, $event)">
+						<div style="display: inline; z-index: 999">
+							取消关注
+							<i class="icon ion-android-favorite positive " style="font-size: 25px; vertical-align: middle"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div style="position: relative" show-more morestyle="width: 20px; right: 0px; bottom: 0px">
+				<div class="text-area scroll-area">
+					<p ng-bind-html="userServiceInfo.title">数据恢复,数据备份</p>
+					<p ng-bind-html="userServiceInfo.slogan"></p>
+				</div>
+			</div>
+			<div style="position: relative; border-bottom: solid 2px #c3c3c3" class="img-list" >
+				<div get-svc-pic-list service="userServiceInfo">
+					<img ng-repeat="item in userServiceInfo.pictureImageValue track by $index" ng-src="{{item.picture}}">
+				</div>
+				<div style="margin-top: 10px; display: flex; text-align: right; line-height: 15px; color: #6a6a6a; font-size: 13px">
+					<div style="display: table-cell; text-align: left; width: 100%; ">已发布: {{userServiceInfo.datetime|daysToNow}}天</div>
+					<div style="display: table-cell; text-align: right; white-space: nowrap">平均答复用户时间: 33天</div>
+				</div>
+			</div>
 		</div>
-		<p>{{userServiceInfo.address}}</p>
-		<!--<p>经度{{userServiceInfo.longitude.toFixed(3)}} 纬度{{userServiceInfo.latitude.toFixed(3)}}</p>-->
-		<!--<p get-position longitude="{{userServiceInfo.longitude}}" latitude="{{userServiceInfo.latitude}}"></p>-->
 	</div>
-	<ion-content on-tap="showMenu.flag1 = false" id="userServiceChat" delegate-handle="messageDetailsScroll">
+
+
+	<ion-content on-tap="showMenu.flag1 = false" id="userServiceChat" delegate-handle="messageDetailsScroll" style="height: auto; z-index: -1" class="has-footer rj-stable-content">
 		<div ng-include="'templates/messageList.html'" style="overflow-y: scroll"></div>
 	</ion-content>
-	<ion-footer-bar align-title="left" class="" resize-foot-bar>
+	<div class="login-popup" style="display: none;bottom: 40px;top: auto" id="messageLogin">
+		<div class="edge1" style="transform: rotate(140deg);bottom:-12px;left: -19px;"></div>
+		<label class="item-input-wrapper">
+			<input type="number" style="width:100%" placeholder="请输入手机号登录后关注" ng-model="loginData.phone">
+		</label>
+		<div style="margin-top: 10px; display: table; width: 100%;">
+			<button style="display: table-cell" class="check-number" ng-click="getValidateCode(loginData.phone, 0)">获取验证码</button>
+			<div style="display: table-cell; width: 100%; padding-left: 10px">
+				<label class="item-input-wrapper" >
+					<input type="number" placeholder="输入验证码" style="width: 100%" ng-model="loginData.validateCode">
+				</label>
+			</div>
+		</div>
+		<button class="button login-button button-positive button-small" ng-click="doLogin()">登录</button>
+	</div>
+	<ion-footer-bar align-title="left" class="bar-light" resize-foot-bar>
 		<div class="rj-footer-btn-wrap">
 			<button class="button button-icon icon ion-ios-mic-outline rj-footer-btn-left">
 			</button>
 		</div>
 		<label class="item item-input rj-footer-input">
-			<textarea msd-elastic ng-model="send_content.message" ng-focus="needLogin()"></textarea>
+			<textarea msd-elastic ng-model="send_content.message" ng-click="showMessageLogin('#messageLogin', $event)" ng-readonly="!isLogin"></textarea>
 			<div class="buttons">
 				<button class="rj-footer-btn button button-icon icon ion-happy-outline"></button>
 			</div>

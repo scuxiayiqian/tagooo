@@ -1,13 +1,80 @@
 <ion-modal-view>
 	<div ng-if="mode == 'new'">
-		<ion-header-bar>
-			<h1 class="title">新建服务</h1>
-			<div class="buttons">
-				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
-			</div>
+		<ion-header-bar align-title="left" class="bar-positive bar-lty">
+			<button class="button button-clear button-small" ng-click="serviceModal.remove()"><i class="icon ion-arrow-left-c"></i></button>
+			<h1 class="title">我提供服务_发布</h1>
 		</ion-header-bar>
 		<ion-content>
-			<form>
+			<div class="new-service">
+				<img ng-src="{{currentChat.user.photoValue}}" class="photo">
+				<input type="text" placeholder="我的名字" ng-model="currentChat.user.name" style="text-align: center; font-size: 17px; width: 30%; margin-top: 10px" disabled>
+				<input type="text" placeholder="请输入地址" style="font-size: 17px; width: 100%; margin-top: 10px" ng-model="newService.address">
+				<div  class="label-selector" style="pointer-events: all !important;">
+					<div onclick="$('.publish-select-label').toggle()">
+						<span>服务类别选择</span><div class="triangle"></div>
+						<span style="color: #656565">{{newService.basicLabel.type + '_' + newService.serviceLabel.type + '_' + newService.thirdLabel.type}}</span>
+					</div>
+					<div class="publish-select-label" style="display: none">
+						<div class="label-column" style="padding-right: 8px">
+							<div class="label-column-list" ng-init="newService.basicLabel = labels[0]">
+								<div class="publish-label-item" ng-repeat="basicLabel in labels" ng-click="selectBasicLabel(newService, basicLabel, $event);" ng-class="{true:'red-border'}[newService.basicLabel == basicLabel]">{{basicLabel.type}}</div>
+							</div>
+							<div class="publish-triangle" id="publish-triangle1" style="top:2px; right:-4px"></div>
+
+						</div>
+						<div class="label-column" style="padding-right: 4px; padding-left: 4px">
+							<div class="label-column-list" id="label-column-list2" ng-init="newService.serviceLabel = newService.basicLabel.serviceLabel[0]">
+								<div class="publish-label-item" ng-repeat="serviceLabel in newService.basicLabel.serviceLabel" ng-click="selectServiceLabel(newService, serviceLabel, $event)" ng-class="{true:'red-border'}[newService.serviceLabel == serviceLabel]">{{serviceLabel.type}}</div>
+							</div>
+							<div class="publish-triangle" id="publish-triangle2" style="top:2px; right:-8px"></div>
+
+						</div>
+						<div class="label-column" id="label-column3" style="padding-left: 8px">
+							<div class="label-column-list" id="label-column-list3" ng-init="newService.thirdLabel = newService.serviceLabel.thirdLabel[0]">
+								<div class="publish-label-item" ng-repeat="thirdLabel in newService.serviceLabel.thirdLabel" ng-click="newService.thirdLabel = thirdLabel" ng-class="{true:'red-border'}[newService.thirdLabel == thirdLabel]">{{thirdLabel.type}}</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div  class="service-title">
+					<div>服务广告标题: </div>
+					<textarea type="text" maxlength="30" ng-model="newService.title"></textarea>
+				</div>
+
+				<div class="service-details">
+					<div>服务广告详情: </div>
+					<textarea type="text" ng-model="newService.slogan"></textarea>
+				</div>
+
+				<div class="media-list">
+					<img ng-repeat="item in newService.pictureImageValue track by $index" ng-src="{{'data:image/jpeg;base64,' + item}}">
+					<button ng-click="selectNewSvcPic(newService.pictureImageValue)"><img src="img/addPicture.png"></button>
+					<button><img src="img/addVideo.png"></button>
+				</div>
+
+				<div class="publish-phone" ng-init="newService.phonenum = true">
+					<input type="text" ng-model="currentChat.user.phone" disabled placeholder="请输入手机号" style="margin-left: 0 !important; text-align: center; width: 120px">
+					<div style="color: #333;">在广告中公布手机号码: </div>
+					<div ng-class="{true:'lty-publish-button', false: 'lty-publish-button-outline'}[newService.phonenum==true]" ng-click="newService.phonenum = true">是</div>
+					<div ng-class="{false:'lty-publish-button', true: 'lty-publish-button-outline'}[newService.phonenum==true]" ng-click="newService.phonenum = false">否</div>
+				</div>
+
+				<div class="get-checknum" style="margin-top: 10px">
+					<div class="lty-publish-button" style="height: 30px; display: inline-block; line-height: 26px;">获取验证码</div>
+					<input type="number" style="margin-left: 10px; text-align: center; width:80px; display: inline-block" placeholder="输入验证码">
+				</div>
+
+				<div style="margin-top: 10px; color: #333">
+					<input type="checkbox" value="Remember Me" ng-model="agree">  我同意<a href="#" style="color: #333">"用户条款"</a>
+				</div>
+
+				<button ng-click="publishService()" ng-disabled="!agree" class="button button-positive button-small" style="margin-top:20px; padding: 5px 10px; line-height: 15px; font-size: 15px;">
+					发布
+				</button>
+			</div>
+
+			<form ng-if="false">
 				<div class="list">
 					<label class="item item-input item-select">
 						<span class="input-label">一级服务标签</span>
@@ -47,23 +114,84 @@
 					</label>
 				</div>
 			</form>
-
-			<div class="register-login-btn">
-				<button class="button button-block button-positive" ng-click="publishService()" ng-disabled="!newServiceButtonState">发布服务</button>
-			</div>
 		</ion-content>
 	</div>
 
-
 	<div ng-if="mode == 'modify'">
-		<ion-header-bar>
-			<h1 class="title">服务详情</h1>
-			<div class="buttons">
-				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
-			</div>
+		<ion-header-bar align-title="left" class="bar-positive bar-lty">
+			<button class="button button-clear button-small" ng-click="serviceModal.remove()"><i class="icon ion-arrow-left-c"></i></button>
+			<h1 class="title">我提供服务_修改</h1>
 		</ion-header-bar>
 		<ion-content>
-			<form>
+			<div class="new-service">
+				<img ng-src="{{currentChat.user.photoValue}}" class="photo">
+				<input type="text" placeholder="我的名字" ng-model="currentChat.user.name" style="text-align: center; font-size: 17px; width: 30%; margin-top: 10px" disabled>
+				<input type="text" placeholder="请输入地址" style="font-size: 17px; width: 100%; margin-top: 10px" ng-model="modifyService.address">
+				<div  class="label-selector" style="pointer-events: all !important;">
+					<div onclick="$('.publish-select-label').toggle()">
+						<span>服务类别选择</span><div class="triangle"></div>
+						<span style="color: #656565">{{modifyService.basicLabel.type + '_' + modifyService.serviceLabel.type + '_' + modifyService.thirdLabel.type}}</span>
+					</div>
+
+					<div class="publish-select-label" style="display: none">
+						<div class="label-column" style="padding-right: 8px">
+							<div class="label-column-list" >
+								<div class="publish-label-item" ng-repeat="basicLabel in labels" ng-click="selectBasicLabel(modifyService, basicLabel, $event);" ng-class="{true:'red-border'}[modifyService.basicLabel == basicLabel]">{{basicLabel.type}}</div>
+							</div>
+							<div class="publish-triangle" id="publish-triangle1" style="top:2px; right:-4px"></div>
+
+						</div>
+						<div class="label-column" style="padding-right: 4px; padding-left: 4px">
+							<div class="label-column-list" id="label-column-list2" >
+								<div class="publish-label-item" ng-repeat="serviceLabel in modifyService.basicLabel.serviceLabel" ng-click="selectServiceLabel(modifyService, serviceLabel, $event)" ng-class="{true:'red-border'}[modifyService.serviceLabel == serviceLabel]">{{serviceLabel.type}}</div>
+							</div>
+							<div class="publish-triangle" id="publish-triangle2" style="top:2px; right:-8px"></div>
+
+						</div>
+						<div class="label-column" id="label-column3" style="padding-left: 8px">
+							<div class="label-column-list" id="label-column-list3" >
+								<div class="publish-label-item" ng-repeat="thirdLabel in modifyService.serviceLabel.thirdLabel" ng-click="modifyService.thirdLabel = thirdLabel" ng-class="{true:'red-border'}[modifyService.thirdLabel == thirdLabel]">{{thirdLabel.type}}</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div  class="service-title">
+					<div>服务广告标题: </div>
+					<textarea type="text" ng-model="modifyService.title" ng-change="modifyService.title = modifyService.title.substring(0,30)"></textarea>
+				</div>
+
+				<div class="service-details">
+					<div>服务广告详情: </div>
+					<textarea type="text" ng-model="modifyService.slogan"></textarea>
+				</div>
+
+				<div class="media-list" get-svc-pic-list service="modifyService">
+					<div ng-repeat="item in modifyService.pictureImageValue track by $index" style="display: inline-block;position: relative">
+						<img ng-src="{{item.picture}}" style="border: 2px #8a8a8a dashed; border-radius: 5px">
+						<i class="icon ion-close delete-img" ng-click="addDelList(modifyService.pictureImageValue,$index,modifyService.forDelete,$event)"></i>
+					</div>
+					<div ng-repeat="item in modifyService.forUpload track by $index" style="display: inline-block;position: relative">
+						<img ng-src="{{'data:image/jpeg;base64,' + item}}">
+						<i class="icon ion-close delete-img" ng-click="deletImgFromList(modifyService.forUpload, $index, $event)"></i>
+					</div>
+					<button ng-click="selectNewSvcPic(modifyService.forUpload)"><img src="img/addPicture.png"></button>
+					<button><img src="img/addVideo.png"></button>
+				</div>
+
+				<div class="publish-phone">
+					<input type="text" ng-model="currentChat.user.phone" disabled placeholder="请输入手机号" style="margin-left: 0 !important; text-align: center; width: 120px">
+					<div style="color: #333;">在广告中公布手机号码: </div>
+					<div ng-click="modifyService.phonenum = true" ng-class="{true:'lty-publish-button', false: 'lty-publish-button-outline'}[modifyService.phonenum==true]">是</div>
+					<div ng-click="modifyService.phonenum = false" ng-class="{false:'lty-publish-button', true: 'lty-publish-button-outline'}[modifyService.phonenum==true]">否</div>
+				</div>
+
+
+				<button ng-click="commitModifyService(modifyService)" class="button button-positive button-small" style="margin-top:20px; padding: 5px 10px; line-height: 15px; font-size: 15px;">
+					完成
+				</button>
+			</div>
+
+			<form ng-if="false">
 				<div class="list">
 					<label class="item item-input">
 						<span class="input-label">服务类型</span>
@@ -96,48 +224,5 @@
 				<button class="button button-block button-positive" style="width: 80%; margin: 0 auto" ng-click="commitModifyService(modifyService)">保存修改</button>
 			</form>
 		</ion-content>
-	</div>
-
-	<div ng-if="mode == 'read'">
-		<ion-header-bar>
-			<h1 class="title">服务详情</h1>
-			<div class="buttons">
-				<button class="button button-positive" ng-click="serviceModal.remove()">关闭</button>
-			</div>
-		</ion-header-bar>
-		<ion-content>
-			<form>
-				<div class="list">
-					<label class="item item-input">
-						<span class="input-label">服务类型</span>
-						<input type="text" ng-model="modifyService.serviceLabelName" disabled>
-					</label>
-					<label class="item item-input">
-						<span class="input-label">经度</span>
-						<input type="number" ng-value="modifyService.longitude.toFixed(4)" disabled>
-					</label>
-					<label class="item item-input">
-						<span class="input-label">纬度</span>
-						<input type="number" ng-value="modifyService.latitude.toFixed(4)"  disabled>
-					</label>
-					<label class="item item-input">
-						<span class="input-label">广告语</span>
-						<input type="text" ng-model="modifyService.slogan" disabled>
-					</label>
-					<label class="item item-input">
-						<span class="input-label">广告图片</span>
-						<img get-svc-pic pic-id="{{modifyService.id}}" style="max-width: 80px">
-						<!--<button class="button button-positive" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px" ng-click="selectServicePicture(modifyService)">上传图片</button>-->
-					</label>
-					<label class="item item-input">
-						<span class="input-label">广告视频</span>
-						<p style="display: inline" ng-if="modifyService.video=='' || modifyService.video==null">还未上传</p>
-						<button class="button button-positive" ng-if="!(modifyService.video=='' || modifyService.video==null)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">查看视频</button>
-						<!--<button class="button button-positive" ng-click="selectServiceVideo(modifyService)" style="line-height: 30px; font-size: 13px; min-height: 0px; margin-left: 20px">上传视频</button>-->
-					</label>
-				</div>
-			</form>
-		</ion-content>
-	</div>
-
+	</div
 </ion-modal-view>
