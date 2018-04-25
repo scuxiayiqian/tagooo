@@ -6,21 +6,21 @@ navigation history that also transitions its views in and out.
 <ion-tabs class="tabs-icon-top tabs-color-active-positive {{$root.hideTabs}}">
 
   <!-- search Tab -->
-	<ion-tab title="找服务" icon-off="ion-ios-search-strong" icon-on="ion-ios-search-strong" ui-sref="tab.search"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
+	<ion-tab title="找人服务我" icon-off="ion-ios-search-strong" icon-on="ion-ios-search-strong" ui-sref="tab.search"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
 		<ion-nav-view name="tab-search"></ion-nav-view>
 	</ion-tab>
 
-	<ion-tab title="找到的人" icon-off="ion-person-stalker" icon-on="ion-person-stalker" ui-sref="tab.searchresult"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
+	<ion-tab title="找到的人" icon-off="icon-search-result2" icon-on="icon-search-result2" ui-sref="tab.searchresult"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
 		<ion-nav-view name="tab-search-result"></ion-nav-view>
 	</ion-tab>
 
   <!-- follow Tab -->
-	<ion-tab title="我的关注" badge="currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myFollowServices" icon-off="ion-android-favorite-outline positive" icon-on="ion-android-favorite-outline" ui-sref="tab.follow"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
+	<ion-tab title="关注的人" badge="currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myFollowServices" icon-off="ion-android-favorite-outline positive" icon-on="ion-android-favorite-outline" ui-sref="tab.follow"  on-select="onTabSelected()" on-deselect="onTabDeselected()">
 		<ion-nav-view name="tab-follow"></ion-nav-view>
 	</ion-tab>
 
   <!-- Account Tab -->
-	<ion-tab title="我的发布" badge="currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myPublishServices" icon-off="ion-android-bulb" icon-on="ion-android-bulb" ui-sref="tab.publish" on-select="onTabSelected()" on-deselect="onTabDeselected()">
+	<ion-tab title="我提供服务" badge="currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myPublishServices" icon-off="icon-my-publish2" icon-on="icon-my-publish2" ui-sref="tab.publish" on-select="onTabSelected()" on-deselect="onTabDeselected()">
 		<ion-nav-view name="tab-publish"></ion-nav-view>
 	</ion-tab>
 </ion-tabs>
@@ -43,7 +43,7 @@ navigation history that also transitions its views in and out.
 	<div class="login-popup" style="display: none">
 		<div class="edge1" style="transform: rotate(320deg);top:-12px;right: -19px;"></div>
 		<label class="item-input-wrapper">
-			<input type="number" style="width:100%" placeholder="请输入手机号登录后关注" ng-model="loginData.phone">
+			<input type="number" style="width:100%" placeholder="请输入手机号" ng-model="loginData.phone">
 		</label>
 		<div style="margin-top: 10px; display: table; width: 100%;">
 			<button style="display: table-cell" class="check-number" ng-click="getValidateCode(loginData.phone, 0)">获取验证码</button>

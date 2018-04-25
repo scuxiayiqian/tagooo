@@ -1,4 +1,4 @@
-/* Empty. Add your own CSS if you like */
+@charset "UTF-8";
 
 .item-right-textnote {
 	font-size: 14px;
@@ -113,7 +113,7 @@
 .lty-menu-item {
 	color: rgba(0,0,0,0.65);
 	font-size: 14px;
-	padding: 0px 15px 0px 15px;
+	padding: 0px 10px 0px 10px;
 	line-height: 24px;
 }
 
@@ -285,6 +285,22 @@ span.tab-title {
 	font-weight: 400 !important;
 }
 
+.button.button-menu-outline{
+	width: 35px !important;
+	height: 35px !important;
+	border: 1px #cc0404 solid !important;
+	border-radius: 5px;
+	padding: 0px !important;
+	white-space: nowrap;
+	font-weight: 400 !important;
+	background-color: white !important;
+	color: #cc0404 !important;
+}
+
+.button.button-menu-outline i{
+	color: #cc0404 !important;
+}
+
 img.more {
 	width: 22px;
 	position: absolute;
@@ -435,9 +451,8 @@ ion-modal-view.show-tabs{
 }
 
 .new-service{
-	margin-top: 10px;
 	text-align: center;
-	padding: 0px 8px;
+	padding: 10px 8px 0 8px;
 }
 
 .new-service .photo{
@@ -448,7 +463,7 @@ ion-modal-view.show-tabs{
 	display: block;
 }
 
-.new-service>input, .new-service .publish-phone input, .new-service .get-checknum input{
+.new-service>div>input, .new-service .publish-phone input, .new-service .get-checknum input{
 	margin-left: auto;
 	margin-right: auto;
 	border-radius: 5px;
@@ -498,6 +513,14 @@ ion-modal-view.show-tabs{
 	min-height: 50px !important;
 	color:#333 !important;
 	display: table;
+	position: relative;
+}
+
+.new-service .service-title .word-count{
+	position: absolute;
+	bottom: 0px;
+	right: 2px;
+	font-size: 10px;
 }
 
 .new-service .service-title div:first-of-type{
@@ -515,6 +538,7 @@ ion-modal-view.show-tabs{
 	border-radius: 5px;
 	background-color: #eee;
 	width: 100%;
+	position: relative;
 }
 
 
@@ -734,4 +758,85 @@ ion-footer-bar textarea[readonly]{
 
 p.rj-message-right, p.rj-message-left {
 	min-height: 38px;
+}
+
+@font-face {
+	font-family: "untitled-font-4";
+	src:url("fonts/untitled-font-4.eot");
+	src:url("fonts/untitled-font-4.eot?#iefix") format("embedded-opentype"),
+	url("fonts/untitled-font-4.woff") format("woff"),
+	url("fonts/untitled-font-4.ttf") format("truetype"),
+	url("fonts/untitled-font-4.svg#untitled-font-4") format("svg");
+	font-weight: normal;
+	font-style: normal;
+
+}
+
+[data-icon]:before {
+	font-family: "untitled-font-4" !important;
+	content: attr(data-icon);
+	font-style: normal !important;
+	font-weight: normal !important;
+	font-variant: normal !important;
+	text-transform: none !important;
+	speak: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
+	font-family: "untitled-font-4" !important;
+	font-style: normal !important;
+	font-weight: normal !important;
+	font-variant: normal !important;
+	text-transform: none !important;
+	speak: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.icon-search-result2:before {
+	content: "\61";
+}
+.icon-my-publish2:before {
+	content: "\62";
+}
+
+.cover-layer {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 100%;
+	z-index: 1500;
+}
+
+.input-icon-background {
+	color:  #E8E8E8!important;
+	border-radius: 50%;
+	background-color: #656565 !important;
+	width: 18px !important;
+	height: 18px !important;
+	text-align: center;
+	position: absolute;
+	right: 3px;
+	line-height: 18px;
+	font-size: 12px;
+}
+
+.input-icon {
+	color: #656565!important;
+	font-size: 18px;
+	line-height: 24px;
+	vertical-align: middle;
+}
+
+.photo-hint {
+	position: absolute;
+	top: 0;
+	left: 85px;
+	width: 110px;
 }

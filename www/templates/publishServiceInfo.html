@@ -9,16 +9,23 @@
 			<button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
 				<img ng-src="{{currentChat.user.photoValue}}">
 			</button>
-			<button class="button button-clear button-small button-menu" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
+			<button class="button button-clear button-small" ng-click="showMenu.modalFlag1 = !showMenu.modalFlag1" ng-class="{true:'button-menu-outline', false:'button-menu'}[showMenu.modalFlag1]"><i class="icon ion-wrench"></i></button>
 		</div>
 	</ion-header-bar>
-	<div show-more morestyle="position: fixed; bottom: 0px"><ion-content class="scroll-area">
+	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; z-index: 20;" ng-show="showMenu.modalFlag1">
+		<div class="lty-menu-item" ng-click="myShare()">推荐本页给朋友</div>
+		<div class="lty-menu-item">举报</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">退出登录</div>
+	</div>
+	<div show-more morestyle="position: fixed; bottom: 0px"><ion-content class="scroll-area" on-tap="showMenu.modalFlag1 = false">
 		<div class="item item-thumbnail-left lty-list-item" style="background-color: #fff !important;">
 			<img ng-src="{{currentChat.user.photoValue}}">
 			<div class="intro">
 				<p class="name">{{loginUser.name | hideEmpty:'未发布'}}</p>
 				<p class="description">电话: {{loginUser.phone}}</p>
-				<p class="description">地址: 江苏省徐州市睢宁县</p>
+				<p class="description">地址: {{loginUser.address | hideEmpty:"未发布"}}</p>
 				<!--<p>{{result | distance:position}}</p>-->
 			</div>
 			<!--<i ng-if="!(followList.includes(result.id))" class="icon ion-android-favorite-outline positive second" ng-click="followService(result, $event)"></i>-->
@@ -27,12 +34,11 @@
 			<div class="operations">
 				<div class="lty-distance">
 					发布广告数共&nbsp
-					<span style="color: #cc0404; font-weight: 900">{{myPublishServices.length}}</span>&nbsp条
+					<span style="color: #cc0404; font-weight: 900" ng-bind="myPublishServices.length"></span>&nbsp条
 				</div>
 				<div class="lty-distance">
 					未读来信共&nbsp
-					<span style="color: #cc0404; font-weight: 900" >
-						{{currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myPublishServices}}
+					<span style="color: #cc0404; font-weight: 900" ng-bind="currentChat.conversationList|getUnreadNum:currentChat.user.id:null:myPublishServices">
 					</span>&nbsp条
 				</div>
 				<div class="lty-publish-button" ng-click="showServiceModal()">

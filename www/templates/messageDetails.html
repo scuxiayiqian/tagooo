@@ -1,14 +1,17 @@
 <ion-modal-view>
-	<ion-header-bar>
-		<h1 class="title" ng-bind="currentChat.conversation.conversationName"></h1>
+	<ion-header-bar align-title="left" class="bar-positive bar-lty">
+		<button class="button button-clear button-small" ng-click="messageDetailsModal.remove()"><i class="icon ion-arrow-left-c"></i></button>
+		<h1 class="title" ng-bind="'用户来信_' + currentChat.conversation.conversationName"></h1>
 		<div class="buttons">
-			<button class="button button-clear button-small" ng-click="showMenu.flag1 = !showMenu.flag1" style="color: #387ef5"><i class="icon ion-wrench"></i></button>
-			<button class="button button-positive" ng-click="messageDetailsModal.remove()">关闭</button>
+			<button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
+				<img ng-src="{{currentChat.user.photoValue}}">
+			</button>
+			<button class="button button-clear button-small button-menu" ng-click="showMenu.flag1 = !showMenu.flag1" style="color: #387ef5"><i class="icon ion-wrench"></i></button>
 		</div>
 	</ion-header-bar>
-	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;padding: 5px 10px 0px 10px;" ng-show="showMenu.flag1">
+	<div class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; width: 30%; z-index: 20;" ng-show="showMenu.flag1">
 		<div ng-click="register()" class="lty-menu-item">注册</div>
-		<div class="lty-menu-item">当前页分享</div>
+		<div class="lty-menu-item" ng-click="myShare()">当前页分享</div>
 		<div class="lty-menu-item">联系客服</div>
 		<div class="lty-menu-item">举报</div>
 	</div>

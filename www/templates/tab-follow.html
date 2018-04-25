@@ -14,7 +14,7 @@
 		<button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
 			<img ng-src="{{currentChat.user.photoValue}}">
 		</button>
-		<button class="button button-clear button-small button-menu" ng-click="showMenu.flag = !showMenu.flag"><i class="icon ion-wrench"></i></button>
+		<button class="button button-clear button-small" ng-click="showMenu.flag = !showMenu.flag" ng-class="{true:'button-menu-outline', false:'button-menu'}[showMenu.flag]"><i class="icon ion-wrench"></i></button>
 	</ion-nav-buttons>
 	<ion-nav-buttons side="left">
 		<!--<button ng-show="isLogin()" class="button button-clear button-small" ng-click="register()">注册-->
@@ -23,17 +23,18 @@
 		</button>
 	</ion-nav-buttons>
 	<div id="menu" class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; z-index: 20;" ng-show="showMenu.flag">
-		<div ng-click="register()" class="lty-menu-item">注册</div>
-		<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">注销</div>
-		<div ng-if="!isLogin" class="lty-menu-item" ng-click="login()">登录</div>
-		<div class="lty-menu-item" ng-click="myShare()">当前页分享</div>
-		<div class="lty-menu-item">联系客服</div>
+		<div class="lty-menu-item" ng-click="myShare()">推荐本页给朋友</div>
 		<div class="lty-menu-item">举报</div>
+		<div class="lty-menu-item">联系客服</div>
+		<div ng-click="register()" class="lty-menu-item">注册</div>
+		<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">退出登录</div>
+		<!--<div ng-if="!isLogin" class="lty-menu-item" ng-click="login()">登录</div>-->
 	</div>
 	<div ng-include="'templates/loginPopup.html'"></div>
 	<div show-more morestyle="position: fixed"><ion-content on-tap="showMenu.flag = false" class="scroll-area">
+		<div class="cover-layer" ng-if="!isLogin" ng-click="closeLogin()"></div>
 		<div ng-if="!isLogin">
-			<div class="login-popup" style="left: 50%;transform: translateX(-50%) translateY(-50%);top: 35%;">
+			<div class="login-popup default-show" style="left: 50%;transform: translateX(-50%) translateY(-50%);top: 35%;">
 				<label class="item-input-wrapper">
 					<input type="number" style="width:100%" placeholder="请输入手机号登录后查看" ng-model="loginData.phone">
 				</label>
@@ -51,8 +52,9 @@
 		<div class="list" direction="y">
 			<div ng-repeat = "item in myFollowServices">
 				<div class="item item-input-inset">
-					<label class="item-input-wrapper">
+					<label class="item-input-wrapper" style="padding-right: 25px; position: relative">
 						<input type="text" ng-value="item.address" disabled style="width:100%">
+						<i class="icon ion-ios-locked input-icon-background"></i>
 					</label>
 					<label style="padding-left: 5px">
 						附近

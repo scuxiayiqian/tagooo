@@ -7,23 +7,14 @@ angular.module('starter.controllers')
 
 		$scope.showMenu = {
 			'flag': false,
-			'flag1': false
+			'flag1': false,
+			'modalFlag1': false,
+			'modalFlag2': false,
 		};
 
 		$scope.profileModalSource = "profile"; //新建服务时如果个人信息不完整,跳转到完善个人信息界面
 
 		$scope.newServiceButtonState = true; //新建服务时的按钮状态,true可用,false不可用,防止用户多次点击
-
-		//var getPublishServices = function(){
-		//	if(UserService.getCurrentUser().id == undefined){
-		//		return;
-		//	}
-		//	ServiceService.getPublishServices(UserService.getCurrentUser().id)
-		//		.success(function(data){
-		//			$scope.myPublishServices = data.serviceinfoDTOList;
-		//
-		//		})
-		//}
 
 		$scope.getPublishServices();
 
@@ -84,7 +75,7 @@ angular.module('starter.controllers')
 				.error(function(err){
 					$cordovaToast.showShortBottom('修改服务信息失败,请检查网络');
 				})
-			if(service.forUpload > 0){
+			if(service.forUpload.length > 0){
 				ServiceService.uploadPicture(temp.id, service.forUpload);
 			}
 			if(service.forDelete.length > 0){
@@ -286,7 +277,7 @@ angular.module('starter.controllers')
 				})
 		}
 
-		$scope.selectPhoto = function(){
+		$scope.selectPhoto = function(result){
 			var actionSheetOptions = {
 				title: '上传头像',
 				buttonLabels: ['相机', '从图库选择'],
@@ -315,14 +306,15 @@ angular.module('starter.controllers')
 					cameraDirection:0                                                                            //枪后摄像头类型：Back= 0,Front-facing = 1
 				};
 				$cordovaCamera.getPicture(cameraOptions).then(function(imageURI) {
-					UserService.uploadPhoto(imageURI, UserService.getCurrentUser().phone)
-						.success(function(data){
-							var currentUser = UserService.getCurrentUser();
-							currentUser.photo = 'data:image/jpeg;base64,' + imageURI;
-							$scope.profile.photo = 'data:image/jpeg;base64,' + imageURI;
-							UserService.setCurrentUser(currentUser);
-							$cordovaToast.showShortBottom("上传头像成功");
-						})
+					//UserService.uploadPhoto(imageURI, UserService.getCurrentUser().phone)
+					//	.success(function(data){
+					//		var currentUser = UserService.getCurrentUser();
+					//		currentUser.photo = 'data:image/jpeg;base64,' + imageURI;
+					//		$scope.profile.photo = 'data:image/jpeg;base64,' + imageURI;
+					//		UserService.setCurrentUser(currentUser);
+					//		$cordovaToast.showShortBottom("上传头像成功");
+					//	})
+					result.photoValue = 'data:image/jpeg;base64,' + imageURI;
 				}, function(err) {
 					// error
 
@@ -344,14 +336,18 @@ angular.module('starter.controllers')
 			$ionicModal.fromTemplateUrl('templates/service.html', {
 				scope: $scope
 			}).then(function(modal) {
+				$scope.newService = {pictureImageValue:[], basicLabel:{},serviceLabel:{},thirdLabel:{}};
 				$scope.serviceModal = modal;
 				$scope.mode = 'new';
 				$scope.serviceModal.show();
+				$scope.newService.basicLabel.serviceLabel = $scope.labels[0].serviceLabel;
+				$scope.newService.serviceLabel.thirdLabel = $scope.labels[0].serviceLabel[0].thirdLabel;
+				$scope.newService.userInfo = angular.copy($scope.currentChat.user);
 			});
 
 		};
 
-		$scope.newService = {pictureImageValue:[]};
+
 
 		SearchService.getAllLabels()
 			.success(function(data){
@@ -413,12 +409,20 @@ angular.module('starter.controllers')
 
 		$scope.publishService = function(){
 			console.log('publishService', $scope.newService);
-			if($scope.newService.address == undefined || $scope.newService.address == ""){
+			if($scope.newService.userInfo.address == undefined || $scope.newService.userInfo.address == ""){
 				$cordovaToast.showShortBottom('请正确填写地址');
+				return;
+			}
+			if($scope.newService.title == undefined || $scope.newService.title == ""){
+				$cordovaToast.showShortBottom('请正确填写广告标题');
 				return;
 			}
 			if($scope.newService.slogan == undefined || $scope.newService.slogan == ""){
 				$cordovaToast.showShortBottom('请正确填写广告语');
+				return;
+			}
+			if($scope.newService.thirdLabel.id == undefined || $scope.newService.thirdLabel.id == ""){
+				$cordovaToast.showShortBottom('请选择服务类别');
 				return;
 			}
 			$scope.newServiceButtonState = false;
@@ -427,15 +431,18 @@ angular.module('starter.controllers')
 			temp.publishUserId = UserService.getCurrentUser().id;
 			temp.slogan = $scope.newService.slogan.replace(/\r?\n/g, '<br />');
 			temp.thirdLabelId = $scope.newService.thirdLabel.id;
-			temp.address = $scope.newService.address;
+			temp.address = ($scope.newService.userInfo.address == $scope.currentChat.user.address) ? "" : $scope.newService.userInfo.address;
 			temp.title = $scope.newService.title.replace(/\r?\n/g, '<br />');;
 			temp.pictureImageValue = $scope.newService.pictureImageValue;
 			temp.phonenum = $scope.newService.phonenum;
+			temp.publisherPhoto = ($scope.newService.userInfo.photoValue == $scope.currentChat.user.photoValue) ? "" : $scope.newService.userInfo.photoValue.substring(23);
+			temp.publisherName = ($scope.newService.userInfo.name == $scope.currentChat.user.name) ? "" : $scope.newService.userInfo.name;
+
 			var geocoder = new AMap.Geocoder({
 				radius: 500 //范围，默认：500
 			});
 			//地理编码,返回地理编码结果
-			geocoder.getLocation($scope.newService.address, function(status, result) {
+			geocoder.getLocation($scope.newService.userInfo.address, function(status, result) {
 				if (status === 'complete' && result.info === 'OK') {
 					var geocode = result.geocodes;
 					temp.longitude = geocode[0].location.getLng();
@@ -447,6 +454,7 @@ angular.module('starter.controllers')
 							$scope.getPublishServices();
 							$scope.serviceModal.remove();
 							$scope.newServiceButtonState = true;
+							$scope.updateUserInfo($scope.currentChat.user.phone);
 							$scope.$apply();
 						})
 						.error(function(error){
@@ -464,8 +472,8 @@ angular.module('starter.controllers')
 
 		$scope.selectBasicLabel = function(service, basicLabel, $event){
 			service.basicLabel = basicLabel;
-			service.serviceLabel = basicLabel.serviceLabel[0];
-			service.thirdLabel = service.serviceLabel.thirdLabel[0];
+			if(service.serviceLabel.id) service.serviceLabel = basicLabel.serviceLabel[0];
+			if(service.thirdLabel.id) service.thirdLabel = service.serviceLabel.thirdLabel[0];
 			$('#publish-triangle1').css('top', $($event.target).position().top);
 			$('#publish-triangle2').css('top', 2);
 			var label_column2 = $('#label-column-list2');
@@ -478,7 +486,7 @@ angular.module('starter.controllers')
 
 		$scope.selectServiceLabel = function(service, serviceLabel, $event) {
 			service.serviceLabel = serviceLabel;
-			service.thirdLabel = service.serviceLabel.thirdLabel[0];
+			if(service.thirdLabel.id)service.thirdLabel = service.serviceLabel.thirdLabel[0];
 			$('#publish-triangle2').css('top', $($event.target).position().top);
 			var label_column3 = $('#label-column-list3');
 			label_column3.css('height','auto').ready(function(){
@@ -494,4 +502,5 @@ angular.module('starter.controllers')
 			list.splice($index, 1);
 		};
 		$scope.loginUser = UserService.getCurrentUser();
-	})
+
+	});

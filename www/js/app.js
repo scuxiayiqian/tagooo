@@ -42,6 +42,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.routes',
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+	  //console.log(window.MobileAccessibility);
+	  //window.MobileAccessibility.usePreferredTextZoom(false);
+	  if(window.MobileAccessibility){
+
+		  window.MobileAccessibility.usePreferredTextZoom(false);
+	  }
   });
 
   $ionicPlatform.registerBackButtonAction(function(e) {

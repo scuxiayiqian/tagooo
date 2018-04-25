@@ -21,7 +21,6 @@ angular.module('starter.services', ['ngCordova'])
 .factory('UserService', function($http, baseUrl, port, managePort){
     var UserService = {};
     UserService.currentUser = {};
-    UserService.followedCoach = [];
     UserService.isLogin = false;
 	UserService.profileUpdated = false;
     // UserService.usersProfile = "img/noprofile.png";
@@ -32,14 +31,6 @@ angular.module('starter.services', ['ngCordova'])
 
     UserService.getCurrentUser = function(){
         return angular.copy(UserService.currentUser);
-    };
-
-    UserService.setFollowedCoach = function(followedCoach){
-        UserService.followedCoach = followedCoach;
-    };
-
-    UserService.getFollowedCoach = function(){
-        return angular.copy(UserService.followedCoach);
     };
 
     UserService.register = function(registerInfo){
@@ -151,6 +142,14 @@ angular.module('starter.services', ['ngCordova'])
 	UserService.getPhotoById = function(id){
 		return $http({
 			url: baseUrl + port + '/user/getphotobyid?id=' + id,
+			method: 'GET',
+			crossDomain: true
+		})
+	};
+
+	UserService.getInfoByPhone = function(phone){
+		return $http({
+			url: baseUrl + port + '/user/infobyphone?phone=' + phone,
 			method: 'GET',
 			crossDomain: true
 		})

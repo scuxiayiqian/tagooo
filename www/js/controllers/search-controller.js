@@ -60,9 +60,10 @@ angular.module('starter.controllers')
 				})
 		}
 
-		$scope.searchWord = "";
+		$scope.searchWord = {};
 		$scope.searchByWord = function(){
-			return SearchService.searchByWord($scope.searchWord)
+			console.log($scope.searchWord);
+			SearchService.searchByWord($scope.searchWord.content)
 				.success(function(data){
 					$rootScope.isSearchAddress = false;
 					if($rootScope.position == undefined) {
@@ -72,7 +73,7 @@ angular.module('starter.controllers')
 						});
 						geolocation.getCurrentPosition();
 						AMap.event.addListener(geolocation, 'complete', function (data) {
-							$rootScope.position = data.position
+							$rootScope.position = data.position;
 							console.log('$rootScope.position', $rootScope.position)
 						})
 					}
@@ -202,6 +203,7 @@ angular.module('starter.controllers')
 			$rootScope.currentPosition.address = data.formattedAddress;
 			$scope.searchPosition.address = data.formattedAddress;
 			$scope.$digest();
+			console.log($scope.searchPosition.address, $rootScope.currentPosition.address);
 		});
 
 		AMap.event.addListener(geolocation, 'error', function(err){

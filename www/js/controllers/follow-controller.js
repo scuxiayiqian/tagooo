@@ -11,7 +11,8 @@ angular.module('starter.controllers')
 		//$scope.$on('$ionicView.enter', function(e) {
 		//});
 		$scope.showMenu = {
-			'flag': false
+			'flag': false,
+			'modalFlag': false
 		};
 		//var getFollowServices = function(){
 		//	if(UserService.getCurrentUser().id == undefined){
@@ -78,10 +79,15 @@ angular.module('starter.controllers')
 				$timeout(function(){
 					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
 				},50);
-				$('#userServiceInfoBlock').ready(function(){
-					$('#userServiceChat').css('margin-top', $('#userServiceInfoBlock').height() + 10);
-				});
-
+				//$('#userServiceInfoBlock').ready(function(){
+				//	$('#userServiceChat').css('margin-top', $('#userServiceInfoBlock').height() + 10);
+				//});
+				$('#messageList')[0].onload = function(){
+					console.log($('#messageList')[0]);
+					$timeout(function(){
+						$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
+					},500);
+				}
 			});
 		};
 

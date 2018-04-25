@@ -191,9 +191,13 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		});
 
 		// Triggered in the login modal to close it
-		$scope.closeLogin = function() {
+		$scope.closeLogin = function($event) {
+			if($event){
+				$event.stopPropagation();
+			}
 			$scope.modal.hide();
 			$("div.login-popup").hide();
+			$('.login-popup.default-show').show()
 		};
 
 		$scope.getValidateCode = function(phone, code){ //code:0 for login; 1 for register
@@ -524,22 +528,39 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 		}
 
 		$scope.showMenuLogin = function(path, $event){
-			var brect = $($event.target)[0].getBoundingClientRect();
 			var loginPopup = $(path);
-			loginPopup.toggle()
+			var isHidden = loginPopup.is(":hidden");
+			$('.login-popup').hide();
+			var brect = $($event.target)[0].getBoundingClientRect();
+			isHidden?loginPopup.show():loginPopup.hide();
 			var lrect = loginPopup[0].getBoundingClientRect();
 			console.log(loginPopup, lrect);
 			loginPopup.css('left', brect.left-lrect.width);
-		}
+			isHidden?$('.login-popup.default-show').hide():$('.login-popup.default-show').show();
+		};
 
 		$scope.showMessageLogin = function(path, $event){
 			if($scope.isLogin) return;
+			$('.login-popup').hide();
 			var brect = $($event.target)[0].getBoundingClientRect();
 			var loginPopup = $(path);
 			loginPopup.toggle();
 			var lrect = loginPopup[0].getBoundingClientRect();
 			console.log(loginPopup, lrect);
 			loginPopup.css('left', brect.left + 30);
+		};
+
+		$scope.updateUserInfo = function(phone){
+			UserService.getInfoByPhone(phone)
+				.success(function(data){
+					$scope.currentChat.user = data;
+					UserService.setCurrentUser(data);
+					UserService.getPhoto(data.phone)
+						.success(function(image){
+							data.photoValue = image;
+							$scope.$apply();
+						});
+				})
 		}
 
 	})

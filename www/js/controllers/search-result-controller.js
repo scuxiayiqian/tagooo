@@ -47,7 +47,8 @@ angular.module('starter.controllers')
 
 		$scope.showMenu = {
 			'flag': false,
-			'flag1': false
+			'flag1': false,
+			'modalFlag': false,
 		};
 
 		$scope.followList = [];
@@ -65,11 +66,17 @@ angular.module('starter.controllers')
 				})
 		});
 
-		$scope.followService = function(service, $event){
+		$scope.followService = function(service, $event, isModal){
 			$event.stopPropagation();
 			if(UserService.getCurrentUser().id == undefined){
-				var login_popup = $("ion-content div.login-popup").last();
-				console.log(login_popup);
+				console.log(isModal);
+				var login_popup;
+				if(isModal){
+					login_popup = $(".modal-login .login-popup");
+				}
+				else {
+					login_popup = $("ion-content div.login-popup").last();
+				}
 				login_popup.show();
 				var lrect = login_popup[0].getBoundingClientRect();
 				var crect = $($event.target)[0].getBoundingClientRect(); //点击元素相对窗口的位置
@@ -157,9 +164,9 @@ angular.module('starter.controllers')
 				$timeout(function(){
 					$ionicScrollDelegate.$getByHandle('messageDetailsScroll').scrollBottom();
 				},50);
-				$('#userServiceInfoBlock').ready(function(){
-					$('#userServiceChat').css('margin-top', $('#userServiceInfoBlock').height() + 10);
-				});
+				//$('#userServiceInfoBlock').ready(function(){
+				//	$('#userServiceChat').css('margin-top', $('#userServiceInfoBlock').height() + 10);
+				//});
 
 				$('#messageList')[0].onload = function(){
 					console.log($('#messageList')[0]);
