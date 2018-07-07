@@ -563,4 +563,32 @@ angular.module('starter.controllers', ['ngCordova', 'starter.services'])
 				})
 		}
 
+		$scope.showReportModal = function(serviceid){
+			console.log("report");
+			$scope.report = {
+				"content": ""
+			};
+			$scope.reportServiceId = serviceid;
+			$ionicModal.fromTemplateUrl('templates/reportModal.html', {
+				scope: $scope,
+			}).then(function(modal) {
+				$scope.reportModal = modal;
+
+				$scope.reportModal.show();
+			});
+		};
+
+		$scope.submitComplain = function(){
+			console.log($scope.report.content);
+			if($scope.report.content == "" || $scope.report.content == null){
+				$cordovaToast.showShortBottom("举报内容不能为空");
+				return;
+			}
+			ServiceService.complain($scope.currentChat.user.id, $scope.reportServiceId, $scope.report.content)
+				.success(function(data){
+					$cordovaToast.showShortBottom("举报成功");
+					$scope.reportModal.remove();
+				})
+		}
+
 	})

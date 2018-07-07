@@ -101,4 +101,5 @@ angular.module('starter.controllers')
 				$scope.serviceModal.show();
 			});
 		};
+
 	})

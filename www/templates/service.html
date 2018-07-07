@@ -14,7 +14,7 @@
 		<div ng-include="'templates/loginPopup.html'"></div>
 		<div class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; z-index: 20;" ng-show="showMenu.modalFlag2">
 			<div class="lty-menu-item" ng-click="myShare()">推荐本页给朋友</div>
-			<div class="lty-menu-item">举报</div>
+			<div class="lty-menu-item" ng-click="showReportModal('')">举报</div>
 			<div class="lty-menu-item">联系客服</div>
 			<div ng-click="register()" class="lty-menu-item">注册</div>
 			<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">退出登录</div>
@@ -162,7 +162,7 @@
 		</ion-header-bar>
 		<div class="card list" style="margin: 0px 0px; position: absolute; right: 7px; top: 48px; z-index: 20;" ng-show="showMenu.modalFlag2">
 			<div class="lty-menu-item" ng-click="myShare()">推荐本页给朋友</div>
-			<div class="lty-menu-item">举报</div>
+			<div class="lty-menu-item" ng-click="showReportModal('')">举报</div>
 			<div class="lty-menu-item">联系客服</div>
 			<div ng-click="register()" class="lty-menu-item">注册</div>
 			<div ng-if="isLogin" class="lty-menu-item" ng-click="logout()">退出登录</div>

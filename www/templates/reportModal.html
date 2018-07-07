@@ -1,0 +1,26 @@
+<ion-modal-view name="new-modify-service">
+	<ion-header-bar align-title="left" class="bar-positive bar-lty">
+		<button class="button button-clear button-small" ng-click="reportModal.remove()"><i class="icon ion-arrow-left-c"></i></button>
+		<h1 class="title">举报</h1>
+		<div class="buttons">
+			<button class="button button-clear button-small button-menu" name="login-menu-button" ng-if="!isLogin" style="margin-right: 10px" ng-click="showMenuLogin('ion-modal-view[name=\'new-modify-service\'] div[ng-include]>.login-popup',$event)">登录</button>
+			<button class="button button-clear button-small button-menu" ng-if="isLogin" style="margin-right: 10px">
+				<img ng-src="{{currentChat.user.photoValue}}">
+			</button>
+		</div>
+	</ion-header-bar>
+	<ion-content>
+		<div class="new-service">
+			<div class="service-details">
+				<div>举报内容: </div>
+				<textarea type="text" ng-model="report.content"></textarea>
+			</div>
+		</div>
+		<div class="register-login-btn" align="center">
+			<button class="button button-block button-positive" ng-click="submitComplain()" >
+				举报
+			</button>
+		</div>
+
+	</ion-content>
+</ion-modal-view>

@@ -428,6 +428,20 @@ angular.module('starter.services', ['ngCordova'])
 		})
 	};
 
+	ServiceService.complain = function(userid, serviceid, content){
+		return $http({
+			method: 'POST',
+			url: baseUrl + managePort + '/service/complaint',
+			data: {
+				'userid': userid,
+				'serviceid': serviceid,
+				'content': content
+			},
+			crossDomain: true,
+			headers: {'Content-Type': 'application/json;charset=UTF-8'}
+		})
+	}
+
 	return ServiceService;
 })
 
