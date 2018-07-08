@@ -55,7 +55,7 @@
 						<div class="lty-distance">{{result | distance:searchResultPosition.coordinate}}</div>
 						<div class="lty-operation-button">
 							<div style="display: inline">
-								工商户认定
+								{{{true:'工商户认证',false:'未认证'}[result.certification]}}
 								<i class="icon ion-chatboxes positive" style="font-size: 25px; vertical-align: middle"></i>
 						    </div>
 						</div>

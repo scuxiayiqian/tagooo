@@ -12,6 +12,8 @@ angular.module('starter.controllers')
 			'modalFlag2': false,
 		};
 
+		console.log($scope.currentChat.user)
+
 		$scope.profileModalSource = "profile"; //新建服务时如果个人信息不完整,跳转到完善个人信息界面
 
 		$scope.newServiceButtonState = true; //新建服务时的按钮状态,true可用,false不可用,防止用户多次点击

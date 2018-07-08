@@ -50,7 +50,8 @@
 					<!--<i ng-if="followList.includes(result.id)" class="icon ion-android-favorite positive second" ng-click="unfollowService(result, $event)"></i>-->
 
 					<div class="operations">
-						<div class="lty-distance" style="height: 66%">距离: {{userServiceInfo | distance:searchResultPosition.coordinate}}</div>
+						<div class="lty-distance" style="height: 33%">距离: {{userServiceInfo | distance:searchResultPosition.coordinate}}</div>
+						<div class="lty-distance"> {{{true:'工商户认证',false:'未认证'}[userServiceInfo.certification]}}</div>
 						<div class="lty-operation-button" ng-if="!(followList.includes(userServiceInfo.id))" ng-click="followService(userServiceInfo, $event, true)">
 							<div style="display: inline; z-index: 999; position: relative">
 								关注

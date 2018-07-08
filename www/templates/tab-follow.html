@@ -77,7 +77,7 @@
 					<div class="operations">
 						<div class="lty-operation-button">{{service.distance | distance:undefined}}</div>
 						<div class="lty-operation-button">
-							工商户认定
+							{{{true:'工商户认证',false:'未认证'}[service.certification]}}
 							<i class="icon ion-chatboxes positive" style="font-size: 25px; vertical-align: middle"></i>
 						</div>
 						<div class="lty-operation-button"  ng-click="unfollowService(service, $event)">
